@@ -792,10 +792,10 @@ static void do_stat_trigger(struct char_data *ch, trig_data *trig)
       if (cmd_list->cmd)
         len += snprintf(sb + len, sizeof(sb)-len, "%s\r\n", cmd_list->cmd);
 
-        if (len>MAX_STRING_LENGTH-80) {
-          len += snprintf(sb + len, sizeof(sb)-len, "*** Overflow - script too long! ***\r\n");
-          break;
-        }
+      if (len>MAX_STRING_LENGTH-80) {
+        len += snprintf(sb + len, sizeof(sb)-len, "*** Overflow - script too long! ***\r\n");
+        break;
+      }
       cmd_list = cmd_list->next;
     }
 
@@ -1138,6 +1138,23 @@ static int remove_trigger(struct script_data *sc, char *name)
     return 0;
 }
 
+static void find_detach_target(char_data *ch, char *arg, char_data **victim, obj_data **object) {
+  /* Thanks to Carlos Myers for fixing the line below */
+  if ((*object = get_obj_in_equip_vis(ch, arg, NULL, ch->equipment)))
+    return;
+  else if ((*object = get_obj_in_list_vis(ch, arg, NULL, ch->carrying)))
+    return;
+  else if ((*victim = get_char_room_vis(ch, arg, NULL)))
+    return;
+  else if ((*object = get_obj_in_list_vis(ch, arg, NULL, world[IN_ROOM(ch)].contents)))
+    return;
+  else if ((*victim = get_char_vis(ch, arg, NULL, FIND_CHAR_WORLD)))
+    return;
+  else
+    *object = get_obj_vis(ch, arg, NULL);
+}
+
+
 ACMD(do_detach)
 {
   char_data *victim = NULL;
@@ -1224,14 +1241,8 @@ ACMD(do_detach)
         trigger = arg3;
     }
     else  {
-      /* Thanks to Carlos Myers for fixing the line below */
-      if ((object = get_obj_in_equip_vis(ch, arg1, NULL, ch->equipment)));
-      else if ((object = get_obj_in_list_vis(ch, arg1, NULL, ch->carrying)));
-      else if ((victim = get_char_room_vis(ch, arg1, NULL)));
-      else if ((object = get_obj_in_list_vis(ch, arg1, NULL, world[IN_ROOM(ch)].contents)));
-      else if ((victim = get_char_vis(ch, arg1, NULL, FIND_CHAR_WORLD)));
-      else if ((object = get_obj_vis(ch, arg1, NULL)));
-      else
+      find_detach_target(ch, arg1, &victim, &object);
+      if (victim == NULL && object == NULL)
         send_to_char(ch, "Nothing around by that name.\r\n");
 
       trigger = arg2;
@@ -1429,7 +1440,7 @@ static void eval_op(char *op, char *lhs, char *rhs, char *result, void *go,
     sprintf(result, "%d", atoi(lhs) * atoi(rhs));
 
   else if (!strcmp("/", op))
-    sprintf(result, "%d", (n = atoi(rhs)) ? (atoi(lhs) / n) : 0);
+    sprintf(result, "%d", (n = atoi(rhs)) != 0 ? (atoi(lhs) / n) : 0);
 
   else if (!strcmp("+", op))
     sprintf(result, "%d", atoi(lhs) + atoi(rhs));
@@ -1487,15 +1498,14 @@ static void eval_expr(char *line, char *result, void *go, struct script_data *sc
   while (*line && isspace(*line))
     line++;
 
-  if (eval_lhs_op_rhs(line, result, go, sc, trig, type));
-
+  if (eval_lhs_op_rhs(line, result, go, sc, trig, type))
+    return;
   else if (*line == '(') {
     p = strcpy(expr, line);
     p = matching_paren(expr);
     *p = '\0';
     eval_expr(expr + 1, result, go, sc, trig, type);
   }
-
   else
     var_subst(go, sc, trig, type, line, result);
 }
@@ -2603,7 +2613,8 @@ int script_driver(void *go_adress, trig_data *trig, int type, int mode)
       if (!strn_cmp(cmd, "eval ", 5))
         process_eval(go, sc, trig, type, cmd);
 
-      else if (!strn_cmp(cmd, "nop ", 4)); /* nop: do nothing */
+      else if (!strn_cmp(cmd, "nop ", 4))
+        continue; /* nop: do nothing */
 
       else if (!strn_cmp(cmd, "extract ", 8))
         extract_value(sc, trig, cmd);

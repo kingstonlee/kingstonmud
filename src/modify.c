@@ -120,6 +120,38 @@ void string_write(struct descriptor_data *d, char **writeto, size_t len, long ma
   d->mail_to = mailto;
 }
 
+int perform_truncate(struct descriptor_data *d, char *str, int orig_action)
+{
+  if (orig_action != STRINGADD_OK)
+    return orig_action;
+
+  if (!(*d->str)) {
+    if (strlen(str) + 3 > d->max_str) { /* \r\n\0 */
+      send_to_char(d->character, "String too long - Truncated.\r\n");
+      strcpy(&str[d->max_str - 3], "\r\n"); /* strcpy: OK (size checked) */
+      CREATE(*d->str, char, d->max_str);
+      strcpy(*d->str, str); /* strcpy: OK (size checked) */
+      if (!using_improved_editor)
+        return STRINGADD_SAVE;
+    } else {
+      CREATE(*d->str, char, strlen(str) + 3);
+      strcpy(*d->str, str); /* strcpy: OK (size checked) */
+    }
+  } else {
+    if (strlen(str) + strlen(*d->str) + 3 > d->max_str) { /* \r\n\0 */
+      send_to_char(d->character, "String too long.  Last line skipped.\r\n");
+      if (!using_improved_editor)
+        return STRINGADD_SAVE;
+      else if (orig_action == STRINGADD_OK)
+        return STRINGADD_ACTION;    /* No appending \r\n\0, but still let them save. */
+    } else {
+      RECREATE(*d->str, char, strlen(*d->str) + strlen(str) + 3); /* \r\n\0 */
+      strcat(*d->str, str); /* strcat: OK (size precalculated) */
+    }
+  }
+  return orig_action;
+}
+
 /* Add user input to the 'current' string (as defined by d->str). This is still
  * overly complex. */
 void string_add(struct descriptor_data *d, char *str)
@@ -140,32 +172,7 @@ void string_add(struct descriptor_data *d, char *str)
     if ((action = improved_editor_execute(d, str)) == STRINGADD_ACTION)
       return;
 
-  if (action != STRINGADD_OK)
-    /* Do nothing. */ ;
-  else if (!(*d->str)) {
-    if (strlen(str) + 3 > d->max_str) { /* \r\n\0 */
-      send_to_char(d->character, "String too long - Truncated.\r\n");
-      strcpy(&str[d->max_str - 3], "\r\n");	/* strcpy: OK (size checked) */
-      CREATE(*d->str, char, d->max_str);
-      strcpy(*d->str, str);	/* strcpy: OK (size checked) */
-      if (!using_improved_editor)
-        action = STRINGADD_SAVE;
-    } else {
-      CREATE(*d->str, char, strlen(str) + 3);
-      strcpy(*d->str, str);	/* strcpy: OK (size checked) */
-    }
-  } else {
-    if (strlen(str) + strlen(*d->str) + 3 > d->max_str) { /* \r\n\0 */
-      send_to_char(d->character, "String too long.  Last line skipped.\r\n");
-      if (!using_improved_editor)
-        action = STRINGADD_SAVE;
-      else if (action == STRINGADD_OK)
-        action = STRINGADD_ACTION;    /* No appending \r\n\0, but still let them save. */
-    } else {
-      RECREATE(*d->str, char, strlen(*d->str) + strlen(str) + 3); /* \r\n\0 */
-      strcat(*d->str, str);	/* strcat: OK (size precalculated) */
-    }
-  }
+  action = perform_truncate(d, str, action);
 
   /* Common cleanup code. */
   switch (action) {
@@ -251,19 +258,20 @@ static void playing_string_cleanup(struct descriptor_data *d, int action)
       store_mail(d->mail_to, GET_IDNUM(d->character), *d->str);
       write_to_output(d, "Message sent!\r\n");
       notify_if_playing(d->character, d->mail_to);
-    } else
+    } else {
       write_to_output(d, "Mail aborted.\r\n");
-      free(*d->str);
-      free(d->str);
     }
+    free(*d->str);
+    free(d->str);
+  }
 
   /* We have no way of knowing which slot the post was sent to so we can only
    * give the message.   */
-    if (d->mail_to >= BOARD_MAGIC) {
-      board_save_board(d->mail_to - BOARD_MAGIC);
-      if (action == STRINGADD_ABORT)
-        write_to_output(d, "Post not aborted, use REMOVE <post #>.\r\n");
-    }
+  if (d->mail_to >= BOARD_MAGIC) {
+    board_save_board(d->mail_to - BOARD_MAGIC);
+    if (action == STRINGADD_ABORT)
+      write_to_output(d, "Post not aborted, use REMOVE <post #>.\r\n");
+  }
   if (PLR_FLAGGED(d->character, PLR_IDEA)) {
     if (action == STRINGADD_SAVE && *d->str){
       write_to_output(d, "Idea saved!\r\n");
@@ -431,7 +439,7 @@ static char *next_page(char *str, struct char_data *ch)
         line++;
 
       /* We need to check here and see if we are over the page width, and if
-       * so, compensate by going to the begining of the next line. */
+       * so, compensate by going to the beginning of the next line. */
       else if (col++ > pw) {
         col = 1;
         line++;

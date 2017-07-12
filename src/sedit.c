@@ -464,7 +464,7 @@ void sedit_parse(struct descriptor_data *d, char *arg)
       cleanup_olc(d, CLEANUP_ALL);
       return;
     default:
-     write_to_output(d, "Invalid choice!\r\nDo you wish to save your changes? : ");
+      write_to_output(d, "Invalid choice!\r\nDo you wish to save your changes? : ");
       return;
     }
 
@@ -739,12 +739,12 @@ void sedit_parse(struct descriptor_data *d, char *arg)
   case SEDIT_NEW_ROOM:
     if ((i = atoi(arg)) != -1)
       if ((i = real_room(i)) == NOWHERE) {
-	write_to_output(d, "That room does not exist, try again : ");
-	return;
+        write_to_output(d, "That room does not exist, try again : ");
+        return;
       }
     if (i >= 0)
       add_shop_to_int_list(&(S_ROOMS(OLC_SHOP(d))), atoi(arg));
-      sedit_rooms_menu(d);
+    sedit_rooms_menu(d);
     return;
   case SEDIT_DELETE_ROOM:
     remove_shop_from_int_list(&(S_ROOMS(OLC_SHOP(d))), atoi(arg));

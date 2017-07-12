@@ -937,11 +937,12 @@ ACMD(do_oasis_prefedit)
   for (d = descriptor_list; d; d = d->next) {
     if (STATE(d) == CON_PREFEDIT) {
       if (d->olc && OLC_PREFS(d)->ch == vict) {
-        if (ch == vict)
+        if (ch == vict) {
           send_to_char(ch, "Your preferences are currently being edited by %s.\r\n", PERS(d->character, ch));
-        else
+        } else {
           sprintf(buf, "$S$u preferences are currently being edited by %s.", PERS(d->character, ch));
           act(buf, FALSE, ch, 0, vict, TO_CHAR);
+        }
         return;
       }
     }

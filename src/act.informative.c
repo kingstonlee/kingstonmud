@@ -1292,8 +1292,8 @@ ACMD(do_who)
         else if (PLR_FLAGGED(tch, PLR_WRITING))
           send_to_char(ch, " (writing)");
 
-      if (d->original)
-        send_to_char(ch, " (out of body)");
+        if (d->original)
+          send_to_char(ch, " (out of body)");
 
         if (d->connected == CON_OEDIT)
           send_to_char(ch, " (Object Edit)");
@@ -2044,14 +2044,15 @@ ACMD(do_toggle)
   }
 
   len = strlen(arg);
-  for (toggle = 0; *tog_messages[toggle].command != '\n'; toggle++)
+  for (toggle = 0; *tog_messages[toggle].command != '\n'; toggle++) {
     if (!strncmp(arg, tog_messages[toggle].command, len))
       break;
+  }
 
-    if (*tog_messages[toggle].command == '\n' || tog_messages[toggle].min_level > GET_LEVEL(ch)) {
-      send_to_char(ch, "You can't toggle that!\r\n");
-      return;
-    }
+  if (*tog_messages[toggle].command == '\n' || tog_messages[toggle].min_level > GET_LEVEL(ch)) {
+    send_to_char(ch, "You can't toggle that!\r\n");
+    return;
+  }
 
   switch (toggle) {
   case SCMD_COLOR:
@@ -2149,8 +2150,9 @@ ACMD(do_toggle)
         send_to_char(ch, "Okay, you'll now tough out fights to the bitter end.");
         GET_WIMP_LEV(ch) = 0;
       }
-    } else
+    } else {
       send_to_char(ch, "Specify at how many hit points you want to wimp out at.  (0 to disable)\r\n");
+    }
     break;
   case SCMD_PAGELENGTH:
     if (!*arg2)
@@ -2158,18 +2160,20 @@ ACMD(do_toggle)
     else if (is_number(arg2)) {
       GET_PAGE_LENGTH(ch) = MIN(MAX(atoi(arg2), 5), 255);
       send_to_char(ch, "Okay, your page length is now set to %d lines.", GET_PAGE_LENGTH(ch));
-    } else
+    } else {
       send_to_char(ch, "Please specify a number of lines (5 - 255).");
-      break;
+    }
+    break;
   case SCMD_SCREENWIDTH:
     if (!*arg2)
       send_to_char(ch, "Your current screen width is set to %d characters.", GET_SCREEN_WIDTH(ch));
     else if (is_number(arg2)) {
       GET_SCREEN_WIDTH(ch) = MIN(MAX(atoi(arg2), 40), 200);
       send_to_char(ch, "Okay, your screen width is now set to %d characters.", GET_SCREEN_WIDTH(ch));
-    } else
+    } else {
       send_to_char(ch, "Please specify a number of characters (40 - 200).");
-      break;
+    }
+    break;
   case SCMD_AUTOMAP:
     if (can_see_map(ch)) {
       if (!*arg2) {
@@ -2184,9 +2188,10 @@ ACMD(do_toggle)
         send_to_char(ch, "Value for %s must either be 'on' or 'off'.\r\n", tog_messages[toggle].command);
         return;
       }
-    } else
+    } else {
       send_to_char(ch, "Sorry, automap is currently disabled.\r\n");
-      break;
+    }
+    break;
   default:
     if (!*arg2) {
       TOGGLE_BIT_AR(PRF_FLAGS(ch), tog_messages[toggle].toggle);
@@ -2197,7 +2202,7 @@ ACMD(do_toggle)
     } else if (!strcmp(arg2, "off")) {
       REMOVE_BIT_AR(PRF_FLAGS(ch), tog_messages[toggle].toggle);
     } else {
-        send_to_char(ch, "Value for %s must either be 'on' or 'off'.\r\n", tog_messages[toggle].command);
+      send_to_char(ch, "Value for %s must either be 'on' or 'off'.\r\n", tog_messages[toggle].command);
       return;
     }
   }

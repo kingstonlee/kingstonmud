@@ -3559,102 +3559,102 @@ ACMD (do_zcheck)
   send_to_char(ch, "Checking Mobs for limits...\r\n");
   /*check mobs first*/
   for (i=0; i<top_of_mobt;i++) {
-      if (real_zone_by_thing(mob_index[i].vnum) == zrnum) {  /*is mob in this zone?*/
-        mob = &mob_proto[i];
-        if (!strcmp(mob->player.name, "mob unfinished") && (found=1))
+    if (real_zone_by_thing(mob_index[i].vnum) == zrnum) {  /*is mob in this zone?*/
+      mob = &mob_proto[i];
+      if (!strcmp(mob->player.name, "mob unfinished") && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Alias hasn't been set.\r\n");
+
+      if (!strcmp(mob->player.short_descr, "the unfinished mob") && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Short description hasn't been set.\r\n");
+
+      if (!strncmp(mob->player.long_descr, "An unfinished mob stands here.", 30) && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Long description hasn't been set.\r\n");
+
+      if (mob->player.description && *mob->player.description) {
+        if (!strncmp(mob->player.description, "It looks unfinished.", 20) && (found=1))
           len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Alias hasn't been set.\r\n");
-
-        if (!strcmp(mob->player.short_descr, "the unfinished mob") && (found=1))
+                          "- Description hasn't been set.\r\n");
+        else if (strncmp(mob->player.description, "   ", 3) && (found=1))
           len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Short description hasn't been set.\r\n");
+                          "- Description hasn't been formatted. (/fi)\r\n");
+      }
 
-        if (!strncmp(mob->player.long_descr, "An unfinished mob stands here.", 30) && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Long description hasn't been set.\r\n");
+      if (GET_LEVEL(mob)>MAX_LEVEL_ALLOWED && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Is level %d (limit: 1-%d)\r\n",
+                        GET_LEVEL(mob), MAX_LEVEL_ALLOWED);
 
-        if (mob->player.description && *mob->player.description) {
-          if (!strncmp(mob->player.description, "It looks unfinished.", 20) && (found=1))
-            len += snprintf(buf + len, sizeof(buf) - len,
-                            "- Description hasn't been set.\r\n");
-          else if (strncmp(mob->player.description, "   ", 3) && (found=1))
-            len += snprintf(buf + len, sizeof(buf) - len,
-                            "- Description hasn't been formatted. (/fi)\r\n");
-        }
+      if (GET_DAMROLL(mob)>MAX_DAMROLL_ALLOWED && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Damroll of %d is too high (limit: %d)\r\n",
+                        GET_DAMROLL(mob), MAX_DAMROLL_ALLOWED);
 
-        if (GET_LEVEL(mob)>MAX_LEVEL_ALLOWED && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Is level %d (limit: 1-%d)\r\n",
-                          GET_LEVEL(mob), MAX_LEVEL_ALLOWED);
+      if (GET_HITROLL(mob)>MAX_HITROLL_ALLOWED && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Hitroll of %d is too high (limit: %d)\r\n",
+                        GET_HITROLL(mob), MAX_HITROLL_ALLOWED);
 
-        if (GET_DAMROLL(mob)>MAX_DAMROLL_ALLOWED && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Damroll of %d is too high (limit: %d)\r\n",
-                          GET_DAMROLL(mob), MAX_DAMROLL_ALLOWED);
+      /* avg. dam including damroll per round of combat */
+      avg_dam = (((mob->mob_specials.damsizedice / 2.0) * mob->mob_specials.damnodice)+GET_DAMROLL(mob));
+      if (avg_dam>MAX_MOB_DAM_ALLOWED && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- average damage of %4.1f is too high (limit: %d)\r\n",
+                        avg_dam, MAX_MOB_DAM_ALLOWED);
 
-        if (GET_HITROLL(mob)>MAX_HITROLL_ALLOWED && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Hitroll of %d is too high (limit: %d)\r\n",
-                          GET_HITROLL(mob), MAX_HITROLL_ALLOWED);
+      if (mob->mob_specials.damsizedice == 1 &&
+          mob->mob_specials.damnodice == 1 &&
+          GET_LEVEL(mob) == 0 &&
+          (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Needs to be fixed - %sAutogenerate!%s\r\n", CCYEL(ch, C_NRM), CCNRM(ch, C_NRM));
 
-        /* avg. dam including damroll per round of combat */
-        avg_dam = (((mob->mob_specials.damsizedice / 2.0) * mob->mob_specials.damnodice)+GET_DAMROLL(mob));
-        if (avg_dam>MAX_MOB_DAM_ALLOWED && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- average damage of %4.1f is too high (limit: %d)\r\n",
-                          avg_dam, MAX_MOB_DAM_ALLOWED);
+      if (MOB_FLAGGED(mob, MOB_AGGRESSIVE) && (MOB_FLAGGED(mob, MOB_AGGR_GOOD) || MOB_FLAGGED(mob, MOB_AGGR_EVIL) || MOB_FLAGGED(mob, MOB_AGGR_NEUTRAL)) && (found=1))
+   len += snprintf(buf + len, sizeof(buf) - len,
+        "- Both aggresive and agressive to align.\r\n");
 
-        if (mob->mob_specials.damsizedice == 1 &&
-            mob->mob_specials.damnodice == 1 &&
-            GET_LEVEL(mob) == 0 &&
-            (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Needs to be fixed - %sAutogenerate!%s\r\n", CCYEL(ch, C_NRM), CCNRM(ch, C_NRM));
+      if ((GET_GOLD(mob) > MAX_MOB_GOLD_ALLOWED) && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Set to %d Gold (limit : %d).\r\n",
+                                GET_GOLD(mob),
+                                MAX_MOB_GOLD_ALLOWED);
 
-        if (MOB_FLAGGED(mob, MOB_AGGRESSIVE) && (MOB_FLAGGED(mob, MOB_AGGR_GOOD) || MOB_FLAGGED(mob, MOB_AGGR_EVIL) || MOB_FLAGGED(mob, MOB_AGGR_NEUTRAL)) && (found=1))
-	 len += snprintf(buf + len, sizeof(buf) - len,
-          "- Both aggresive and agressive to align.\r\n");
-
-        if ((GET_GOLD(mob) > MAX_MOB_GOLD_ALLOWED) && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Set to %d Gold (limit : %d).\r\n",
-                                  GET_GOLD(mob),
-                                  MAX_MOB_GOLD_ALLOWED);
-
-        if (GET_EXP(mob)>MAX_EXP_ALLOWED && (found=1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Has %d experience (limit: %d)\r\n",
-                              GET_EXP(mob), MAX_EXP_ALLOWED);
-        if ((AFF_FLAGGED(mob, AFF_CHARM) || AFF_FLAGGED(mob, AFF_POISON)) && (found = 1))
-	  len += snprintf(buf + len, sizeof(buf) - len,
-                          "- Has illegal affection bits set (%s %s)\r\n",
-                              AFF_FLAGGED(mob, AFF_CHARM) ? "CHARM" : "",
-                              AFF_FLAGGED(mob, AFF_POISON) ? "POISON" : "");
+      if (GET_EXP(mob)>MAX_EXP_ALLOWED && (found=1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Has %d experience (limit: %d)\r\n",
+                            GET_EXP(mob), MAX_EXP_ALLOWED);
+      if ((AFF_FLAGGED(mob, AFF_CHARM) || AFF_FLAGGED(mob, AFF_POISON)) && (found = 1))
+    len += snprintf(buf + len, sizeof(buf) - len,
+                        "- Has illegal affection bits set (%s %s)\r\n",
+                            AFF_FLAGGED(mob, AFF_CHARM) ? "CHARM" : "",
+                            AFF_FLAGGED(mob, AFF_POISON) ? "POISON" : "");
 
 
-        if (!MOB_FLAGGED(mob, MOB_SENTINEL) && !MOB_FLAGGED(mob, MOB_STAY_ZONE) && (found = 1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                            "- Neither SENTINEL nor STAY_ZONE bits set.\r\n");
+      if (!MOB_FLAGGED(mob, MOB_SENTINEL) && !MOB_FLAGGED(mob, MOB_STAY_ZONE) && (found = 1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                          "- Neither SENTINEL nor STAY_ZONE bits set.\r\n");
 
-        if (MOB_FLAGGED(mob, MOB_SPEC) && (found = 1))
-          len += snprintf(buf + len, sizeof(buf) - len,
-                            "- SPEC flag needs to be removed.\r\n");
+      if (MOB_FLAGGED(mob, MOB_SPEC) && (found = 1))
+        len += snprintf(buf + len, sizeof(buf) - len,
+                          "- SPEC flag needs to be removed.\r\n");
 
-          /* Additional mob checks.*/
-          if (found) {
-            send_to_char(ch,
-                    "%s[%5d]%s %-30s: %s\r\n",
-                    CCCYN(ch, C_NRM), GET_MOB_VNUM(mob),
-                    CCYEL(ch, C_NRM), GET_NAME(mob),
-                    CCNRM(ch, C_NRM));
-            send_to_char(ch, "%s", buf);
-          }
-          /* reset buffers and found flag */
-          strcpy(buf, "");
-          found = 0;
-          len = 0;
-        }   /* mob is in zone */
-    }  /* check mobs */
+      /* Additional mob checks.*/
+      if (found) {
+        send_to_char(ch,
+                "%s[%5d]%s %-30s: %s\r\n",
+                CCCYN(ch, C_NRM), GET_MOB_VNUM(mob),
+                CCYEL(ch, C_NRM), GET_NAME(mob),
+                CCNRM(ch, C_NRM));
+        send_to_char(ch, "%s", buf);
+      }
+      /* reset buffers and found flag */
+      strcpy(buf, "");
+      found = 0;
+      len = 0;
+    }   /* mob is in zone */
+  }  /* check mobs */
 
  /* Check objects */
   send_to_char(ch, "\r\nChecking Objects for limits...\r\n");
@@ -3959,15 +3959,15 @@ static void obj_checkload(struct char_data *ch, obj_vnum ovnum)
                              mob_proto[lastmob_r].player.short_descr,
                              mob_index[lastmob_r].vnum,
                              ZCMD2.arg2);
-            break;
-          case 'R': /* rem obj from room */
-            lastroom_v = world[ZCMD2.arg1].number;
-            lastroom_r = ZCMD2.arg1;
-            if (ZCMD2.arg2 == ornum)
-              send_to_char(ch, "  [%5d] %s (Removed from room)\r\n",
-                               lastroom_v,
-                               world[lastroom_r].name);
-            break;
+          break;
+        case 'R': /* rem obj from room */
+          lastroom_v = world[ZCMD2.arg1].number;
+          lastroom_r = ZCMD2.arg1;
+          if (ZCMD2.arg2 == ornum)
+            send_to_char(ch, "  [%5d] %s (Removed from room)\r\n",
+                             lastroom_v,
+                             world[lastroom_r].name);
+          break;
       }/* switch */
     } /*for cmd_no......*/
   }  /*for zone...*/
