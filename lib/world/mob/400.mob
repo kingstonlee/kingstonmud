@@ -1,0 +1,37 @@
+#40001
+cm castmember cast member~
+a cast member~
+A cast member stands here waiting to help someone out.
+~
+
+This cast member looks straight out of high school and ready to save your day.
+~
+12 0 0 0 512 0 0 0 0 E
+5 19 7 1d1+50 1d2+0
+50 2500
+8 8 0
+SavingPara: 1
+SavingRod: 1
+SavingPetri: 1
+SavingBreath: 1
+SavingSpell: 1
+E
+#40002
+chad manager barista~
+Chad, the Starbucks barista manager~
+Chad has a long face, short brown hair and dark rimmed glasses.  He keeps talking about the acting gig he once performed in 5 years ago.
+~
+"Hi"
+
+~
+14 0 0 0 0 0 0 0 0 E
+10 17 4 2d2+100 1d2+1
+100 10000
+8 8 0
+SavingPara: 2
+SavingRod: 2
+SavingPetri: 2
+SavingBreath: 2
+SavingSpell: 2
+E
+$

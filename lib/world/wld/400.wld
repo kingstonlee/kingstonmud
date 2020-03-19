@@ -1,0 +1,471 @@
+#40000
+Downtown Disney - Parking Tram Exit ~
+The Parking Tram stop is busy with tourists getting off the trams to get into the parks.  Across from the tram the La Brea Bakery Express is open to guests looking for some pre-park carbo-loading and coffee. To the east is the Disneyland Ticket Counter.  To the west is the rest of Downtown Disney with all the hotels, shops and restaurants.
+~
+400 0 0 0 0 1
+D1
+~
+~
+0 0 40023
+D2
+A bakery
+~
+La Brea Express Bakery~
+1 0 40050
+D3
+~
+~
+0 0 40001
+S
+#40001
+Downtown Disney Way East - Churro~
+The road is crowded with parents pushing their strollers.  To the north is the Churro Cart.  To the south is the entrance to the World of Disney Store.
+~
+400 8 0 0 0 1
+D0
+~
+~
+0 0 40051
+D1
+~
+~
+0 0 40000
+D3
+~
+~
+0 0 40002
+S
+T 1200
+#40002
+Downtown Drive East at Starbucks~
+The road is crowded with parents pushing their strollers.  To the south you see a Starbucks.
+~
+400 8 0 0 0 1
+D1
+~
+~
+0 0 40001
+D2
+~
+~
+0 0 40052
+D3
+~
+~
+0 0 40003
+S
+T 1200
+#40003
+Downtown Disney Way East at Grand Californian Hotel~
+The road is crowded with parents pushing their strollers.  To the south is the entrance to Disney's Grand Californian Hotel and Spa. Downtown Disney Continues east to west.
+~
+400 8 0 0 0 1
+D1
+~
+~
+0 0 40002
+D2
+~
+~
+0 0 40080
+D3
+~
+~
+0 0 40004
+S
+T 1200
+#40004
+Downtown Disney Way East at Marceline's Confectionary~
+The road continues east to west.  To the south you can enter Marceline's Confectionary.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40003
+D3
+~
+~
+0 0 40005
+S
+#40005
+Downtown Disney Way Center at The VOID ~
+In the south you can see The VOID experience. It will be hard to avoid this place.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40004
+D3
+~
+~
+0 0 40006
+S
+#40006
+Downtown Disney Way at Splitsville~
+In the north you can see Splitsville Luxury Lanes.  
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40005
+D3
+~
+~
+0 0 40007
+S
+#40007
+Downtown Disney Way~
+Nothing to see here.  Move along.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40006
+D3
+~
+~
+0 0 40008
+S
+#40008
+Downtown Disney Way at Ralph Brennan's Jazz Kitchen Express~
+To the south you can see Ralph Brennan's Jazz Kitchen Express.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40007
+D3
+~
+~
+0 0 40009
+S
+#40009
+Downtown Disney Way at Ralph Brennan's Jazz Kitchen Restaurant~
+To the south you can see Ralph Brennan's Jazz Kitchen.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40008
+D3
+~
+~
+0 0 40010
+S
+#40010
+Downtown Disney Way at the Blue Ribbon Corndog~
+To the north you see Blue Ribbon Corndog. 
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40009
+D3
+~
+~
+0 0 40011
+S
+#40011
+Downtown Disney Way at The Lego Store~
+To the north you see Disney's Pin Traders. To the south The Lego Store.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40010
+D3
+~
+~
+0 0 40012
+S
+#40012
+Downtown Disney Way at the Downtown Disney Monorail Station~
+When the Monorail is running you can go straight to Tomorrowland!  Make sure you have your park ticket and monorail pass.  To the south you see another Starbucks.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40011
+D3
+~
+~
+0 0 40013
+S
+#40013
+Downtown Disney Way at World of Disney~
+To the north you see a small path to the Downtown Disney parking lot.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40012
+D3
+~
+~
+0 0 40014
+S
+#40014
+Downtown Disney Way at Earl of Sandwich~
+To the south you see an Earl of Sandwich.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40013
+D3
+~
+~
+0 0 40015
+S
+#40015
+Downtown Disney Way at Hotel Avenue~
+To the west you see a path to the Disneyland Hotel.  To the South is a path towards the Paradise Pier.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40014
+D2
+~
+~
+0 0 40016
+S
+#40016
+Hotel Avenue at Rose Garden Court~
+Nothing interesting to see here.
+~
+400 0 0 0 0 0
+D0
+~
+~
+0 0 40015
+D2
+~
+~
+0 0 40017
+S
+#40017
+Hotel Avenue at Paradise Way~
+You can see a parking lot to the south.  To the east you can see the Paradise Pier Tower.  To the north you can see the path to the Disneyland Hotel.
+~
+400 0 0 0 0 0
+D0
+~
+~
+0 0 40016
+D1
+~
+~
+0 0 40018
+S
+#40018
+Paradise Pier Hotel on Paradise Way~
+To the south is the entrance to the Paradise Pier Hotel.  To the east you can see the Grand Californian Hotel.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40019
+D3
+~
+~
+0 0 40017
+S
+#40019
+Paradise Way at Disneyland Drive~
+Here you dodge cars trying to get to the other side.  To the east is the Grand Californian and to the west is the Paradise Pier Hotel.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40020
+D3
+~
+~
+0 0 40018
+S
+#40020
+The Grand Californian Hotel at Paradise Way~
+To the east is the entrance to the Grand Californian Hotel.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40084
+D3
+~
+~
+0 0 40019
+S
+#40023
+Disneyland Ticket Counter~
+Buy your tickets to get into Disneyland.
+~
+400 0 0 0 0 0
+D1
+~
+~
+0 0 40024
+D3
+~
+~
+0 0 40000
+S
+#40024
+Disneyland Esplanade~
+It's a big old open space.  To the north is Disneyland.  To the south is Disney's California Adventure.
+~
+400 0 0 0 0 0
+D0
+~
+~
+0 0 40025
+D2
+~
+~
+0 0 40026
+D3
+~
+~
+0 0 40023
+S
+#40025
+Disneyland Entrance~
+Passes Required
+~
+400 0 0 0 0 0
+D0
+~
+~
+0 40000 40100
+D2
+~
+~
+0 0 40024
+S
+#40026
+Disney's California Adventure~
+Passes Required
+~
+400 0 0 0 0 0
+D0
+~
+~
+0 0 40024
+S
+#40050
+La Brea Express Bakery~
+The smells of baked goods and coffee fill the air.
+~
+400 0 0 0 0 0
+D0
+~
+exit~
+1 0 40000
+S
+#40051
+California Churro Company Food Car~
+The smell of churros fills the air.
+~
+400 0 0 0 0 0
+D2
+~
+exit~
+1 0 40001
+S
+#40052
+Starbucks~
+The smell of coffee fills the air.
+~
+400 0 0 0 0 0
+D0
+~
+exit~
+1 0 40002
+S
+#40080
+Grand Californian Hotel - Downtown Disney Entrance~
+You've made it into what looks like a Craftsman's Lodge in a national park.
+~
+400 0 0 0 0 0
+D0
+~
+exit~
+1 0 40003
+D2
+~
+exit~
+1 0 40081
+S
+#40081
+Grand Californian Hotel - Courtyard~
+You're in an outdoor area.
+~
+400 0 0 0 0 0
+D0
+~
+undefined~
+0 0 40080
+D2
+~
+exit~
+1 0 40082
+S
+#40082
+Grand Californian Hotel - Lobby~
+You are in the lobby of the Grand Californian Hotel.
+~
+400 0 0 0 0 0
+D0
+~
+exit~
+1 0 40081
+D3
+~
+exit~
+1 0 40083
+S
+#40083
+Grand Californian Hotel - Lobby~
+You are in the lobby of the Grand Californian Hotel.
+~
+400 0 0 0 0 0
+D1
+~
+exit~
+1 0 40082
+D3
+~
+exit~
+1 0 40084
+S
+#40084
+Grand Californian Hotel - Paradise Drive Entrance~
+You've made it into what looks like a Craftsman's Lodge in a national park.
+~
+400 0 0 0 0 0
+D1
+~
+exit~
+1 0 40083
+D3
+~
+exit~
+1 0 40020
+S
+$~
