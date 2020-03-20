@@ -53,10 +53,18 @@ D0
 ~
 ~
 0 0 40104
+D1
+~
+~
+0 0 40155
 D2
 ~
 ~
 0 0 40110
+D3
+~
+~
+0 0 40146
 S
 #40104
 Main Street U.S.A. at the 20th Century Music Company~
@@ -67,6 +75,10 @@ D0
 ~
 ~
 0 0 40117
+D1
+~
+~
+0 0 40156
 D2
 ~
 ~
@@ -109,6 +121,10 @@ D0
 ~
 ~
 0 0 40108
+D1
+~
+~
+0 0 40151
 D2
 ~
 ~
@@ -127,6 +143,10 @@ D0
 ~
 ~
 0 0 40109
+D1
+~
+~
+0 0 40152
 D2
 ~
 ~
@@ -141,6 +161,14 @@ Main Street U.S.A.~
 This unfinished room was created by Kingston.
 ~
 401 0 0 0 0 0
+D0
+~
+~
+0 0 40127
+D1
+~
+~
+0 0 40154
 D2
 ~
 ~
@@ -207,6 +235,10 @@ D2
 ~
 ~
 0 0 40116
+D3
+~
+~
+0 0 40150
 S
 #40113
 Main Street U.S.A. at Town Hall~
@@ -225,12 +257,20 @@ D2
 ~
 ~
 0 0 40112
+D3
+~
+~
+0 0 40147
 S
 #40114
 Main Street U.S.A. at the Firehouse~
 This unfinished room was created by Kingston.
 ~
 401 0 0 0 0 0
+D0
+~
+~
+0 0 40146
 D1
 ~
 ~
@@ -239,6 +279,10 @@ D2
 ~
 ~
 0 0 40113
+D3
+~
+~
+0 0 40148
 S
 #40115
 The Flagpole~
@@ -285,6 +329,10 @@ D0
 ~
 ~
 0 0 40118
+D1
+~
+~
+0 0 40157
 D2
 ~
 ~
@@ -299,10 +347,18 @@ D0
 ~
 ~
 0 0 40119
+D1
+~
+~
+0 0 40158
 D2
 ~
 ~
 0 0 40117
+D3
+~
+~
+0 0 40145
 S
 #40119
 Main Street U.S.A. at the Fortuosity Shop~
@@ -321,6 +377,10 @@ D2
 ~
 ~
 0 0 40118
+D3
+~
+~
+0 0 40144
 S
 #40120
 Fruit Stand Alley~
@@ -337,44 +397,76 @@ Main Street U.S.A. at Disney Clothier's Ltd.~
 This unfinished room was created by Kingston.
 ~
 401 0 0 0 0 0
+D0
+~
+~
+0 0 40122
+D1
+~
+~
+0 0 40159
 D2
 ~
 ~
 0 0 40119
+D3
+~
+~
+0 0 40143
 S
 #40122
 Main Street U.S.A. at Gibson Girl Ice Cream Parlor~
 This unfinished room was created by Kingston.
 ~
-0 0 0 0 0 0
+401 0 0 0 0 0
 D0
 ~
 ~
-0 0 40122
+0 0 40123
+D1
+~
+~
+0 0 40160
 D2
 ~
 ~
 0 0 40121
+D3
+~
+~
+0 0 40142
 S
 #40123
 Main Street U.S.A. at Candy Palace~
 This unfinished room was created by Kingston.
 ~
-0 0 0 0 0 0
+401 0 0 0 0 0
 D0
 ~
 ~
 0 0 40124
+D1
+~
+~
+0 0 40161
 D2
 ~
 ~
 0 0 40122
+D3
+~
+~
+0 0 40140
 S
 #40124
 Main Street U.S.A. at Refreshment Corner~
 This unfinished room was created by Kingston.
 ~
-0 0 0 0 0 0
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40129
 D1
 ~
 ~
@@ -383,16 +475,24 @@ D2
 ~
 ~
 0 0 40123
+D3
+~
+~
+0 0 40139
 S
 #40125
 Alley at Main Street Photo Supply Co.~
 This unfinished room was created by Kingston.
 ~
-0 0 0 0 0 0
+401 0 0 0 0 0
 D1
 ~
 ~
 0 0 40126
+D2
+~
+~
+0 0 40161
 D3
 ~
 ~
@@ -402,7 +502,7 @@ S
 Little Red Wagon~
 This unfinished room was created by Kingston.
 ~
-0 8 0 0 0 1
+401 8 0 0 0 1
 D1
 ~
 ~
@@ -416,10 +516,532 @@ S
 The Alley~
 This unfinished room was created by Kingston.
 ~
-0 0 0 0 0 0
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40128
+D2
+~
+~
+0 0 40109
 D3
 ~
 ~
 0 0 40126
+S
+#40128
+First Aid~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40127
+S
+#40129
+Main Street U.S.A. Circle S~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40137
+D1
+~
+~
+0 0 40130
+D2
+~
+~
+0 0 40124
+D3
+~
+~
+0 0 40136
+S
+#40130
+Main Street U.S.A. at Plaza Inn~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40131
+D1
+~
+~
+0 0 40162
+D3
+~
+~
+0 0 40129
+S
+#40131
+Main Street U.S.A. at Tomorrowland~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40132
+D2
+~
+~
+0 0 40130
+D3
+~
+~
+0 0 40137
+S
+#40132
+Main Street U.S.A. Circle NE~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D2
+~
+~
+0 0 40131
+D3
+~
+~
+0 0 40133
+S
+#40133
+Main Street U.S.A. Circle N~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40132
+D2
+~
+~
+0 0 40137
+D3
+~
+~
+0 0 40134
+S
+#40134
+Main Street U.S.A. Circle NW~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40133
+D2
+~
+~
+0 0 40135
+S
+#40135
+Main Street U.S.A. Circle W~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40134
+D1
+~
+~
+0 0 40137
+D2
+~
+~
+0 0 40136
+S
+#40136
+Main Street U.S.A. Circle SW~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40135
+D1
+~
+~
+0 0 40129
+D3
+~
+~
+0 0 40138
+S
+#40137
+The Partners Statue~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40133
+D1
+~
+~
+0 0 40131
+D2
+~
+~
+0 0 40129
+D3
+~
+~
+0 0 40135
+S
+#40138
+Jolly Holiday Bakery Cafe~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40136
+S
+#40139
+Refreshment Corner~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40124
+D2
+~
+~
+0 0 40140
+S
+#40140
+Candy Palace~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40139
+D1
+~
+~
+0 0 40123
+D2
+~
+~
+0 0 40142
+D3
+~
+~
+0 0 40141
+S
+#40141
+Candy Kitchen~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40140
+S
+#40142
+Gibson Girl Ice Cream Parlor~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40140
+D1
+~
+~
+0 0 40122
+D2
+~
+~
+0 0 40143
+S
+#40143
+Carnation Cafe~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40142
+D1
+~
+~
+0 0 40121
+D2
+~
+~
+0 0 40144
+S
+#40144
+Fortuosity Shop~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40143
+D1
+~
+~
+0 0 40119
+D2
+~
+~
+0 0 40145
+S
+#40145
+New Century Jewelry~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40144
+D1
+~
+~
+0 0 40118
+D2
+~
+~
+0 0 40146
+S
+#40146
+Emporium~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40145
+D1
+~
+~
+0 0 40103
+D2
+~
+~
+0 0 40114
+S
+#40147
+City Hall~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40113
+S
+#40148
+Firehouse~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40114
+D4
+~
+~
+0 0 40149
+S
+#40149
+Walt's Apartment~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D5
+~
+~
+0 0 40148
+S
+#40150
+Tour Group Meeting Area~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40112
+S
+#40151
+Disneyana~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40152
+D3
+~
+~
+0 0 40107
+S
+#40152
+The Lobby of the Great Moments with Mr. Lincoln~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40154
+D1
+~
+~
+0 0 40153
+D2
+~
+~
+0 0 40151
+D3
+~
+~
+0 0 40108
+S
+#40153
+Great Moments with Mr. Lincoln~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40152
+S
+#40154
+The Mad Hatter~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D2
+~
+~
+0 0 40152
+D3
+~
+~
+0 0 40109
+S
+#40155
+Main Street Magic Shop~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40103
+S
+#40156
+20th Century Music Company~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40104
+S
+#40157
+Main Street Cinema~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40117
+S
+#40158
+Market House~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40118
+S
+#40159
+Dinsey Clothiers Ltd.~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40161
+D3
+~
+~
+0 0 40121
+S
+#40160
+Crystal Arts~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40122
+S
+#40161
+Main Street Photo Supply Co.~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40125
+D2
+~
+~
+0 0 40159
+D3
+~
+~
+0 0 40123
+S
+#40162
+Plaza Inn~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40130
 S
 $~
