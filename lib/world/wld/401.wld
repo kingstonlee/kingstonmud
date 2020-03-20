@@ -6,10 +6,142 @@ There are lines of toursits all along the gate. This is the barrier between fant
 D0
 ~
 ~
-0 0 -1
+0 0 40101
 D2
 ~
 ~
 0 0 40025
+S
+#40101
+Disneyland Reception Area~
+Here you see the well manicured Mickey Mouse face that has welcomed visitors for generations.
+~
+401 0 0 0 0 1
+D1
+~
+~
+0 0 40102
+D2
+~
+~
+0 0 40100
+D3
+~
+~
+0 0 40105
+S
+#40102
+Disneyland Reception Area - East~
+The tourists are flocking towards the tunnel in the north.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40106
+D3
+~
+~
+0 0 40101
+S
+#40103
+New BuildWalk Room~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40104
+D2
+~
+~
+0 0 40102
+S
+#40104
+New BuildWalk Room~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D2
+~
+~
+0 0 40103
+S
+#40105
+Disneyland Reception Area - West~
+Parents with strollers and YouTube Vloggers are bumrushing the tunnels to the north.
+~
+401 0 0 0 0 1
+D1
+~
+~
+0 0 40101
+S
+#40106
+Disneyland Entrance Tunnel East~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40107
+D2
+~
+~
+0 0 40102
+S
+#40107
+Main Street U.S.A. at Disneyana~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40108
+D2
+~
+~
+0 0 40106
+S
+#40108
+Main Street U.S.A. at Great Moments of Mr. Lincoln~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40109
+D2
+~
+~
+0 0 40107
+S
+#40109
+Main Street U.S.A.~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D2
+~
+~
+0 0 40108
+D3
+~
+~
+0 0 40110
+S
+#40110
+Main Street U.S.A.~
+At this end of the street you have the best view of the entire row of buildings with the Friends statue in front of the castle.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40109
 S
 $~
