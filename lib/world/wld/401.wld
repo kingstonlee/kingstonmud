@@ -342,4 +342,84 @@ D2
 ~
 0 0 40119
 S
+#40122
+Main Street U.S.A. at Gibson Girl Ice Cream Parlor~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D0
+~
+~
+0 0 40122
+D2
+~
+~
+0 0 40121
+S
+#40123
+Main Street U.S.A. at Candy Palace~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D0
+~
+~
+0 0 40124
+D2
+~
+~
+0 0 40122
+S
+#40124
+Main Street U.S.A. at Refreshment Corner~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D1
+~
+~
+0 0 40125
+D2
+~
+~
+0 0 40123
+S
+#40125
+Alley at Main Street Photo Supply Co.~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D1
+~
+~
+0 0 40126
+D3
+~
+~
+0 0 40124
+S
+#40126
+Little Red Wagon~
+This unfinished room was created by Kingston.
+~
+0 8 0 0 0 1
+D1
+~
+~
+0 0 40127
+D3
+~
+~
+0 0 40125
+S
+#40127
+The Alley~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D3
+~
+~
+0 0 40126
+S
 $~
