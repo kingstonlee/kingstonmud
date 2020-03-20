@@ -45,8 +45,8 @@ D3
 0 0 40101
 S
 #40103
-New BuildWalk Room~
-This unfinished room was created by Kingston.
+Main Street U.S.A. at the Emporium~
+On the west is the Emporium store on the right is the Magic Shop.
 ~
 401 0 0 0 0 0
 D0
@@ -56,13 +56,17 @@ D0
 D2
 ~
 ~
-0 0 40102
+0 0 40110
 S
 #40104
-New BuildWalk Room~
+Main Street U.S.A. at the 20th Century Music Company~
 This unfinished room was created by Kingston.
 ~
 401 0 0 0 0 0
+D0
+~
+~
+0 0 40117
 D2
 ~
 ~
@@ -73,6 +77,10 @@ Disneyland Reception Area - West~
 Parents with strollers and YouTube Vloggers are bumrushing the tunnels to the north.
 ~
 401 0 0 0 0 1
+D0
+~
+~
+0 0 40116
 D1
 ~
 ~
@@ -147,6 +155,10 @@ Main Street U.S.A.~
 At this end of the street you have the best view of the entire row of buildings with the Friends statue in front of the castle.
 ~
 401 0 0 0 0 0
+D0
+~
+~
+0 0 40103
 D1
 ~
 ~
@@ -191,6 +203,10 @@ D1
 ~
 ~
 0 0 40111
+D2
+~
+~
+0 0 40116
 S
 #40113
 Main Street U.S.A. at Town Hall~
@@ -225,7 +241,7 @@ D2
 0 0 40113
 S
 #40115
-New BuildWalk Room~
+The Flagpole~
 This unfinished room was created by Kingston.
 ~
 401 0 0 0 0 0
@@ -245,5 +261,85 @@ D3
 ~
 ~
 0 0 40113
+S
+#40116
+Disneyland Entrance Tunnel West~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40112
+D2
+~
+~
+0 0 40105
+S
+#40117
+Main Street U.S.A. at the Main Street Cinema~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40118
+D2
+~
+~
+0 0 40104
+S
+#40118
+Main Street U.S.A. at Market House~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40119
+D2
+~
+~
+0 0 40117
+S
+#40119
+Main Street U.S.A. at the Fortuosity Shop~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40121
+D1
+~
+~
+0 0 40120
+D2
+~
+~
+0 0 40118
+S
+#40120
+Fruit Stand Alley~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D3
+~
+~
+0 0 40119
+S
+#40121
+Main Street U.S.A. at Disney Clothier's Ltd.~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D2
+~
+~
+0 0 40119
 S
 $~
