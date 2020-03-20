@@ -105,6 +105,10 @@ D2
 ~
 ~
 0 0 40106
+D3
+~
+~
+0 0 40111
 S
 #40108
 Main Street U.S.A. at Great Moments of Mr. Lincoln~
@@ -119,6 +123,10 @@ D2
 ~
 ~
 0 0 40107
+D3
+~
+~
+0 0 40115
 S
 #40109
 Main Street U.S.A.~
@@ -143,5 +151,99 @@ D1
 ~
 ~
 0 0 40109
+D2
+~
+~
+0 0 40115
+D3
+~
+~
+0 0 40114
+S
+#40111
+Main Street U.S.A. Train Station~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40115
+D1
+~
+~
+0 0 40107
+D3
+~
+~
+0 0 40112
+S
+#40112
+Main Street U.S.A. at the Tour Meeting Area~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40113
+D1
+~
+~
+0 0 40111
+S
+#40113
+Main Street U.S.A. at Town Hall~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40114
+D1
+~
+~
+0 0 40115
+D2
+~
+~
+0 0 40112
+S
+#40114
+Main Street U.S.A. at the Firehouse~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D1
+~
+~
+0 0 40110
+D2
+~
+~
+0 0 40113
+S
+#40115
+New BuildWalk Room~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40110
+D1
+~
+~
+0 0 40108
+D2
+~
+~
+0 0 40111
+D3
+~
+~
+0 0 40113
 S
 $~
