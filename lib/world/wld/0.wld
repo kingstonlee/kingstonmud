@@ -4,6 +4,10 @@ The Void~
 a strange portal located above you.
 ~
 0 8 0 0 0 1
+D0
+~
+~
+0 0 24
 D4
 ~
 ~
@@ -135,7 +139,7 @@ HELP BREATHE@n
 D0
 ~
 ~
-0 0 24
+0 0 -1
 D1
 ~
 ~
@@ -143,7 +147,7 @@ D1
 D2
 ~
 ~
-0 0 25
+0 0 -1
 D3
 ~
 ~
@@ -151,7 +155,7 @@ D3
 D4
 ~
 ~
-0 0 26
+0 0 -1
 S
 #7
 Writing Good Descriptions~
@@ -215,7 +219,7 @@ D3
 D4
 ~
 ~
-0 0 27
+0 0 -1
 S
 #9
 How to Use Oedit~
@@ -557,6 +561,101 @@ D2
 ~
 0 0 21
 S
+#24
+Main Street U.S.A. at Gibson Girl Ice Cream Parlor~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D0
+~
+~
+0 0 25
+D2
+~
+~
+0 0 0
+S
+#25
+Main Street U.S.A. at Candy Palace~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D0
+~
+~
+0 0 26
+D2
+~
+~
+0 0 24
+S
+#26
+Main Street U.S.A. at Refreshment Corner~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D1
+~
+~
+0 0 27
+D2
+~
+~
+0 0 25
+S
+#27
+Alley at Main Street Photo Supply Co.~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D1
+~
+~
+0 0 28
+D3
+~
+~
+0 0 26
+S
+#28
+Little Red Wagon~
+   You don't think that you are not floating in nothing.  You can see
+a strange portal located above you.
+~
+0 8 0 0 0 1
+D1
+~
+~
+0 0 29
+D3
+~
+~
+0 0 27
+S
+#29
+The Alley~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D2
+~
+~
+0 0 30
+D3
+~
+~
+0 0 28
+S
+#30
+First Aid~
+This unfinished room was created by Kingston.
+~
+0 0 0 0 0 0
+D0
+~
+~
+0 0 29
+S
 #33
 Rumble's Room~
    War is an ugly thing, but not the ugliest of things.  The decayed and
@@ -775,14 +874,14 @@ D2
 ~
 0 0 98
 E
+sky winds~
+   Cold winds plunge ceaselessly at you from the dark, cloudless sky.
+~
+E
 floor~
    The stone floor is the same shade of gray as the sky and is completely plain
 and unscratched. It is probably too hard for anything to leave as much as a
 scratch on it.
-~
-E
-sky winds~
-   Cold winds plunge ceaselessly at you from the dark, cloudless sky.
 ~
 S
 $~
