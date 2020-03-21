@@ -163,6 +163,10 @@ Downtown Disney Way at the Blue Ribbon Corndog~
 To the north you see Blue Ribbon Corndog. 
 ~
 400 0 0 0 0 0
+D0
+~
+~
+0 0 40021
 D1
 ~
 ~
@@ -311,6 +315,16 @@ D3
 ~
 ~
 0 0 40019
+S
+#40021
+Blue Ribbon Corndog~
+This unfinished room was created by Kingston.
+~
+400 0 0 0 0 0
+D2
+~
+~
+0 0 40010
 S
 #40023
 Disneyland Ticket Counter~
