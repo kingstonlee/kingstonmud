@@ -3,6 +3,10 @@ Fantasyland~
 You are in an unfinished room.
 ~
 403 0 0 0 0 0
+D0
+~
+~
+0 0 40309
 D2
 ~
 ~
@@ -95,6 +99,10 @@ D1
 ~
 ~
 0 0 40308
+D2
+~
+~
+0 0 40134
 D3
 ~
 ~
@@ -119,5 +127,99 @@ D3
 ~
 ~
 0 0 40306
+S
+#40309
+The Sword in the Stone~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D0
+~
+~
+0 0 40310
+D2
+~
+~
+0 0 40300
+S
+#40310
+Fantasy Road~
+North to Dumbo the Flying Elephant
+~
+403 0 0 0 0 0
+D1
+~
+~
+0 0 40311
+D2
+~
+~
+0 0 40309
+S
+#40311
+Fantasy Road~
+South to the Mad Tea Party
+~
+403 0 0 0 0 0
+D1
+~
+~
+0 0 40312
+D3
+~
+~
+0 0 40310
+S
+#40312
+Parade Route at Fantasy Road~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D0
+~
+~
+0 0 40313
+D1
+~
+~
+0 0 40314
+D3
+~
+~
+0 0 40311
+S
+#40313
+Parade Route~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D2
+~
+~
+0 0 40312
+S
+#40314
+Edelweiss Snacks on Fantasy Road~
+South to Matterhorn
+~
+403 0 0 0 0 0
+D1
+~
+~
+0 0 40315
+D3
+~
+~
+0 0 40312
+S
+#40315
+Entrance to Nemo's Submarine Voyage on Fantasy Road~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D3
+~
+~
+0 0 40314
 S
 $~
