@@ -3,5 +3,97 @@ Castle Drawbridge~
 You are in an unfinished room.
 ~
 402 0 0 0 0 0
+D0
+~
+~
+0 0 40201
+D2
+~
+~
+0 0 40133
+S
+#40201
+The Portcullis Room~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40205
+D1
+~
+~
+0 0 40203
+D2
+~
+~
+0 0 40200
+D3
+~
+~
+0 0 40202
+S
+#40202
+The Guards Room~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D1
+~
+~
+0 0 40201
+S
+#40203
+Staircase to the Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D3
+~
+~
+0 0 40201
+D4
+~
+~
+0 0 40204
+S
+#40204
+Along the Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D5
+~
+~
+0 0 40203
+S
+#40205
+The Gatehouse~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40206
+D2
+~
+~
+0 0 40201
+S
+#40206
+Entrance to Fantasyland~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40300
+D2
+~
+~
+0 0 40205
 S
 $~
