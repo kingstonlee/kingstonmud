@@ -1,0 +1,207 @@
+#40400
+Tomorrowland Monorail Station~
+You are in an unfinished room.
+~
+404 0 0 0 0 0
+D5
+~
+~
+0 0 40315
+S
+#40401
+Tomorrowland Road~
+You are in an unfinished room.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40315
+D1
+~
+~
+0 0 40402
+D2
+~
+~
+0 0 40404
+S
+#40402
+Entrance to Autopia~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D1
+~
+~
+0 0 40403
+D3
+~
+~
+0 0 40401
+S
+#40403
+Disneyland Railroad - Tomorrowland Station~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D3
+~
+~
+0 0 40402
+S
+#40404
+Tomorrowland Road~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40401
+D1
+~
+~
+0 0 40406
+D2
+~
+~
+0 0 40407
+D3
+~
+~
+0 0 40405
+S
+#40405
+Galactic Grill~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D1
+~
+~
+0 0 40404
+S
+#40406
+Star Wars Launch Bay~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D3
+~
+~
+0 0 40404
+S
+#40407
+Tomorrowland Road~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40404
+D2
+~
+~
+0 0 40408
+D3
+~
+~
+0 0 40411
+S
+#40408
+Tomorrowland Kugel Ball~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40407
+D1
+~
+~
+0 0 40409
+D2
+~
+~
+0 0 40410
+S
+#40409
+Alien Pizza Planet~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D3
+~
+~
+0 0 40408
+S
+#40410
+Space Mountain~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40408
+S
+#40411
+Tomorrowland Road~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40412
+D1
+~
+~
+0 0 40407
+D2
+~
+~
+0 0 40413
+D3
+~
+~
+0 0 40414
+S
+#40412
+Buzz Lightyear Astro Blasters~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D2
+~
+~
+0 0 40411
+S
+#40413
+Star Tours~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D0
+~
+~
+0 0 40411
+S
+#40414
+Astro Orbitor~
+This unfinished room was created by Kingston.
+~
+404 0 0 0 0 0
+D1
+~
+~
+0 0 40411
+D3
+~
+~
+0 0 40131
+S
+$~

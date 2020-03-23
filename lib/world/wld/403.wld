@@ -136,7 +136,7 @@ This unfinished room was created by Kingston.
 D0
 ~
 ~
-0 0 40310
+0 0 40316
 D2
 ~
 ~
@@ -154,7 +154,7 @@ D1
 D2
 ~
 ~
-0 0 40309
+0 0 40316
 S
 #40311
 Fantasy Road~
@@ -183,6 +183,10 @@ D1
 ~
 ~
 0 0 40314
+D2
+~
+~
+0 0 40317
 D3
 ~
 ~
@@ -193,10 +197,22 @@ Parade Route~
 This unfinished room was created by Kingston.
 ~
 403 0 0 0 0 0
+D0
+~
+~
+0 0 40321
+D1
+~
+~
+0 0 40320
 D2
 ~
 ~
 0 0 40312
+D3
+~
+~
+0 0 40323
 S
 #40314
 Edelweiss Snacks on Fantasy Road~
@@ -217,9 +233,113 @@ Entrance to Nemo's Submarine Voyage on Fantasy Road~
 This unfinished room was created by Kingston.
 ~
 403 0 0 0 0 0
+D2
+~
+~
+0 0 40401
 D3
 ~
 ~
 0 0 40314
+D4
+~
+~
+0 0 40400
+S
+#40316
+King Arthur's Carousel~
+You are in an unfinished room.
+~
+403 0 0 0 0 0
+D0
+~
+~
+0 0 40310
+D2
+~
+~
+0 0 40309
+S
+#40317
+Parade Route at Alice in Wonderland~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D0
+~
+~
+0 0 40312
+D2
+~
+~
+0 0 40318
+S
+#40318
+Parade Route at Pixie Hollow~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D0
+~
+~
+0 0 40317
+D3
+~
+~
+0 0 40132
+S
+#40319
+Snow White's Wishing Well~
+You are in an unfinished room.
+~
+403 0 0 0 0 0
+D2
+~
+~
+0 0 40132
+S
+#40320
+Parade Route~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D3
+~
+~
+0 0 40313
+S
+#40321
+Toon Town Road~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D2
+~
+~
+0 0 40313
+D3
+~
+~
+0 0 40322
+S
+#40322
+Disneyland Railroad - Mickey's Toontown Depot~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D1
+~
+~
+0 0 40321
+S
+#40323
+Fantasyland Theater~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D1
+~
+~
+0 0 40313
 S
 $~
