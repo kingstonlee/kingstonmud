@@ -63,6 +63,10 @@ Along the Wall~
 This unfinished room was created by Kingston.
 ~
 402 0 0 0 0 0
+D1
+~
+~
+0 0 40207
 D5
 ~
 ~
@@ -95,5 +99,117 @@ D2
 ~
 ~
 0 0 40205
+S
+#40207
+The Southern Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D1
+~
+~
+0 0 40208
+D3
+~
+~
+0 0 40204
+S
+#40208
+The Southern Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40209
+D3
+~
+~
+0 0 40207
+S
+#40209
+The Eastern Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40210
+D2
+~
+~
+0 0 40208
+S
+#40210
+The North Eastern Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D2
+~
+~
+0 0 40209
+D3
+~
+~
+0 0 40211
+S
+#40211
+The Northern Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D1
+~
+~
+0 0 40210
+D3
+~
+~
+0 0 40212
+S
+#40212
+The North Western Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D1
+~
+~
+0 0 40211
+D2
+~
+~
+0 0 40213
+S
+#40213
+The Western Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40212
+D2
+~
+~
+0 0 40214
+S
+#40214
+The South Western Wall~
+This unfinished room was created by Kingston.
+~
+402 0 0 0 0 0
+D0
+~
+~
+0 0 40213
+D1
+~
+~
+0 0 40207
 S
 $~

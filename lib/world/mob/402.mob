@@ -1,1 +1,32 @@
+#40200
+goon~
+a goon~
+A goon is here searching for Aurora.
+~
+It looks unfinished.
+~
+76 0 0 0 0 0 0 0 0 E
+1 20 9 0d0+10 1d2+0
+10 100
+8 8 0
+BareHandAttack: 3
+E
+#40201
+Castle Guard~
+a Castle Guard~
+A Castle Guard protects the area.
+~
+It looks unfinished.
+~
+72 0 0 0 0 0 0 0 0 E
+5 19 7 1d1+50 1d2+0
+50 2500
+8 8 0
+SavingPara: 1
+SavingRod: 1
+SavingPetri: 1
+SavingBreath: 1
+SavingSpell: 1
+E
+T 40200
 $
