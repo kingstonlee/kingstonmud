@@ -47,4 +47,20 @@ SavingPetri: 2
 SavingBreath: 2
 SavingSpell: 2
 E
+T 40202
+#40203
+dragon black~
+a black dragon~
+A black dragon moves about in the darkness of the room.
+~
+   It is hard to make out any details of the creature save for the fact that it
+is an enormous thing, its bulk seeming endless.
+~
+10 0 0 0 0 0 0 0 0 E
+24 12 -4 4d4+240 4d4+4
+240 57600
+8 8 0
+BareHandAttack: 2
+E
+T 40201
 $
