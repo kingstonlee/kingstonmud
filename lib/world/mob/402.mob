@@ -29,4 +29,22 @@ SavingBreath: 1
 SavingSpell: 1
 E
 T 40200
+#40202
+Prince Phillip~
+Prince Phillip~
+Prince Phillip, a tall handsome man
+~
+It looks unfinished.
+~
+72 0 0 0 0 0 0 0 0 E
+10 17 4 2d2+100 1d2+1
+100 10000
+8 8 0
+BareHandAttack: 3
+SavingPara: 2
+SavingRod: 2
+SavingPetri: 2
+SavingBreath: 2
+SavingSpell: 2
+E
 $
