@@ -63,7 +63,7 @@ Prince Phillip fights the Dragon~
 0 gk 100
 ~
 if %actor.vnum% == 40203
-  wait 1
-  mkill dragon
+  kill dragon
+end
 ~
 $~
