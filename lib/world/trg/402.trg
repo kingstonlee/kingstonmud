@@ -54,7 +54,7 @@ else
 end
 %echoaround% %actor% %self.name% breathes forth a cone of fire.
 %send% %actor% %self.name% breathes a cone of hot fire over you!
-if %actor.vnum% == 40203
+if %actor.vnum% == 40202
   %echoaround% %actor% The fire hits Prince Phillip's Shield of Virtue
 else
   %send% %actor% %self.name%'s %spellname% %vp% you!
