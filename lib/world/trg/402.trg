@@ -54,9 +54,13 @@ else
 end
 %echoaround% %actor% %self.name% breathes forth a cone of fire.
 %send% %actor% %self.name% breathes a cone of hot fire over you!
-%send% %actor% %self.name%'s %spellname% %vp% you!
-%echoaround% %actor% %self.name%'s %spellname% %vp% %actor.name%!
-%damage% %actor% %dmg%
+if %actor.vnum% == 40203
+  %echoaround% %actor% The fire hits Prince Phillip's Shield of Virtue
+else
+  %send% %actor% %self.name%'s %spellname% %vp% you!
+  %echoaround% %actor% %self.name%'s %spellname% %vp% %actor.name%!
+  %damage% %actor% %dmg%
+end
 ~
 #40202
 Prince Phillip fights the Dragon~
@@ -65,5 +69,15 @@ Prince Phillip fights the Dragon~
 if %actor.vnum% == 40203
   kill dragon
 end
+~
+#40203
+Dragon fights Phillip~
+0 gk 100
+~
+if %actor.vnum% == 40202
+  wait 1
+  say I'll stop you.
+  wait 1
+  mkill phillip
 ~
 $~
