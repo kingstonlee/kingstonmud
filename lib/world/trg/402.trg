@@ -76,8 +76,17 @@ Dragon fights Phillip~
 ~
 if %actor.vnum% == 40202
   wait 1
-  say I'll stop you.
+  say No, it cannot be!
+  wait 1
+  say Now, you shall deal with ME, O Prince...
+  wait 1
+  say and all the powers of HELL.
   wait 1
   mkill phillip
+  wait 10
+  %echoaround% %actor% Prince Phillip lifts his sword and hurls the Sword of Truth into Maleficent. 
+  %asound% Noooooooo! 
+  %damage% %victim% %victim.hitp%
+end
 ~
 $~
