@@ -38,7 +38,7 @@ Prince Phillip, a tall handsome man
 It looks unfinished.
 ~
 72 0 0 0 0 0 0 0 0 E
-10 17 4 2d2+100 1d2+1
+10 -5 4 2d2+100 1d2+1
 100 10000
 8 8 0
 BareHandAttack: 3
@@ -49,6 +49,7 @@ SavingBreath: 2
 SavingSpell: 2
 E
 T 40202
+T 40204
 #40203
 dragon black~
 a black dragon~

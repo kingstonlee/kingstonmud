@@ -1,0 +1,187 @@
+#40500
+Frontierland Entrance~
+You are in an unfinished room.
+~
+405 0 0 0 0 0
+D1
+~
+~
+0 0 40134
+D3
+~
+~
+0 0 40501
+S
+#40501
+Shooting Exposition~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D1
+~
+~
+0 0 40500
+D3
+~
+~
+0 0 40502
+S
+#40502
+Frontierland Road~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40503
+D1
+~
+~
+0 0 40501
+D3
+~
+~
+0 0 40504
+S
+#40503
+Zocalo Park~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D1
+~
+~
+0 0 40305
+D2
+~
+~
+0 0 40502
+S
+#40504
+Frontierland Churro Cart~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40505
+D1
+~
+~
+0 0 40502
+D2
+~
+~
+0 0 40512
+S
+#40505
+Mark Twain Riverboat Port~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40506
+D2
+~
+~
+0 0 40504
+S
+#40506
+Big Thunder Trail~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40507
+D2
+~
+~
+0 0 40505
+S
+#40507
+Entrance to Big Thunder Mountain Railroad~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40508
+D2
+~
+~
+0 0 40506
+S
+#40508
+Big Thunder Trail~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40509
+D2
+~
+~
+0 0 40507
+S
+#40509
+Big Thunder Trail~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D1
+~
+~
+0 0 40510
+D2
+~
+~
+0 0 40508
+S
+#40510
+Big Thunder Trail at Imperial Road~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D1
+~
+~
+0 0 40511
+D3
+~
+~
+0 0 40509
+S
+#40511
+Big Thunder Trail~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D1
+~
+~
+0 0 40324
+D3
+~
+~
+0 0 40510
+S
+#40512
+Big Thunder Trail~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40504
+S
+$~

@@ -1,0 +1,109 @@
+#40600
+Adventureland Trail~
+You are in an unfinished room.
+~
+406 0 0 0 0 0
+D0
+~
+~
+0 0 40512
+D1
+~
+~
+0 0 40602
+D2
+~
+~
+0 0 40601
+S
+#40601
+Tarzan's Treehouse~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D0
+~
+~
+0 0 40600
+S
+#40602
+Adventureland Road~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D1
+~
+~
+0 0 40603
+D3
+~
+~
+0 0 40600
+S
+#40603
+Adventureland Road~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D1
+~
+~
+0 0 40604
+D3
+~
+~
+0 0 40602
+S
+#40604
+Adventureland Road~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D0
+~
+~
+0 0 40606
+D1
+~
+~
+0 0 40605
+D3
+~
+~
+0 0 40603
+S
+#40605
+Tropical Hideaway~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D3
+~
+~
+0 0 40604
+S
+#40606
+Adventureland Road~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D1
+~
+~
+0 0 40607
+D2
+~
+~
+0 0 40604
+S
+#40607
+Adventureland Road~
+This unfinished room was created by Kingston.
+~
+406 0 0 0 0 0
+D3
+~
+~
+0 0 40606
+S
+$~

@@ -1,0 +1,169 @@
+#40700
+New Orleans Square~
+You are in an unfinished room.
+South to Pirates.  Up to 21 Royal.
+~
+407 0 0 0 0 0
+D1
+~
+~
+0 0 40600
+D3
+~
+~
+0 0 40701
+S
+#40701
+New Orleans Square~
+This unfinished room was created by Kingston.
+Royal Street Cross
+~
+407 0 0 0 0 0
+D1
+~
+~
+0 0 40700
+D2
+~
+~
+0 0 40702
+D3
+~
+~
+0 0 40705
+S
+#40702
+Royal Street~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D0
+~
+~
+0 0 40701
+D3
+~
+~
+0 0 40703
+S
+#40703
+Front Street~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D0
+~
+~
+0 0 40704
+D1
+~
+~
+0 0 40702
+D3
+~
+~
+0 0 40706
+S
+#40704
+Orleans Street~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D0
+~
+~
+0 0 40705
+D2
+~
+~
+0 0 40703
+D3
+~
+~
+0 0 40709
+S
+#40705
+New Orleans Square~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D1
+~
+~
+0 0 40701
+D2
+~
+~
+0 0 40704
+S
+#40706
+Front Street~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D0
+~
+~
+0 0 40708
+D1
+~
+~
+0 0 40703
+D2
+~
+~
+0 0 40707
+S
+#40707
+Disneyland Railroad - New Orleans Square~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D0
+~
+~
+0 0 40706
+S
+#40708
+Front Street~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D0
+~
+~
+0 0 40709
+D2
+~
+~
+0 0 40706
+S
+#40709
+New Orleans Square~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D1
+~
+~
+0 0 40704
+D2
+~
+~
+0 0 40708
+D3
+~
+~
+0 0 40710
+S
+#40710
+Entrance to Haunted Mansion~
+This unfinished room was created by Kingston.
+~
+407 0 0 0 0 0
+D1
+~
+~
+0 0 40709
+S
+$~

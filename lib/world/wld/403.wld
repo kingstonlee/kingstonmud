@@ -85,6 +85,10 @@ D1
 ~
 ~
 0 0 40303
+D3
+~
+~
+0 0 40503
 S
 #40306
 Plaza Gardens~
@@ -155,6 +159,10 @@ D2
 ~
 ~
 0 0 40316
+D3
+~
+~
+0 0 40324
 S
 #40311
 Fantasy Road~
@@ -341,5 +349,15 @@ D1
 ~
 ~
 0 0 40313
+S
+#40324
+Fantasy Road~
+This unfinished room was created by Kingston.
+~
+403 0 0 0 0 0
+D1
+~
+~
+0 0 40310
 S
 $~

@@ -663,6 +663,10 @@ D2
 ~
 ~
 0 0 40135
+D3
+~
+~
+0 0 40500
 S
 #40135
 Main Street U.S.A. Circle W~
@@ -681,6 +685,10 @@ D2
 ~
 ~
 0 0 40136
+D3
+~
+~
+0 0 40607
 S
 #40136
 Main Street U.S.A. Circle SW~
@@ -1064,5 +1072,26 @@ D3
 ~
 ~
 0 0 40130
+S
+#40163
+Disneyland Train~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D0
+~
+~
+0 0 40111
+S
+T 40101
+#40164
+New BuildWalk Room~
+This unfinished room was created by Kingston.
+~
+401 0 0 0 0 0
+D2
+~
+~
+0 0 40163
 S
 $~

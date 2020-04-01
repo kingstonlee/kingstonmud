@@ -83,10 +83,19 @@ if %actor.vnum% == 40202
   say and all the powers of HELL.
   wait 1
   mkill phillip
-  wait 10
+  wait 2
   %echoaround% %actor% Prince Phillip lifts his sword and hurls the Sword of Truth into Maleficent. 
   %asound% Noooooooo! 
-  %damage% %victim% %victim.hitp%
+  %damage% dragon 500
 end
+~
+#40204
+load Prince Phillip~
+0 n 100
+~
+%load% obj 40201
+wear shield
+%load% obj 40202
+wield sword
 ~
 $~
