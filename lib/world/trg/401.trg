@@ -100,8 +100,8 @@ else
 * Announce Now Arriving at Tomorrowland
   %echo% Now arriving at Tomorrowland
 * Create Exit to 40403
-  %door% %self.vnum% e room 40403
-  %door% 40403 w room %self.vnum%
+  %door% %self.vnum% w room 40403
+  %door% 40403 e room %self.vnum%
 * Give 5 Seconds
   wait 10 s
 * Announce to Room - All Aboard - Next Stop Main Street
@@ -112,8 +112,8 @@ else
 * Give 5 Seconds
   wait 10 s
 * Remove Tomorrowland (40403)
-  %door% %self.vnum% e purge
-  %door% 40403 w purge
+  %door% %self.vnum% w purge
+  %door% 40403 e purge
 * Announce in 40111 - The Disneyland Train Arriving
   %at% 40111 %echo% The Disneyland Train is now Arriving
 * Give 5 Seconds
