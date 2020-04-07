@@ -25,4 +25,25 @@ if %cmd% == sprinkle && (%arg% /= pixie || %arg% /= dust)
   end
 end
 ~
+#40801
+Peter Pan's Flight Cast Member Dialogue~
+0 b 25
+~
+switch %random.5%
+  case 1
+    emote says, "Next guest!" 
+    break
+  case 2
+    emote says, "Please step all the way in." 
+    break
+  case 3
+    emote says, "Watch for the bar coming down on your lap."
+    break
+  case 4
+    emote mumbles, "	Y	_Sprinkle Pixie Dust	n	n"
+    break
+  case 5
+    emote mumbles, "	Y	_Use Pixie Dust	n	n"
+    break
+~
 $~
