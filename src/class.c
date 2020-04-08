@@ -42,7 +42,7 @@ const char *pc_class_types[] = {
 };
 
 /* The menu for choosing a class in interpreter.c: */
-const char *class_menu =
+const char *class_menu[] =
 "\r\n"
 "Select a class:\r\n"
 "  [\t(C\t)]leric\r\n"
