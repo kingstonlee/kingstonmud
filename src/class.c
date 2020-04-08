@@ -59,8 +59,8 @@ int parse_class(char arg)
   switch (arg) {
   case 'm': return CLASS_MAGIC_USER;
   case 'c': return CLASS_CLERIC;
-  case 'w': return CLASS_WARRIOR;
   case 't': return CLASS_THIEF;
+  case 'w': return CLASS_WARRIOR;
   default:  return CLASS_UNDEFINED;
   }
 }
@@ -1406,6 +1406,28 @@ void roll_real_abils(struct char_data *ch)
       ch->real_abils.str_add = rand_number(0, 100);
     break;
   }
+
+  switch (GET_RACE(ch)) {
+  case RACE_HUMANOID:
+    break;
+  case RACE_ELF:
+    ch->real_abils.dex += 1;
+    ch->real_abils.con -= 1;
+    break;
+  case RACE_GNOME:
+    ch->real_abils.intel += 1;
+    ch->real_abils.wis -= 1;
+    break;
+  case RACE_DWARF:
+    ch->real_abils.con += 1;
+    ch->real_abils.cha -= 1;
+    break;
+  case RACE_HALFLING:
+    ch->real_abils.dex += 1;
+    ch->real_abils.str -= 1;
+    break;
+  }
+
   ch->aff_abils = ch->real_abils;
 }
 

@@ -26,6 +26,7 @@
 #include "act.h"
 #include "genzon.h" /* for real_zone_by_thing */
 #include "class.h"
+#include "races.h"
 #include "genolc.h"
 #include "genobj.h"
 #include "fight.h"
@@ -764,6 +765,7 @@ static void do_stat_object(struct char_data *ch, struct obj_data *j)
 static void do_stat_character(struct char_data *ch, struct char_data *k)
 {
   char buf[MAX_STRING_LENGTH];
+  char buf2[MAX_STRING_LENGTH];
   int i, i2, column, found = FALSE;
   struct obj_data *j;
   struct follow_type *fol;
@@ -784,9 +786,11 @@ static void do_stat_character(struct char_data *ch, struct char_data *k)
 
   send_to_char(ch, "D-Des: %s", k->player.description ? k->player.description : "<None>\r\n");
 
-  sprinttype(k->player.chclass, pc_class_types, buf, sizeof(buf));
-  send_to_char(ch, "%s%s, Lev: [%s%2d%s], XP: [%s%7d%s], Align: [%4d]\r\n",
-	IS_NPC(k) ? "Mobile" : "Class: ", IS_NPC(k) ? "" : buf, CCYEL(ch, C_NRM), GET_LEVEL(k), CCNRM(ch, C_NRM),
+  sprinttype(k->player.chrace, pc_race_types, buf, sizeof(buf));
+  sprinttype(k->player.chclass, pc_class_types, buf2, sizeof(buf2));
+  send_to_char(ch, "%s%s %s, Lev: [%s%2d%s], XP: [%s%7d%s], Align: [%4d]\r\n",
+	IS_NPC(k) ? "Mobile" : "Class: ", IS_NPC(k) ? "" : buf,
+        IS_NPC(k) ? "" : buf2, CCYEL(ch, C_NRM), GET_LEVEL(k), CCNRM(ch, C_NRM),
 	CCYEL(ch, C_NRM), GET_EXP(k), CCNRM(ch, C_NRM), GET_ALIGNMENT(k));
 
   if (!IS_NPC(k)) {
@@ -2087,8 +2091,9 @@ ACMD(do_last)
 
     strftime(timestr, sizeof(timestr), "%a %b %d %H:%M:%S %Y", localtime(&(vict->player.time.logon)));
 
-    send_to_char(ch, "[%5ld] [%2d %s] %-12s : %-18s : %-24s\r\n",
+    send_to_char(ch, "[%5ld] [%2d %s %s] %-12s : %-18s : %-24s\r\n",
     GET_IDNUM(vict), (int) GET_LEVEL(vict),
+    race_abbrevs[(int) GET_RACE(vict)],
     class_abbrevs[(int) GET_CLASS(vict)], GET_NAME(vict),
     GET_HOST(vict) && *GET_HOST(vict) ? GET_HOST(vict) : "(NOHOST)", timestr);
     free_char(vict);
@@ -2612,9 +2617,9 @@ ACMD(do_show)
     strftime(buf1, sizeof(buf1), "%a %b %d %H:%M:%S %Y", localtime(&(vict->player.time.birth)));
     strftime(buf2, sizeof(buf2), "%a %b %d %H:%H:%S %Y", localtime(&(vict->player.time.logon)));
 
-    send_to_char(ch, "Player: %-12s (%s) [%2d %s]\r\n", GET_NAME(vict),
-      genders[(int) GET_SEX(vict)], GET_LEVEL(vict), class_abbrevs[(int)
-      GET_CLASS(vict)]);
+    send_to_char(ch, "Player: %-12s (%s) [%2d %s %s]\r\n", GET_NAME(vict),
+      genders[(int) GET_SEX(vict)], GET_LEVEL(vict), race_abbrevs[(int) GET_RACE(vict)],
+      class_abbrevs[(int) GET_CLASS(vict)]);
     send_to_char(ch, "Gold: %-8d  Bal: %-8d Exp: %-8d  Align: %-5d  Lessons: %-3d\r\n",
       GET_GOLD(vict), GET_BANK_GOLD(vict), GET_EXP(vict),
       GET_ALIGNMENT(vict), GET_PRACTICES(vict));
@@ -2890,6 +2895,7 @@ static struct set_struct {
    { "wis", 		LVL_BUILDER, 	BOTH, 	NUMBER }, /* 55 */
    { "questpoints",     LVL_GOD,        PC,     NUMBER },
    { "questhistory",    LVL_GOD,        PC,   NUMBER },
+   { "race",		LVL_GRGOD,	BOTH,	MISC },
    { "\n", 0, BOTH, MISC }
   };
 
@@ -3303,6 +3309,13 @@ static int perform_set(struct char_data *ch, struct char_data *vict, int mode, c
         }
         break;
       }
+    case 58: /*Race */
+      if ((i = parse_race(*val_arg)) == RACE_UNDEFINED) {
+      send_to_char(ch, "That is not a valid race.\r\n");
+      return (0);
+    }
+    GET_RACE(vict) = i;
+    break;
     default:
       send_to_char(ch, "Can't set that!\r\n");
       return (0);
