@@ -48,7 +48,7 @@ const char *class_menu[] = {
 "  [\t(C\t)]leric\r\n"
 "  [\t(T\t)]hief\r\n"
 "  [\t(W\t)]arrior\r\n"
-"  [\t(M\t)]agic-user\r\n";
+"  [\t(M\t)]agic-user\r\n"
 };
 
 /* The code to interpret a class letter -- used in interpreter.c when a new
