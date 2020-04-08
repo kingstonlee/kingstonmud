@@ -1,0 +1,55 @@
+Here is a snippet that loads a new character with starting equipment.  It's loads equipment based on their class.
+
+
+1. Open act.other and at the end of the file add:
+
+void do_newbie(struct char_data *vict)
+{
+  struct obj_data *obj;
+  int give_warrior[] = {1, -1}; /* Change Vnums */
+  int give_mage[] = {1, -1}; /* Change Vnums */
+  int give_cleric[] = {1, -1}; /* Chnage Vnums */
+  int give_thief[] = {1, -1}; /* Change Vnums*/
+  int i;
+
+
+  if(GET_CLASS(vict) == CLASS_WARRIOR) {
+          for (i = 0; give_warrior[i] != -1; i++) {
+            obj = read_object(give_warrior[i], VIRTUAL);
+            obj_to_char(obj, vict);
+          }
+  }
+  if (GET_CLASS(vict) == CLASS_MAGIC_USER) {
+          for (i = 0; give_mage[i] != -1; i++) {
+            obj = read_object(give_mage[i], VIRTUAL);
+            obj_to_char(obj, vict);
+  }
+  if (GET_CLASS(vict) == CLASS_CLERIC) {
+          for (i = 0; give_cleric[i] != -1; i++) {
+            obj = read_object(give_cleric[i], VIRTUAL);
+            obj_to_char(obj, vict);
+          }
+  }
+  if (GET_CLASS(vict) == CLASS_THIEF) {
+          for (i = 0; give_thief[i] != -1; i++) {
+            obj = read_object(give_thief[i], VIRTUAL);
+            obj_to_char(obj, vict);
+          }
+  }
+}
+
+2. Close act.other.c and open act.h
+
+3. search  do_gen_tog and above it add
+
+void do_newbie(struct char_data *vict);
+
+4. close act.other.c and open class.c 
+
+5. search do_start and under roll_real_abils add:
+
+do_newbie(ch)
+
+6. Close and Compile.
+
+This is just another way to start players with equipment.  You can also do this with http://tbamud.com/forum/3-building/619-trigger-of-the-day-newbie-equip

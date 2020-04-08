@@ -1,0 +1,214 @@
+diff -BbuprN -x '*.o' 354-old/src/act.offensive.c 
+354-new/src/act.offensive.c
+--- 354-old/src/act.offensive.c	2008-01-10 13:16:40.828125000 -0800
++++ 354-new/src/act.offensive.c	2008-01-10 13:25:04.750000000 -0800
+@@ -25,6 +25,7 @@ int compute_armor_class(struct char_data
+ 
+ /* local functions */
+ ACMD(do_assist);
++ACMD(do_chargeup);
+ ACMD(do_hit);
+ ACMD(do_kill);
+ ACMD(do_backstab);
+@@ -79,6 +80,120 @@ ACMD(do_assist)
+   }
+ }
+ 
++/*
++ *  The two example skills are both used in my MUD.  I wanted warcry
++ *  to give 3 hit and 3 dam for 3 hours, so i made two separate effects,
++ *  which both last for 3 hours, as shown below in the local array warcry[].
++ *
++ *  Heroism is the same idea, but there are three effects instead of two.
++ *  You can of course add as many as you'd like, provided you finish the
++ *  arrays with a delimiter that has a type of -1.
++ *
++ *  Notice that I always set the bit_vector element to 0, since I don't
++ *  want to unnecessarily use up my very precious "AFF_XX" flags.  However
++ *  if you are using a 128-bit vector system, then you probably don't care.
++ *
++ *  Also, I chose to give two pulses of lag whether the skills succeed or
++ *  fail.  You may wish to change that.
++ *
++ *  Kyle Schlitt
++ *                                                                       */
++
++ACMD(do_chargeup)
++{
++  /* This is what the skills do. */
++  struct affected_type warcry[] = {
++    /* type, duration, modifier, location, bit_vector, next */
++
++    { SKILL_WARCRY,   3,   3,  APPLY_HITROLL,  0,   NULL },
++    { SKILL_WARCRY,   3,   3,  APPLY_DAMROLL,  0,   NULL },
++    {     -1      ,   0,   0,      -1       ,  0,   NULL }
++  };
++
++  struct affected_type heroism[] = {
++    /* type, duration, modifier, location, bit_vector, next */
++
++    { SKILL_HEROISM,  3,   4,  APPLY_HITROLL,  0,   NULL },
++    { SKILL_HEROISM,  3,   4,  APPLY_DAMROLL,  0,   NULL },
++    { SKILL_HEROISM,  3,  -5,  APPLY_AC     ,  0,   NULL },
++    {     -1      ,   0,   0,      -1       ,  0,   NULL }
++  };
++
++  struct chargeup_message_type {
++    char *success;
++    char *already;
++    char *fail;
++    char *success_to_room;
++    char *fail_to_room;
++
++  } chargeup_message[] = {
++
++    {"You let out a raging warcry!",                  /* Warcry - 0 */
++     "OK, calm down.  Don't over-do it.",
++     "Your warcry is not very effective...",
++     "$n lets out a raging warcry!",
++     "$n lets out a pathetic excuse for a warcry."},
++
++    {"You feel the heroism flow through your body.",  /* Heroism - 1 */
++     "Yeah yeah, you're a hero.  Wait a while.",
++     "You feel almost heroic, but then feel like a failure!",
++     "$n looks and smells like a hero!",
++     "$n tries to look heroic, but looks more like a failure!"}
++  };
++
++  int skill_number = 0;
++  int msg_number = 0;
++  struct affected_type *affect_ptr = NULL;
++
++  switch(subcmd) {
++
++    case SCMD_WARCRY:    skill_number = SKILL_WARCRY;
++                         msg_number = 0;
++                         affect_ptr = warcry;
++                         break;
++
++    case SCMD_HEROISM:   skill_number = SKILL_HEROISM;
++                         msg_number = 1;
++                         affect_ptr = heroism;
++                         break;
++
++    /* Add more cases here. */
++  }
++
++  /*Nothing below here NEEDS to be changed to add more chargeup skills. */
++
++  /* Do they even have the skill? */
++  if (!GET_SKILL(ch, skill_number)) {
++    send_to_char(ch, "You do not have the skill to do that!\r\n");
++    return;
++  }
++
++  /* Are they already under its affect? */
++  if (affected_by_spell(ch, skill_number)) {
++    send_to_char(ch, "%s\r\n", chargeup_message[msg_number].already);
++    return;
++  }
++
++  /* Did it fail? */
++  if (GET_SKILL(ch, skill_number) < (circle_random() % 101) ) {
++    send_to_char(ch, "%s\r\n", chargeup_message[msg_number].fail);
++    act(chargeup_message[msg_number].fail_to_room, TRUE, 0, 0, ch, TO_ROOM);
++    WAIT_STATE(ch, PULSE_VIOLENCE * 2);
++    return;
++  }
++
++  /* Success */
++  send_to_char(ch, "%s\r\n", chargeup_message[msg_number].success);
++  act(chargeup_message[msg_number].success_to_room, FALSE, ch, 0, 0, TO_ROOM);
++
++  /* Give them each effect. */
++  for(;affect_ptr->type != -1;affect_ptr++)
++    affect_join(ch, affect_ptr, FALSE, FALSE, FALSE, FALSE);
++
++  WAIT_STATE(ch, PULSE_VIOLENCE * 2);
++
++}
++
+ ACMD(do_hit)
+ {
+   char arg[MAX_INPUT_LENGTH];
+diff -BbuprN -x '*.o' 354-old/src/class.c 354-new/src/class.c
+--- 354-old/src/class.c	2008-01-10 13:16:40.843750000 -0800
++++ 354-new/src/class.c	2008-01-10 13:27:50.593750000 -0800
+@@ -1644,6 +1644,8 @@ void init_spell_levels(void)
+   spell_level(SKILL_RESCUE, CLASS_WARRIOR, 3);
+   spell_level(SKILL_TRACK, CLASS_WARRIOR, 9);
+   spell_level(SKILL_BASH, CLASS_WARRIOR, 12);
++  spell_level(SKILL_WARCRY, CLASS_WARRIOR, 15);
++  spell_level(SKILL_HEROISM, CLASS_WARRIOR, 20);
+ }
+ 
+ /* This is the exp given to implementors -- it must always be greater than the 
+diff -BbuprN -x '*.o' 354-old/src/interpreter.c 354-new/src/interpreter.c
+--- 354-old/src/interpreter.c	2008-01-10 13:16:40.890625000 -0800
++++ 354-new/src/interpreter.c	2008-01-10 13:26:36.437500000 -0800
+@@ -75,6 +75,7 @@ ACMD(do_ban);
+ ACMD(do_bash);
+ ACMD(do_cast);
+ ACMD(do_changelog);
++ACMD(do_chargeup);
+ ACMD(do_checkloadstatus);
+ ACMD(do_commands);
+ ACMD(do_consider);
+@@ -326,6 +327,7 @@ cpp_extern const struct command_info cmd
+ 
+   { "help"     , "h"       , POS_DEAD    , do_help     , 0, 0 },
+   { "hedit"    , "hedit"   , POS_DEAD    , do_oasis_hedit, LVL_GOD , 0 },
++  { "heroism"  , "heroism" , POS_FIGHTING, do_chargeup , 0, SCMD_HEROISM },
+   { "hindex"   , "hind"    , POS_DEAD    , do_hindex   , 0, 0 },
+   { "helpcheck", "helpch"  , POS_DEAD    , do_helpcheck, LVL_IMPL, 0 },
+   { "hide"     , "hi"      , POS_RESTING , do_hide     , 1, 0 },
+@@ -484,6 +486,7 @@ cpp_extern const struct command_info cmd
+   { "vdelete"  , "vdelete" , POS_DEAD    , do_vdelete  , LVL_BUILDER, 0 },
+ 
+   { "wake"     , "wake"    , POS_SLEEPING, do_wake     , 0, 0 },
++  { "warcry"   , "warcry"  , POS_FIGHTING, do_chargeup , 0, SCMD_WARCRY },
+   { "wear"     , "wea"     , POS_RESTING , do_wear     , 0, 0 },
+   { "weather"  , "weather" , POS_RESTING , do_weather  , 0, 0 },
+   { "who"      , "wh"      , POS_DEAD    , do_who      , 0, 0 },
+diff -BbuprN -x '*.o' 354-old/src/interpreter.h 354-new/src/interpreter.h
+--- 354-old/src/interpreter.h	2008-01-10 13:16:40.890625000 -0800
++++ 354-new/src/interpreter.h	2008-01-10 13:19:48.265625000 -0800
+@@ -222,3 +222,7 @@ struct alias_data {
+ 
+ /* do_last */
+ #define SCMD_LIST_ALL 1
++
++/* do_chargeup */
++#define SCMD_WARCRY            0
++#define SCMD_HEROISM           1
+diff -BbuprN -x '*.o' 354-old/src/spell_parser.c 354-new/src/spell_parser.c
+--- 354-old/src/spell_parser.c	2008-01-10 13:16:40.937500000 -0800
++++ 354-new/src/spell_parser.c	2008-01-10 13:29:42.218750000 -0800
+@@ -934,6 +934,7 @@ void mag_assign_spells(void)
+    * the skill for other classes is set up in class.c. */
+   skillo(SKILL_BACKSTAB, "backstab");
+   skillo(SKILL_BASH, "bash");
++  skillo(SKILL_HEROISM, "heroism");
+   skillo(SKILL_HIDE, "hide");
+   skillo(SKILL_KICK, "kick");
+   skillo(SKILL_PICK_LOCK, "pick lock");
+@@ -941,5 +942,6 @@ void mag_assign_spells(void)
+   skillo(SKILL_SNEAK, "sneak");
+   skillo(SKILL_STEAL, "steal");
+   skillo(SKILL_TRACK, "track");
++  skillo(SKILL_WARCRY, "warcry");
+ }
+ 
+diff -BbuprN -x '*.o' 354-old/src/spells.h 354-new/src/spells.h
+--- 354-old/src/spells.h	2008-01-10 13:16:40.937500000 -0800
++++ 354-new/src/spells.h	2008-01-10 13:18:56.406250000 -0800
+@@ -99,6 +99,8 @@
+ #define SKILL_SNEAK                 138 /* Reserved Skill[] DO NOT CHANGE */
+ #define SKILL_STEAL                 139 /* Reserved Skill[] DO NOT CHANGE */
+ #define SKILL_TRACK		    140 /* Reserved Skill[] DO NOT CHANGE */
++#define SKILL_WARCRY                141 /* Reserved Skill[] DO NOT CHANGE */
++#define SKILL_HEROISM               142 /* Reserved Skill[] DO NOT CHANGE */
+ /* New skills may be added here up to MAX_SKILLS (200) */
+ 
+ /* NON-PLAYER AND OBJECT SPELLS AND SKILLS: The practice levels for the spells 
+

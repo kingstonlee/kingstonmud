@@ -1,0 +1,754 @@
+diff -BbuprN -x '*.o' src/srcbak/act.wizard.c src/src/act.wizard.c
+--- src/srcbak/act.wizard.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/act.wizard.c	2004-10-02 17:01:02.000000000 -0400
+@@ -64,7 +64,7 @@ struct char_data *find_char(int n);
+ SPECIAL(shop_keeper);
+ void Crash_rentsave(struct char_data * ch, int cost);
+ void show_guild(struct char_data * ch, char *arg);
+-struct spell_info_type spell_info[];
++
+ 
+ /* local functions */
+ int perform_set(struct char_data *ch, struct char_data *vict, int mode, char *val_arg);
+@@ -533,7 +533,7 @@ void list_zone_commands_room(struct char
+ 
+ void do_stat_room(struct char_data *ch, room_rnum location)
+ {
+-  char buf2[MAX_STRING_LENGTH];
++  char buf2[MAX_STRING_LENGTH], buf[MAX_STRING_LENGTH];
+   struct extra_descr_data *desc;
+   struct room_data *rm;
+   int i, found, column;
+@@ -555,11 +555,8 @@ void do_stat_room(struct char_data *ch, 
+   sprintbitarray(rm->room_flags, room_bits, RF_ARRAY_MAX, buf2);
+   send_to_char(ch, "SpecProc: %s, Flags: %s\r\n", rm->func == NULL ? "None" : "Exists", buf2);
+ 
+-  send_to_char(ch, "Room has these Anti-spell affects: [&G%-10.5s&n] [&G%-10.5s&n] [&G%-10.5s&n] [&G%-10.5s&n]\r\n",
+-                    (rm->value[0] < 1) ? "none" : spell_info[rm->value[0]].name,
+-                    (rm->value[1] < 1) ? "none" : spell_info[rm->value[1]].name,
+-                    (rm->value[2] < 1) ? "none" : spell_info[rm->value[2]].name,
+-                    (rm->value[3] < 1) ? "none" : spell_info[rm->value[3]].name);
++  sprintbitarray(rm->spells, spell_list, SP_ARRAY_MAX, buf);
++  send_to_char(ch, "Room has these Anti-spell affects: [%s%s%s]\r\n", CCGRN(ch, C_NRM), buf, CCNRM(ch, C_NRM));
+ 
+   send_to_char(ch, "Description:\r\n%s", rm->description ? rm->description : "  None.\r\n");
+ 
+diff -BbuprN -x '*.o' src/srcbak/constants.c src/src/constants.c
+--- src/srcbak/constants.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/constants.c	2004-10-02 17:06:51.000000000 -0400
+@@ -362,6 +362,133 @@ const char *connected_types[] = {
+ };
+ 
+ 
++const char *spell_list[] = {
++  "Reserved",
++  "Armor",
++  "Teleport",
++  "Bless",
++  "Blindness",
++  "Burning_hands",
++  "Call_lightning",
++  "Charm",
++  "Chill_touch",
++  "Clone",
++  "Color_spray",
++  "Control_weather",
++  "Create_food",
++  "Create_water",
++  "Cure_blind",
++  "Cure_critic",
++  "Cure_light",
++  "Curse",
++  "Detect_align",
++  "Detect_invis",
++  "Detect_magic",
++  "Detect_poison",
++  "Dispel_evil",
++  "Earthquake",
++  "Enchant_weapon",
++  "Energy_drain",
++  "Fireball",
++  "Harm",
++  "Heal",
++  "Invisible",
++  "Lightning_bolt",
++  "Locate_object",
++  "Magic_missile",
++  "Poison",
++  "Prot_from_evil",
++  "Remove_Curse",
++  "Sanctuary",
++  "Shocking_grasp",
++  "Sleep",
++  "Strength",
++  "Summon",
++  "Ventriloquate",
++  "Word_of_recall",
++  "Remove_poison",
++  "Sense_life",
++  "Animate_dead",
++  "Dispel_good",
++  "Group_armor",
++  "Group_heal",
++  "Group_recall",
++  "Infravision",
++  "Waterwalk",
++  "Portal",
++  "Paralize",
++  "Cause_light",
++  "Cause_critic",
++  "Identify",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Unused",
++  "Backstab",
++  "Bash",
++  "Hide",
++  "Kick",
++  "Pick_lock",
++  "Lay_hands",
++  "Rescue",
++  "Sneak",
++  "Steal",
++  "Track",
++  "Disarm",
++  "Turning",
++  "\n"
++};
++
++
+ /*
+  * WEAR_x - for eq list
+  * Not use in sprinttype() so no \n.
+diff -BbuprN -x '*.o' src/srcbak/constants.h src/src/constants.h
+--- src/srcbak/constants.h	2004-10-02 16:45:05.000000000 -0400
++++ src/src/constants.h	2004-10-02 16:51:51.000000000 -0400
+@@ -6,6 +6,7 @@ extern const char *abbr_dirs[];
+ extern const char *room_bits[];
+ extern const char *exit_bits[];
+ extern const char *sector_types[];
++extern const char *spell_list[];
+ extern const char *genders[];
+ extern const char *position_types[];
+ extern const char *player_bits[];
+diff -BbuprN -x '*.o' src/srcbak/.cvsignore src/src/.cvsignore
+--- src/srcbak/.cvsignore	1969-12-31 19:00:00.000000000 -0500
++++ src/src/.cvsignore	2003-02-07 00:41:13.000000000 -0500
+@@ -0,0 +1 @@
++*.o
+diff -BbuprN -x '*.o' src/srcbak/db.c src/src/db.c
+--- src/srcbak/db.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/db.c	2004-10-02 17:02:13.000000000 -0400
+@@ -1073,7 +1073,7 @@ void parse_room(FILE *fl, int virtual_nr
+   int t[10], i, retval;
+   char line[READ_SIZE], flags[128], flags2[128], flags3[128];
+   char flags4[128], buf2[MAX_STRING_LENGTH], buf[128];
+-  struct extra_descr_data *new_descr;
++  char flags5[READ_SIZE], flags6[READ_SIZE], flags7[READ_SIZE], flags8[READ_SIZE];  struct extra_descr_data *new_descr;
+   char letter;
+ 
+   /* This really had better fit or there are other problems. */
+@@ -1138,10 +1138,7 @@ void parse_room(FILE *fl, int virtual_nr
+   world[room_nr].room_flags[3] = asciiflag_conv(flags4);
+ 
+   world[room_nr].sector_type = t[2];
+-  world[room_nr].value[0]    = -1; 
+-  world[room_nr].value[1]    = -1; 
+-  world[room_nr].value[2]    = -1; 
+-  world[room_nr].value[3]    = -1;
++
+   sprintf(flags, "object #%d", virtual_nr);	/* sprintf: OK (until 399-bit integers) */
+   for(taeller=0; taeller < AF_ARRAY_MAX; taeller++) 
+     check_bitvector_names(world[room_nr].room_flags[taeller], room_bits_count, flags, "room");
+@@ -1154,10 +1151,7 @@ void parse_room(FILE *fl, int virtual_nr
+   world[room_nr].room_flags[3] = asciiflag_conv(flags4);
+ 
+   world[room_nr].sector_type = t[2];
+-  world[room_nr].value[0]    = t[7]; 
+-  world[room_nr].value[1]    = t[8]; 
+-  world[room_nr].value[2]    = t[9]; 
+-  world[room_nr].value[3]    = t[10];
++
+   sprintf(flags, "object #%d", virtual_nr);	/* sprintf: OK (until 399-bit integers) */
+   for(taeller=0; taeller < AF_ARRAY_MAX; taeller++) 
+     check_bitvector_names(world[room_nr].room_flags[taeller], room_bits_count, flags, "room");
+@@ -1185,6 +1179,25 @@ void parse_room(FILE *fl, int virtual_nr
+       exit(1);
+     }
+     switch (*line) {
++    case 'A':
++    if (!get_line(fl, line)) {
++      log("SYSERR: Expecting Anti_room_flags in room #%d but file ended!",
++	virtual_nr);
++      exit(1);
++    }
++    if ((retval = sscanf(line, "%s %s %s %s %s %s %s %s", flags, flags2, flags3, flags4, flags5, flags6, flags7, flags8)) != 8) { 
++      log("SYSERR: Format error in Anti_room_flags of room #%d Number count %d", virtual_nr, retval);
++      exit(1);
++    }
++     world[room_nr].spells[0]              = asciiflag_conv(flags); 
++     world[room_nr].spells[1]              = asciiflag_conv(flags2); 
++     world[room_nr].spells[2]              = asciiflag_conv(flags3); 
++     world[room_nr].spells[3]              = asciiflag_conv(flags4); 
++     world[room_nr].spells[4]              = asciiflag_conv(flags5); 
++     world[room_nr].spells[5]              = asciiflag_conv(flags6); 
++     world[room_nr].spells[6]              = asciiflag_conv(flags7); 
++     world[room_nr].spells[7]              = asciiflag_conv(flags8); 
++     break;
+     case 'D':
+       setup_dir(fl, room_nr, atoi(line + 1));
+       break;
+diff -BbuprN -x '*.o' src/srcbak/doc/.cvsignore src/src/doc/.cvsignore
+--- src/srcbak/doc/.cvsignore	1969-12-31 19:00:00.000000000 -0500
++++ src/src/doc/.cvsignore	2003-02-06 23:20:04.000000000 -0500
+@@ -0,0 +1,63 @@
++conf.h
++.accepted
++Makefile
++act.comm.c.html
++act.informative.c.html
++act.item.c.html
++act.movement.c.html
++act.offensive.c.html
++act.other.c.html
++act.social.c.html
++act.wizard.c.html
++alias.c.html
++ban.c.html
++boards.c.html
++boards.h.html
++castle.c.html
++circle.function
++circle.html
++circle.include
++circle.typedef
++circle.variable
++class.c.html
++comm.c.html
++comm.h.html
++conf.h.html
++config.c.html
++constants.c.html
++constants.h.html
++db.c.html
++db.h.html
++fight.c.html
++graph.c.html
++handler.c.html
++handler.h.html
++house.c.html
++house.h.html
++index.html
++interpreter.c.html
++interpreter.h.html
++limits.c.html
++magic.c.html
++mail.c.html
++mail.h.html
++mobact.c.html
++modify.c.html
++objsave.c.html
++olc.c.html
++olc.h.html
++random.c.html
++screen.h.html
++shop.c.html
++shop.h.html
++spec_assign.c.html
++spec_procs.c.html
++spell_parser.c.html
++spells.c.html
++spells.h.html
++structs.h.html
++sysdep.h.html
++telnet.h.html
++utils.c.html
++utils.h.html
++weather.c.html
+diff -BbuprN -x '*.o' src/srcbak/genwld.c src/src/genwld.c
+--- src/srcbak/genwld.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/genwld.c	2004-10-02 16:53:54.000000000 -0400
+@@ -295,6 +295,8 @@ int save_rooms(zone_rnum rzone)
+   char buf[MAX_STRING_LENGTH], buf1[MAX_STRING_LENGTH];
+   char rbuf1[MAX_STRING_LENGTH], rbuf2[MAX_STRING_LENGTH];
+   char rbuf3[MAX_STRING_LENGTH], rbuf4[MAX_STRING_LENGTH];
++  char rbuf5[MAX_STRING_LENGTH], rbuf6[MAX_STRING_LENGTH];
++  char rbuf7[MAX_STRING_LENGTH], rbuf8[MAX_STRING_LENGTH];
+ 
+ #if CIRCLE_UNSIGNED_INDEX
+   if (rzone == NOWHERE || rzone > top_of_zone_table) {
+@@ -338,14 +340,12 @@ int save_rooms(zone_rnum rzone)
+       fprintf(sf, 	"#%d\n"
+ 			"%s%c\n"
+ 			"%s%c\n"
+-                        "%d %s %s %s %s %d %d %d %d %d\n",
++                        "%d %s %s %s %s %d\n",
+ 		room->number,
+ 		room->name ? room->name : "Untitled", STRING_TERMINATOR,
+ 		buf, STRING_TERMINATOR,
+ 		zone_table[room->zone].number, 
+-                rbuf1, rbuf2, rbuf3, rbuf4, room->sector_type,
+-                room->value[0], room->value[1], room->value[2],
+-                room->value[3]
++                rbuf1, rbuf2, rbuf3, rbuf4, room->sector_type
+       );
+ 
+       /*
+@@ -405,6 +405,21 @@ int save_rooms(zone_rnum rzone)
+ 			"%s~\n", xdesc->keyword, buf);
+ 	}
+       }
++
++  /* if Room anti spell exists write out all existing values */
++      sprintascii(rbuf1, room->spells[0]);
++      sprintascii(rbuf2, room->spells[1]);
++      sprintascii(rbuf3, room->spells[2]);
++      sprintascii(rbuf4, room->spells[3]);
++      sprintascii(rbuf5, room->spells[4]);
++      sprintascii(rbuf6, room->spells[5]);
++      sprintascii(rbuf7, room->spells[6]);
++      sprintascii(rbuf8, room->spells[7]);
++      fprintf(sf, 	"A\n"
++                        "%s %s %s %s %s %s %s %s\n",
++                        rbuf1, rbuf2, rbuf3, rbuf4, rbuf5, rbuf6, rbuf7, rbuf8);
++
++
+       fprintf(sf, "S\n");
+       script_save_to_disk(sf, room, WLD_TRIGGER);
+     }
+diff -BbuprN -x '*.o' src/srcbak/oasis.h src/src/oasis.h
+--- src/srcbak/oasis.h	2004-10-02 16:45:05.000000000 -0400
++++ src/src/oasis.h	2004-10-02 16:58:26.000000000 -0400
+@@ -278,10 +278,8 @@ extern const char *nrm, *grn, *cyn, *yel
+ #define REDIT_EXTRADESC_KEY 		15
+ #define REDIT_EXTRADESC_DESCRIPTION 	16
+ #define REDIT_DELETE			17
+-#define REDIT_VALUE_0                   18
+-#define REDIT_VALUE_1                   19
+-#define REDIT_VALUE_2                   20
+-#define REDIT_VALUE_3                   21
++#define REDIT_ANTI_SPELLS               18
++
+ 
+ /*
+  * Submodes of ZEDIT connectedness.
+@@ -533,10 +531,6 @@ void redit_disp_menu(struct descriptor_d
+ void redit_parse(struct descriptor_data *d, char *arg);
+ void free_room(struct room_data *room);
+ void redit_disp_spell_menu(struct descriptor_data *d);
+-void redit_disp_value0(struct descriptor_data *d);
+-void redit_disp_value1(struct descriptor_data *d);
+-void redit_disp_value2(struct descriptor_data *d);
+-void redit_disp_value3(struct descriptor_data *d);
+ ACMD(do_oasis_redit);
+ 
+ void sedit_setup_new(struct descriptor_data *d);
+diff -BbuprN -x '*.o' src/srcbak/redit.c src/src/redit.c
+--- src/srcbak/redit.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/redit.c	2004-10-02 17:03:14.000000000 -0400
+@@ -421,40 +421,20 @@ void redit_disp_exit_flag_menu(struct de
+ void redit_disp_spell_menu(struct descriptor_data *d)
+ {
+   int counter, columns = 0;
++  char buf[MAX_STRING_LENGTH];
+ 
+   get_char_colors(d->character);
+   clear_screen(d);
+ 
+-  for (counter = 1; counter < NUM_SPELLS; counter++) {
+-    write_to_output(d, "%s%2d%s) %s%-20.20s %s", grn, counter, nrm, yel,
++  for (counter = 1; counter < MAX_CUR_SKILLS; counter++) {
++    write_to_output(d, "%s%2d%s) %s%-20.20s %s", grn, counter + 1, nrm, yel,
+ 		spell_info[counter].name, !(++columns % 3) ? "\r\n" : "");
+   }
+-  write_to_output(d, "\r\n%sEnter spell choice (0 for none) : ", nrm);
+-}
+-
+-
+-void redit_disp_value0(struct descriptor_data *d)
+-{
+-  OLC_MODE(d) = REDIT_VALUE_0;
+-  redit_disp_spell_menu(d);
+-}
+-
+-void redit_disp_value1(struct descriptor_data *d)
+-{
+-  OLC_MODE(d) = REDIT_VALUE_1;
+-  redit_disp_spell_menu(d);
+-}
+-
+-void redit_disp_value2(struct descriptor_data *d)
+-{
+-  OLC_MODE(d) = REDIT_VALUE_2;
+-  redit_disp_spell_menu(d);
+-}
+ 
+-void redit_disp_value3(struct descriptor_data *d)
+-{
+-  OLC_MODE(d) = REDIT_VALUE_3;
+-  redit_disp_spell_menu(d);
++  sprintbitarray(OLC_ROOM(d)->spells, spell_list, SP_ARRAY_MAX, buf);
++  write_to_output(d, "\r\nAnti spells assigned: &R%s&n\r\n"
++          "Enter spell choice (0 to exit) : ", buf);
++  OLC_MODE(d) = REDIT_ANTI_SPELLS;
+ }
+ 
+ 
+@@ -499,6 +479,7 @@ void redit_disp_sector_menu(struct descr
+  */
+ void redit_disp_menu(struct descriptor_data *d)
+ {
++  char buf[MAX_STRING_LENGTH];
+   char buf1[MAX_STRING_LENGTH];
+   char buf2[MAX_STRING_LENGTH];
+   struct room_data *room;
+@@ -507,6 +488,7 @@ void redit_disp_menu(struct descriptor_d
+   clear_screen(d);
+   room = OLC_ROOM(d);
+ 
++  sprintbitarray(room->spells, spell_list, SP_ARRAY_MAX, buf);  
+   sprintbitarray(room->room_flags, room_bits, RF_ARRAY_MAX, buf1);
+   sprinttype(room->sector_type, sector_types, buf2, sizeof(buf2));
+   write_to_output(d,
+@@ -574,17 +556,10 @@ void redit_disp_menu(struct descriptor_d
+ 	  );
+ 
+   write_to_output(d,
+-          "%sV%s) Anti-spells value1: %-10.5s\r\n"
+-          "               value2: %-10.5s\r\n"
+-          "               value3: %-10.5s\r\n"
+-          "               value4: %-10.5s\r\n"     
++          "%sV%s) Change anti_room_spells : %s%s%s\r\n"     
+ 	  "%sQ%s) Quit\r\n"
+ 	  "Enter choice : ",
+- 	  grn, nrm,
+- 	  room->value[0]  < 1 ? "None" : spell_info[room->value[0]].name,
+-	  room->value[1]  < 1 ? "None" : spell_info[room->value[1]].name,
+-	  room->value[2]  < 1 ? "None" : spell_info[room->value[2]].name,
+-	  room->value[3]  < 1 ? "None" : spell_info[room->value[3]].name,
++ 	  grn, nrm, grn, buf, nrm,          
+           grn, nrm 
+ 	  );
+ 
+@@ -744,7 +719,7 @@ void redit_parse(struct descriptor_data 
+ 
+     case 'v':
+     case 'V':
+-      redit_disp_value0(d);
++      redit_disp_spell_menu(d);
+       break;
+ 
+     default:
+@@ -792,6 +767,20 @@ void redit_parse(struct descriptor_data 
+     }
+     return;
+ 
++  case REDIT_ANTI_SPELLS:
++    number = atoi(arg);
++    if (number < 0 || number > MAX_SKILLS) {
++      write_to_output(d, "That is not a valid choice!\r\n");
++      redit_disp_spell_menu(d);
++    } else if (number == 0)
++      break;
++    else {
++     TOGGLE_BIT_AR(OLC_ROOM(d)->spells, number - 1);
++     redit_disp_spell_menu(d);
++    }
++    return;
++
++
+   case REDIT_SECTOR:
+     number = atoi(arg);
+     if (number < 0 || number >= NUM_ROOM_SECTORS) {
+@@ -884,61 +873,6 @@ void redit_parse(struct descriptor_data 
+     redit_disp_exit_menu(d);
+     return;
+ 
+-  case REDIT_VALUE_0:
+-    number = atoi(arg);
+-    if (number == 0){
+-        redit_disp_menu(d); 
+-        break;
+-    } else if (number < 1 || number > NUM_SPELLS) {
+-      write_to_output(d, "Thats not valid!\r\n");
+-      redit_disp_spell_menu(d);
+-    } else {
+-        OLC_ROOM(d)->value[0] = number;
+-        redit_disp_value1(d);
+-      }        
+-    return;
+-
+-  case REDIT_VALUE_1:
+-    number = atoi(arg);
+-    if (number == 0){
+-        redit_disp_menu(d); 
+-        break;
+-    }else if (number < 1 || number > NUM_SPELLS) {
+-      write_to_output(d, "Thats not valid!\r\n");
+-      redit_disp_spell_menu(d);
+-    } else {
+-        OLC_ROOM(d)->value[1] = number;
+-        redit_disp_value2(d);
+-      }        
+-    return;
+-
+-  case REDIT_VALUE_2:
+-    number = atoi(arg);
+-    if (number == 0){
+-        redit_disp_menu(d); 
+-        break;
+-    }else if (number < 1 || number > NUM_SPELLS) {
+-      write_to_output(d, "Thats not valid!\r\n");
+-      redit_disp_spell_menu(d);
+-    } else {
+-        OLC_ROOM(d)->value[2] = number;
+-        redit_disp_value3(d);
+-      }        
+-    return;
+-
+-  case REDIT_VALUE_3:
+-    number = atoi(arg);
+-    if (number == 0){
+-        redit_disp_menu(d); 
+-        break;
+-    }else if (number < 1 || number > NUM_SPELLS) {
+-      write_to_output(d, "Thats not valid!\r\n");
+-      redit_disp_spell_menu(d);
+-    } else 
+-        OLC_ROOM(d)->value[3] = number;
+-     return;
+-
+-
+   case REDIT_EXIT_DOORFLAGS:
+     number = atoi(arg);
+     if (number < 0 || number > NUM_EXIT_FLAGS) {
+diff -BbuprN -x '*.o' src/srcbak/spell_parser.c src/src/spell_parser.c
+--- src/srcbak/spell_parser.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/spell_parser.c	2004-10-02 17:27:18.000000000 -0400
+@@ -230,8 +230,7 @@ int call_magic(struct char_data *caster,
+     return (0);
+   }
+   
+-  if (ROOM_ANTISPELL(IN_ROOM(caster), 0) == spellnum || ROOM_ANTISPELL(IN_ROOM(caster), 1) == spellnum ||
+-      ROOM_ANTISPELL(IN_ROOM(caster), 2) == spellnum || ROOM_ANTISPELL(IN_ROOM(caster), 3) == spellnum) {
++  if (ROOM_ANTISPELL(IN_ROOM(caster), spellnum)) {
+     send_to_char(caster, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, caster, 0, 0, TO_ROOM);
+     return (0);
+diff -BbuprN -x '*.o' src/srcbak/spells.c src/src/spells.c
+--- src/srcbak/spells.c	2004-10-02 16:45:05.000000000 -0400
++++ src/src/spells.c	2004-10-02 17:20:18.000000000 -0400
+@@ -47,8 +47,7 @@ ASPELL(spell_create_water)
+     return;
+   /* level = MAX(MIN(level, LVL_IMPL), 1);	 - not used */
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(victim), 0) == SPELL_CREATE_WATER || ROOM_ANTISPELL(IN_ROOM(victim), 1) == SPELL_CREATE_WATER ||
+-      ROOM_ANTISPELL(IN_ROOM(victim), 2) == SPELL_CREATE_WATER || ROOM_ANTISPELL(IN_ROOM(victim), 3) == SPELL_CREATE_WATER) {
++  if (ROOM_ANTISPELL(IN_ROOM(victim), SPELL_WORD_OF_RECALL)) {
+     send_to_char(victim, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, victim, 0, 0, TO_ROOM);
+     return;
+@@ -80,10 +79,9 @@ ASPELL(spell_recall)
+   if (victim == NULL || IS_NPC(victim))
+     return;
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(victim), 0) == SPELL_WORD_OF_RECALL || ROOM_ANTISPELL(IN_ROOM(victim), 1) == SPELL_WORD_OF_RECALL ||
+-      ROOM_ANTISPELL(IN_ROOM(victim), 2) == SPELL_WORD_OF_RECALL || ROOM_ANTISPELL(IN_ROOM(victim), 3) == SPELL_WORD_OF_RECALL) {
+-    send_to_char(victim, "The room seems to absorb your magic!\r\n");
+-    act("The room absorbes $n's magic spell!", FALSE, victim, 0, 0, TO_ROOM);
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_TELEPORT)) {
++    send_to_char(ch, "The room seems to absorb your magic!\r\n");
++    act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+   }      
+ 
+@@ -105,8 +103,7 @@ ASPELL(spell_teleport)
+   if (victim == NULL || IS_NPC(victim))
+     return;
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_TELEPORT || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_TELEPORT ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_TELEPORT || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_TELEPORT) {
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_SUMMON)) {
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+@@ -208,8 +205,7 @@ ASPELL(spell_locate_object)
+     return;
+   }
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_LOCATE_OBJECT || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_LOCATE_OBJECT ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_LOCATE_OBJECT || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_LOCATE_OBJECT) {
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_LOCATE_OBJECT)) {
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+@@ -251,8 +247,7 @@ ASPELL(spell_charm)
+   if (victim == NULL || ch == NULL)
+     return;
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_CHARM || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_CHARM ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_CHARM || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_CHARM){
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_CHARM)){
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+@@ -309,13 +304,14 @@ ASPELL(spell_identify)
+   int i, found;
+   size_t len;
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_IDENTIFY || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_IDENTIFY ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_IDENTIFY || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_IDENTIFY) {
++
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_IDENTIFY)) {
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+   }
+ 
++  
+   if (obj) {
+     char bitbuf[MAX_STRING_LENGTH];
+ 
+@@ -411,8 +407,8 @@ ASPELL(spell_enchant_weapon)
+   if (ch == NULL || obj == NULL)
+     return;
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_ENCHANT_WEAPON || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_ENCHANT_WEAPON ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_ENCHANT_WEAPON || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_ENCHANT_WEAPON) {
++
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_ENCHANT_WEAPON)) {
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+@@ -458,8 +454,7 @@ ASPELL(spell_enchant_weapon)
+ 
+ ASPELL(spell_detect_poison)
+ {
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_DETECT_POISON || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_DETECT_POISON ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_DETECT_POISON || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_DETECT_POISON){
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_DETECT_POISON)){
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+@@ -505,8 +500,8 @@ ASPELL(spell_portal)
+   if (ch == NULL || victim == NULL)
+     return;
+ 
+-  if (ROOM_ANTISPELL(IN_ROOM(ch), 0) == SPELL_PORTAL || ROOM_ANTISPELL(IN_ROOM(ch), 1) == SPELL_PORTAL ||
+-      ROOM_ANTISPELL(IN_ROOM(ch), 2) == SPELL_PORTAL || ROOM_ANTISPELL(IN_ROOM(ch), 3) == SPELL_PORTAL) {
++
++  if (ROOM_ANTISPELL(IN_ROOM(ch), SPELL_PORTAL)) {
+     send_to_char(ch, "The room seems to absorb your magic!\r\n");
+     act("The room absorbes $n's magic spell!", FALSE, ch, 0, 0, TO_ROOM);
+     return;
+diff -BbuprN -x '*.o' src/srcbak/spells.h src/src/spells.h
+--- src/srcbak/spells.h	2004-10-02 16:45:05.000000000 -0400
++++ src/src/spells.h	2004-10-02 17:04:54.000000000 -0400
+@@ -133,6 +133,10 @@
+ #define MIN_WP                      170
+ #define MAX_WP                      182
+ 
++/*Current Max skills you have in your game not the acutal array max */
++#define MAX_CUR_SKILLS              132
++
++
+ /*
+  *  NON-PLAYER AND OBJECT SPELLS AND SKILLS
+  *  The practice levels for the spells and skills below are _not_ recorded
+diff -BbuprN -x '*.o' src/srcbak/structs.h src/src/structs.h
+--- src/srcbak/structs.h	2004-10-02 16:45:05.000000000 -0400
++++ src/src/structs.h	2004-10-02 16:46:30.000000000 -0400
+@@ -632,6 +632,7 @@
+ #define TW_ARRAY_MAX    4
+ #define EF_ARRAY_MAX    4
+ #define ZF_ARRAY_MAX    4
++#define SP_ARRAY_MAX    8
+ 
+ /* other #defined constants **********************************************/
+ 
+@@ -894,7 +895,7 @@ struct room_data {
+    struct extra_descr_data *ex_description; /* for examine/look       */
+    struct room_direction_data *dir_option[NUM_OF_DIRS]; /* Directions */
+    int room_flags[RF_ARRAY_MAX];   /* DEATH,DARK ... etc */
+-   sh_int value[3];                 /* Anti room spells --Cunning        */
++   int spells[SP_ARRAY_MAX];    /* Anti room spells --Cunning        */
+ 
+    struct trig_proto_list *proto_script; /* list of default triggers  */
+    struct script_data *script;  /* script info for the object         */
+diff -BbuprN -x '*.o' src/srcbak/utils.h src/src/utils.h
+--- src/srcbak/utils.h	2004-10-02 16:45:05.000000000 -0400
++++ src/src/utils.h	2004-10-02 16:47:29.000000000 -0400
+@@ -221,6 +221,7 @@ void	update_pos(struct char_data *victim
+ #define ROOM_FLAGS(loc)	(world[(loc)].room_flags)
+ #define SPELL_ROUTINES(spl)	(spell_info[spl].routines)
+ #define ZONE_FLAGS(loc) (zone_table[(loc)].zone_flags)
++#define ROOM_SPELL(loc)		(world[(loc)].spells)
+ /*
+  * See http://www.circlemud.org/~greerga/todo/todo.009 to eliminate MOB_ISNPC.
+  * IS_MOB() acts as a VALID_MOB_RNUM()-like function.
+@@ -234,6 +235,7 @@ void	update_pos(struct char_data *victim
+ #define AFF_FLAGGED(ch, flag) (IS_SET_AR(AFF_FLAGS(ch), (flag)))
+ #define PRF_FLAGGED(ch, flag) (IS_SET_AR(PRF_FLAGS(ch), (flag)))
+ #define ROOM_FLAGGED(loc, flag) (IS_SET_AR(ROOM_FLAGS(loc), (flag)))
++#define ROOM_ANTISPELL(loc, flag)  (IS_SET_AR(ROOM_SPELL(loc), (flag)))
+ #define ZONE_FLAGGED(loc, flag) (IS_SET_AR(ZONE_FLAGS(loc), (flag)))
+ #define EXIT_FLAGGED(exit, flag) (IS_SET((exit)->exit_info, (flag)))
+ #define OBJAFF_FLAGGED(obj, flag) (IS_SET(GET_OBJ_AFFECT(obj), (flag)))
+@@ -265,7 +267,6 @@ void	update_pos(struct char_data *victim
+ 	((room_vnum)(VALID_ROOM_RNUM(rnum) ? world[(rnum)].number : NOWHERE))
+ #define GET_ROOM_SPEC(room) \
+ 	(VALID_ROOM_RNUM(room) ? world[(room)].func : NULL)
+-#define ROOM_ANTISPELL(loc, val)  (world[(loc)].value[(val)])
+ 
+ 
+ /* char utils ************************************************************/

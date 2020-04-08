@@ -1,0 +1,91 @@
+I found an old newbie messages snippet on the circlemud snippets page and decided to updated  it.  It's free to use and no credit is needed.
+
+
+[::ACT.INFORMATIVE.C::]
+
+1. Find ACMD(do_toggle) and under {"screenwidth", 0, 0, "\n", "\n"},
+add:
+
+    {"newbie", PRF_NEWBIE, 0,
+    "You will no longer see newbie messages.\r\n",
+    "You will now see newbie messages.\r\n"},
+
+2. Scroll a little farther down and under "    Color: %s\r\n", add:
+
+    "    Newbie Disp: %-3s\r\n",
+
+3.  Scroll down and under types[COLOR_LEV(ch)], add:
+
+    ONOFF(PRF_FLAGGED(ch, PRF_NEWBIE)));
+
+4. That's all for do_toggle now go to the end of your act.informative.c file and add:
+
+void check_newbie(void)
+{
+ struct descriptor_data *d;
+ int message;
+
+        for (d = descriptor_list; d; d = d->next) {
+                if(IS_PLAYING(d)) {
+                        if(PRF_FLAGGED(d->character, PRF_NEWBIE) && !PLR_FLAGGED(d->character, PLR_WRITING)) {
+                                message = rand_number(1,4);
+                                if(message == 1)
+                                        send_to_char(d->character, "\tD[\tRNewbie Help\tD: \twRemember to check monster's corpse for loot!\tD]\tn\r\n");
+                                if(message == 2)
+                                        send_to_char(d->character, "\tD[\tRNewbie Help\tD: \twYou can turn of the newbie help by typing \tctoggle 'newbie'\tD]\tn\r\n");
+                                if(message == 3)
+                                        send_to_char(d->character, "\tD[\tRNewbie Help\tD: \twRemember to stock up on potions.\tD]\tn\r\n");
+                                if(message == 4)
+                                        send_to_char(d->character, "\tD[\tRNewbie Help\tD: You can check the latest game updates by typing \tcupdate\tD]\tn\r\n");
+                        }
+                }
+        }
+}
+
+5. Close act.informative.c and open
+
+[::ACT.H::]
+
+6. Find void free_recent_players(void) and under it add:
+
+void check_newbie(void);
+
+7. Close act.h
+
+8. open 
+
+[[:::COMM.C:::]
+
+9. Search check_timed_quests and under add:
+
+    check_newbie();
+
+10. close comm.c
+
+11. open 
+
+[[:::STRUCTS.H:::::]
+
+12. search PRF_AUTODOOR and under it add:
+
+#define PRF_NEWBIE       XX   /* Display Newbie Messages*/
+
+13.  Change #define NUM_PRF_FLAGS to
+
+#define NUM_PRF_FLAGS    XX
+
+*Note:  Change your XX's to your next available slot.
+
+14. close structs.h
+
+15. open
+
+[[:::CONSTANTS.C::::]
+
+16. search "AUTODOOR" and under it add:
+
+  "D_NEWBIE",
+
+17. close constants.c
+
+18. Make.

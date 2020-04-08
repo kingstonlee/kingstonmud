@@ -1,0 +1,596 @@
+diff -BbuprN -x '*.0' srcbak/act.movement.c src/act.movement.c
+--- srcbak/act.movement.c	2004-09-27 17:02:37.000000000 -0400
++++ src/act.movement.c	2004-09-27 17:11:41.000000000 -0400
+@@ -119,6 +119,7 @@ int do_simple_move(struct char_data *ch,
+   char throwaway[MAX_INPUT_LENGTH] = ""; /* Functions assume writable. */
+   room_rnum was_in = IN_ROOM(ch);
+   int need_movement;
++  struct room_data *rm;
+ 
+   /*
+    * Check for special routines (North is 1 in command list, but 0 here) Note
+@@ -182,6 +183,63 @@ int do_simple_move(struct char_data *ch,
+     send_to_char(ch, "You aren't godly enough to use that room!\r\n");
+     return (0);
+   }
++/*******  Cunning's Zone flag checks *******/
++
++  rm = &world[EXIT(ch, dir)->to_room];
++  
++
++  /* Immortal Scouting is not allwoed in Quest Zones!  */   
++  
++ if (!IS_NPC(ch)){
++   if (GET_LEVEL(ch) <= zone_table[rm->zone].min_level){
++        send_to_char(ch, "Sorry, Your too low a lvl to enter this zone yet.\r\n");
++        return(0);
++     }
++ 
++ if (GET_TRUST_LEVEL(ch) < LVL_GRGOD){     
++   if (GET_LEVEL(ch) > zone_table[rm->zone].max_level){
++        send_to_char(ch, "Sorry, Your too high a lvl to enter this zone.\r\n");
++        return(0);
++     }  
++   } 
++  }    
++   if (GET_LEVEL(ch) < LVL_IMMORT){
++      if (zone_table[rm->zone].zone_flags == ZONE_CLOSED){
++        send_to_char(ch, "This zone is currently closed to immorts.\r\n");
++        return (0);
++       }
++    }
++    
++    if (GET_LEVEL(ch) >= LVL_IMMORT && !GET_LEVEL(ch) >= LVL_IMMORT){
++      if (zone_table[rm->zone].zone_flags == ZONE_NOIMMORT){
++        send_to_char(ch, "This zone is NOIMMORT.\r\n");
++        return (0);
++       }
++    }
++    
++    if (GET_LEVEL(ch) < LVL_GOD && (GET_REMORTS(ch) <= 0)){
++      if (zone_table[rm->zone].zone_flags == ZONE_REMORT_ONLY){
++        send_to_char(ch, "This zone is REMORT chars only.\r\n");
++        return (0);
++       }
++    }
++    
++    if (GET_LEVEL(ch) < LVL_IMMORT){
++      if (zone_table[rm->zone].zone_flags == ZONE_FLYING && !IS_AFFECTED(ch, AFF_FLYING)){
++       send_to_char(ch, "This is a flying zone!\r\n");
++       return (0);
++      }
++     }
++  
++   if (GET_TRUST_LEVEL(ch) < LVL_GRGOD){
++    if (GET_OLC_ZONE(ch) != zone_table[rm->zone].number && GET_LEVEL(ch) >= LVL_IMMORT){
++          if (zone_table[rm->zone].zone_flags == ZONE_QUEST){
++        send_to_char(ch, "This is a Quest zone.\r\n");
++        return (0);
++       }
++     }
++   }
++ 
+ 
+   /* Now we know we're allowed to go into the room. */
+   if (GET_LEVEL(ch) < LVL_IMMORT && !IS_NPC(ch))
+diff -BbuprN -x '*.0' srcbak/act.wizard.c src/act.wizard.c
+--- srcbak/act.wizard.c	2004-09-27 17:02:37.000000000 -0400
++++ src/act.wizard.c	2004-09-27 17:19:16.000000000 -0400
+@@ -230,6 +230,7 @@ ACMD(do_at)
+ {
+   char command[MAX_INPUT_LENGTH], buf[MAX_INPUT_LENGTH];
+   room_rnum location, original_loc;
++  struct room_data *rm;
+ 
+   half_chop(argument, buf, command);
+   if (!*buf) {
+@@ -245,6 +246,16 @@ ACMD(do_at)
+   if ((location = find_target_room(ch, buf)) == NOWHERE)
+     return;
+ 
++ rm = &world[location];
++ if (GET_TRUST_LEVEL(ch) < LVL_GRGOD) {
++  if ((zone_table[rm->zone].zone_flags == ZONE_QUEST) &&
++          (GET_OLC_ZONE(ch) != zone_table[rm->zone].number)) {
++       send_to_char(ch, "This is a Quest zone, the At function is disabled.!\r\n");
++       return;
++   }
++  }
++
++
+   /* a location has been found. */
+   original_loc = IN_ROOM(ch);
+   char_from_room(ch);
+@@ -263,10 +274,20 @@ ACMD(do_goto)
+ {
+   char buf[MAX_STRING_LENGTH];
+   room_rnum location;
++  struct room_data *rm;
+ 
+   if ((location = find_target_room(ch, argument)) == NOWHERE)
+     return;
+ 
++  rm = &world[location];
++  if (GET_TRUST_LEVEL(ch) < LVL_GRGOD){
++  if ((zone_table[rm->zone].zone_flags == ZONE_QUEST) &&
++          (GET_OLC_ZONE(ch) != zone_table[rm->zone].number)) {
++       send_to_char(ch, "This is a Quest zone, No Immortals allowed!\r\n");
++       return;
++  }
++ } 
++
+   snprintf(buf, sizeof(buf), "$n %s", POOFOUT(ch) ? POOFOUT(ch) : "disappears in a puff of smoke.");
+   act(buf, TRUE, ch, 0, 0, TO_ROOM);
+ 
+@@ -2263,6 +2284,27 @@ size_t print_zone_to_buf(char *bufptr, s
+ 	zone_table[zone].bot, zone_table[zone].top);
+ }
+ 
++int check_room(struct char_data *vict, room_vnum room,  struct char_data *ch)
++{
++ struct room_data *rm = NULL;
++ room_rnum location = real_room(room);
++ 
++ rm = &world[location];
++  
++   log("Vict name %s, location %d", GET_NAME(vict), location);
++   if (ROOM_FLAGGED(location, ROOM_GODROOM) && GET_LEVEL(vict) < LVL_BUILDER){
++    send_to_char(ch, "You are not godly enough to use that room!\r\n");
++    return FALSE;
++   }else if (zone_table[rm->zone].zone_flags == ZONE_QUEST){
++    send_to_char(ch, "This zone has all its rooms protected!\r\n"); 
++    return FALSE;
++   }else 
++    return TRUE;
++    
++ return FALSE;
++} 
++
++
+ 
+ ACMD(do_show)
+ {
+@@ -2855,11 +2897,11 @@ int perform_set(struct char_data *ch, st
+       GET_LOADROOM(vict) = NOWHERE;
+     } else if (is_number(val_arg)) {
+       rvnum = atoi(val_arg);
+-      if (real_room(rvnum) != NOWHERE) {
++      if (real_room(rvnum) != NOWHERE && check_room(vict, rvnum, ch)) {
+         SET_BIT_AR(PLR_FLAGS(vict), PLR_LOADROOM);
+ 	GET_LOADROOM(vict) = rvnum;
+ 	send_to_char(ch, "%s will enter at room #%d.\r\n", GET_NAME(vict), GET_LOADROOM(vict));
+-      } else {
++      }else {
+ 	send_to_char(ch, "That room does not exist!\r\n");
+ 	return (0);
+       }
+diff -BbuprN -x '*.0' srcbak/db.c src/db.c
+--- srcbak/db.c	2004-09-27 17:02:37.000000000 -0400
++++ src/db.c	2004-09-27 17:27:25.000000000 -0400
+@@ -1958,10 +1958,10 @@ char *parse_object(FILE *obj_f, int nr)
+ void load_zones(FILE *fl, char *zonename)
+ {
+   static zone_rnum zone = 0;
+-  int cmd_no, num_of_cmds = 0, line_num = 0, tmp, error, arg_num;
++  int cmd_no, num_of_cmds = 0, line_num = 0, tmp, error, arg_num, version = 1;
+   char *ptr, buf[READ_SIZE], zname[READ_SIZE], buf2[MAX_STRING_LENGTH];
+   int zone_fix = FALSE;
+-  char t1[80], t2[80];
++  char t1[80], t2[80], line[MAX_STRING_LENGTH];
+ 
+   strlcpy(zname, zonename, sizeof(zname));
+ 
+@@ -1986,11 +1986,20 @@ void load_zones(FILE *fl, char *zonename
+     CREATE(Z.cmd, struct reset_com, num_of_cmds);
+ 
+   line_num += get_line(fl, buf);
+-
++    if(*buf=='@') {
++     if(sscanf(buf,"@Version: %d", &version)!=1)
++            {
++             log("SYSERR: Format error in %s (version)", zname);
++             log("SYSERR: ...Line: %s", line);
++             exit(1);
++            }
++        line_num+=get_line(fl,buf);
++     }
+   if (sscanf(buf, "#%hd", &Z.number) != 1) {
+     log("SYSERR: Format error in %s, line %d", zname, line_num);
+     exit(1);
+   }
++  
+   snprintf(buf2, sizeof(buf2), "beginning of zone #%d", Z.number);
+ 
+   line_num += get_line(fl, buf);
+@@ -2004,7 +2013,13 @@ void load_zones(FILE *fl, char *zonename
+   Z.name = strdup(buf);
+ 
+   line_num += get_line(fl, buf);
+-  if (sscanf(buf, " %hd %hd %d %d ", &Z.bot, &Z.top, &Z.lifespan, &Z.reset_mode) != 4) {
++    if (version >= 2) {
++       if  (sscanf(buf, " %hd %hd %d %d %d %d %d", &Z.bot, &Z.top, &Z.lifespan, &Z.reset_mode, &Z.zone_flags, &Z.min_level, &Z.max_level) != 7) {
++            log("SYSERR: Format error in 7-constant line of %s", zname);
++            exit(1);
++       }
++     }
++    else if (sscanf(buf, " %hd %hd %d %d ", &Z.bot, &Z.top, &Z.lifespan, &Z.reset_mode) != 4) {
+     /*
+      * This may be due to the fact that the zone has no builder.  So, we just attempt
+      * to fix this by copying the previous 2 last reads into this variable and the
+diff -BbuprN -x '*.0' srcbak/db.h src/db.h
+--- srcbak/db.h	2004-09-27 17:02:37.000000000 -0400
++++ src/db.h	2004-09-27 17:31:10.000000000 -0400
+@@ -193,6 +193,9 @@ struct reset_com {
+ 
+ 
+ /* zone definition structure. for the 'zone-table'   */
++#define CUR_WORLD_VERSION 1
++#define CUR_ZONE_VERSION  2
++
+ struct zone_data {
+    char	*name;		    /* name of this zone                  */
+    char *builders;          /* namelist of builders allowed to    */
+@@ -205,7 +208,9 @@ struct zone_data {
+    int	reset_mode;         /* conditions for reset (see below)   */
+    zone_vnum number;	    /* virtual number of this zone	  */
+    struct reset_com *cmd;   /* command table for reset	          */
+-
++   int min_level;
++   int max_level;
++   int zone_flags;
+    /*
+     * Reset mode:
+     *   0: Don't reset, and don't update age.
+diff -BbuprN -x '*.0' srcbak/genzon.c src/genzon.c
+--- srcbak/genzon.c	2004-09-27 17:02:37.000000000 -0400
++++ src/genzon.c	2004-09-27 17:30:37.000000000 -0400
+@@ -237,6 +237,9 @@ zone_rnum create_new_zone(zone_vnum vzon
+   zone->lifespan = 30;
+   zone->age = 0;
+   zone->reset_mode = 2;
++  zone->zone_flags = 0;
++  zone->min_level = 0;
++  zone->max_level = 36;
+   /*
+    * No zone commands, just terminate it with an 'S'
+    */
+@@ -395,10 +398,11 @@ int save_zone(zone_rnum zone_num)
+   /*
+    * Print zone header to file	
+    */
++  fprintf(zfile, "@Version: %d\n", CUR_ZONE_VERSION);
+   fprintf(zfile, "#%d\n"
+                  "%s~\n"
+                  "%s~\n"
+-                 "%d %d %d %d\n",
++                 "%d %d %d %d %d %d %d\n",
+ 	  zone_table[zone_num].number,
+ 	  (zone_table[zone_num].builders && *zone_table[zone_num].builders)
+ 		? zone_table[zone_num].builders : "None.",
+@@ -407,7 +411,10 @@ int save_zone(zone_rnum zone_num)
+           genolc_zone_bottom(zone_num),
+ 	  zone_table[zone_num].top,
+ 	  zone_table[zone_num].lifespan,
+-	  zone_table[zone_num].reset_mode
++	  zone_table[zone_num].reset_mode,
++	  zone_table[zone_num].zone_flags,
++	  zone_table[zone_num].min_level,
++	  zone_table[zone_num].max_level
+ 	  );
+ 
+ 	/*
+diff -BbuprN -x '*.0' srcbak/oasis.c src/oasis.c
+--- srcbak/oasis.c	2004-09-27 17:02:37.000000000 -0400
++++ src/oasis.c	2004-09-27 17:20:30.000000000 -0400
+@@ -420,13 +420,24 @@ int can_edit_zone(struct char_data *ch, 
+   if (!ch->desc || IS_NPC(ch) || rnum == NOWHERE)
+     return FALSE;
+ 
++ /* always access if a player helped build the zone in the first place */ 
++  if (is_name(GET_NAME(ch), zone_table[rnum].builders))
++    return (TRUE);
++
++ /* Cunnings change for Quest zones. No one other then builder of the zone
++    and Co-imps+ can edit these zones. */
++
++  /* always access if you're assigned to this zone */
++  if (real_zone(GET_OLC_ZONE(ch)) == rnum)
++    return TRUE;
++     
++  if (GET_LEVEL(ch) < LVL_COIMP && zone_table[rnum].zone_flags == ZONE_QUEST)
++     return (FALSE);
++
+   /* always access if ch is high enough level */
+   if (GET_LEVEL(ch) >= LVL_GRGOD)
+     return (TRUE);
+   
+-  /* always access if a player helped build the zone in the first place */ 
+-  if (is_name(GET_NAME(ch), zone_table[rnum].builders))
+-    return (TRUE);
+   
+   /* no access if you haven't been assigned a zone */
+   if (GET_OLC_ZONE(ch) == NOWHERE)
+@@ -436,9 +447,6 @@ int can_edit_zone(struct char_data *ch, 
+   if (GET_LEVEL(ch) < LVL_BUILDER)
+     return FALSE;
+ 
+-  /* always access if you're assigned to this zone */
+-  if (real_zone(GET_OLC_ZONE(ch)) == rnum)
+-    return TRUE;
+-
+   return (FALSE);
+ }
++
+diff -BbuprN -x '*.0' srcbak/oasis.h src/oasis.h
+--- srcbak/oasis.h	2004-09-27 17:02:37.000000000 -0400
++++ src/oasis.h	2004-09-27 17:44:26.000000000 -0400
+@@ -33,6 +33,7 @@
+  */
+ #define NUM_ROOM_FLAGS 		20
+ #define NUM_ROOM_SECTORS	10
++#define NUM_ZONE_FLAGS          13
+ 
+ #define NUM_MOB_FLAGS		19
+ #define NUM_AFF_FLAGS		27
+@@ -304,6 +305,9 @@ extern const char *nrm, *grn, *cyn, *yel
+ #define ZEDIT_ZONE_BUILDERS		16
+ #define ZEDIT_SARG1			20
+ #define ZEDIT_SARG2			21
++#define ZEDIT_ZONE_FLAGS		22
++#define ZEDIT_MIN_LEVEL                 23
++#define ZEDIT_MAX_LEVEL                 24
+ 
+ /*
+  * Submodes of MEDIT connectedness.
+@@ -573,6 +577,7 @@ void zedit_disp_arg1(struct descriptor_d
+ void zedit_disp_arg2(struct descriptor_data *d);
+ void zedit_disp_arg3(struct descriptor_data *d);
+ void zedit_parse(struct descriptor_data *d, char *arg);
++void zedit_disp_flag_menu(struct descriptor_data *d);
+ ACMD(do_oasis_zedit);
+ 
+ void cedit_setup(struct descriptor_data *d);
+diff -BbuprN -x '*.0' srcbak/oasis_list.c src/oasis_list.c
+--- srcbak/oasis_list.c	2004-09-27 17:02:37.000000000 -0400
++++ src/oasis_list.c	2004-09-27 17:34:21.000000000 -0400
+@@ -360,6 +360,9 @@ void print_zone(struct char_data *ch, zo
+   int size_guilds;
+   room_vnum top, bottom;
+   int largest_table;
++  char bits[MAX_STRING_LENGTH];
++  
++  sprinttype(zone_table[rnum].zone_flags, zone_bits, bits, sizeof(bits));
+   
+   if ((rnum = real_zone(vnum)) == NOWHERE) {
+     send_to_char(ch, "Zone #%d does not exist in the database.\r\n", vnum);
+@@ -415,6 +418,9 @@ void print_zone(struct char_data *ch, zo
+     "%sBottom of Zone = %s%d\r\n"
+     "%sTop of Zone    = %s%d\r\n"
+     "%sReset Mode     = %s%s\r\n"
++    "%sMin Level      = %s%d\r\n"
++    "%sMax Level      = %s%d\r\n"
++    "%sZone Flags     = %s%s\r\n"
+     "%sSize\r\n"
+     "%s   Rooms       = %s%d\r\n"
+     "%s   Guilds      = %s%d\r\n"
+@@ -429,6 +435,9 @@ void print_zone(struct char_data *ch, zo
+     QGRN, QCYN, zone_table[rnum].top,
+     QGRN, QCYN, zone_table[rnum].reset_mode ? ((zone_table[rnum].reset_mode == 1) ?
+     "Reset when no players are in zone." : "Normal reset.") : "Never reset",
++    QGRN, QCYN, zone_table[rnum].min_level,
++    QGRN, QCYN, zone_table[rnum].max_level,
++    QGRN, QCYN, bits,
+     QGRN,
+     QGRN, QCYN, size_rooms,
+     QGRN, QCYN, size_guilds,
+diff -BbuprN -x '*.0' srcbak/spells.c src/spells.c
+--- srcbak/spells.c	2004-09-27 17:02:37.000000000 -0400
++++ src/spells.c	2004-09-27 17:21:52.000000000 -0400
+@@ -499,6 +499,8 @@ ASPELL(spell_detect_poison)
+ ASPELL(spell_portal)
+ {
+   struct obj_data *portal, *tportal;
++  struct room_data *rm;
++  rm = &world[IN_ROOM(victim)];
+ 
+   if (ch == NULL || victim == NULL)
+     return;
+@@ -510,6 +512,11 @@ ASPELL(spell_portal)
+     return;
+   }
+ 
++  if (zone_table[rm->zone].zone_flags ==  ZONE_QUEST) {
++    send_to_char(ch, "You can not create a portal to that room.\r\n");
++    return;
++  }
++
+   /* create the portal */
+   portal = read_object(portal_object, VIRTUAL);
+   GET_OBJ_VAL(portal, 0) = GET_ROOM_VNUM(IN_ROOM(victim));
+diff -BbuprN -x '*.0' srcbak/structs.h src/structs.h
+--- srcbak/structs.h	2004-09-27 17:02:37.000000000 -0400
++++ src/structs.h	2004-09-27 17:22:31.000000000 -0400
+@@ -105,6 +105,22 @@
+ #define ROOM_TIMED_DT    19
+ #define ROOM_ANTI_SPELL  20
+ 
++/* Zone info: Used in zone_data.zone_flags */
++#define ZONE_OPEN               0
++#define ZONE_CLOSED             1
++#define ZONE_NOMAGIC            2
++#define ZONE_REMORT_ONLY        3
++#define ZONE_NOIMMORT           4
++#define ZONE_QUEST              5
++#define ZONE_SPACE              6
++#define ZONE_RAND_MAZE          7
++#define ZONE_TESTING            8
++#define ZONE_SWAMP              9
++#define ZONE_DESERT             10
++#define ZONE_FLYING             11
++#define ZONE_ARENA              12
++
++
+ /* Exit info: used in room_data.dir_option.exit_info */
+ #define EX_ISDOOR		(1 << 0)   /* Exit is a door		*/
+ #define EX_CLOSED		(1 << 1)   /* The door is closed	*/
+diff -BbuprN -x '*.0' srcbak/zedit.c src/zedit.c
+--- srcbak/zedit.c	2004-09-27 17:02:37.000000000 -0400
++++ src/zedit.c	2004-09-27 17:43:18.000000000 -0400
+@@ -242,6 +242,9 @@ void zedit_setup(struct descriptor_data 
+ #endif
+   zone->top = zone_table[OLC_ZNUM(d)].top;
+   zone->reset_mode = zone_table[OLC_ZNUM(d)].reset_mode;
++  zone->zone_flags = zone_table[OLC_ZNUM(d)].zone_flags;
++  zone->min_level = zone_table[OLC_ZNUM(d)].min_level;
++  zone->max_level = zone_table[OLC_ZNUM(d)].max_level;
+   /*
+    * The remaining fields are used as a 'has been modified' flag  
+    */
+@@ -285,6 +288,24 @@ void zedit_setup(struct descriptor_data 
+    */
+   zedit_disp_menu(d);
+ }
++/*------------------------------------------------------------------*/
++void zedit_disp_flag_menu(struct descriptor_data *d)
++{
++  char bits[MAX_STRING_LENGTH];
++  int counter, columns = 0;
++
++  get_char_colors(d->character);
++  clear_screen(d);
++  for (counter = 0; counter < NUM_ZONE_FLAGS; counter++) {
++    write_to_output(d, "%s%2d%s) %-20.20s %s", grn, counter + 1, nrm,
++		zone_bits[counter], !(++columns % 2) ? "\r\n" : "");
++  }
++  sprinttype(OLC_ZONE(d)->zone_flags, zone_bits, bits, sizeof(bits));
++  write_to_output(d, "\r\nZone flags: %s%s%s\r\n"
++	  "Enter Zone flags, 0 to quit : ", cyn, bits, nrm);
++  OLC_MODE(d) = ZEDIT_ZONE_FLAGS;
++}
++
+ 
+ /*-------------------------------------------------------------------*/
+ 
+@@ -399,6 +420,9 @@ void zedit_save_internally(struct descri
+     zone_table[OLC_ZNUM(d)].top = OLC_ZONE(d)->top;
+     zone_table[OLC_ZNUM(d)].reset_mode = OLC_ZONE(d)->reset_mode;
+     zone_table[OLC_ZNUM(d)].lifespan = OLC_ZONE(d)->lifespan;
++    zone_table[OLC_ZNUM(d)].zone_flags = OLC_ZONE(d)->zone_flags;
++    zone_table[OLC_ZNUM(d)].min_level = OLC_ZONE(d)->min_level;
++    zone_table[OLC_ZNUM(d)].max_level = OLC_ZONE(d)->max_level;
+   }
+   add_to_save_list(zone_table[OLC_ZNUM(d)].number, SL_ZON);
+ }
+@@ -437,10 +461,12 @@ int start_change_command(struct descript
+ void zedit_disp_menu(struct descriptor_data *d)
+ {
+   int subcmd = 0, room, counter = 0;
++  char buf1[MAX_STRING_LENGTH];
+ 
+   get_char_colors(d->character);
+   clear_screen(d);
+   room = real_room(OLC_NUM(d));
++  sprinttype(OLC_ZONE(d)->zone_flags, zone_bits, buf1, sizeof(buf1));
+ 
+   /*
+    * Menu header  
+@@ -455,6 +481,9 @@ void zedit_disp_menu(struct descriptor_d
+ #endif
+ 	  "%sT%s) Top of zone    : %s%d\r\n"
+ 	  "%sR%s) Reset Mode     : %s%s%s\r\n"
++          "%sF%s) Zone Flags     : %s%s%s\r\n"
++	  "%sM%s) Min Level   : %s%d%s\r\n"
++	  "%sX%s) Max Level   : %s%d%s\r\n"
+ 	  "[Command list]\r\n",
+ 
+ 	  cyn, OLC_NUM(d), nrm,
+@@ -469,7 +498,9 @@ void zedit_disp_menu(struct descriptor_d
+ 	  grn, nrm,
+           yel,
+           OLC_ZONE(d)->reset_mode ? ((OLC_ZONE(d)->reset_mode == 1) ? "Reset when no players are in zone." : "Normal reset.") : "Never reset",
+-          nrm
++          nrm, grn, nrm, yel, buf1, nrm,
++          grn, nrm, yel, OLC_ZONE(d)->min_level, nrm,
++	  grn, nrm, yel, OLC_ZONE(d)->max_level, nrm
+ 	  );
+ 
+   /*
+@@ -920,6 +951,25 @@ void zedit_parse(struct descriptor_data 
+ 		"Enter new zone reset type : ");
+       OLC_MODE(d) = ZEDIT_ZONE_RESET;
+       break;
++    case 'm':
++    case 'M':
++     /*** Edit zone min level. ***/
++      write_to_output(d, "Enter Minimum level to enter zone : \r\n");
++      OLC_MODE(d) = ZEDIT_MIN_LEVEL;
++      break;
++
++    case 'f':
++    case 'F':
++      zedit_disp_flag_menu(d);
++      break;
++    
++    case 'x':
++    case 'X': 
++      /*** Edit zone max level. ***/
++      write_to_output(d, "Enter Maximum level to enter zone : \r\n");
++      OLC_MODE(d) = ZEDIT_MAX_LEVEL;
++      break;
++
+     default:
+       zedit_disp_menu(d);
+       break;
+@@ -1343,6 +1393,52 @@ void zedit_parse(struct descriptor_data 
+     break;
+ 
+ /*-------------------------------------------------------------------*/
++/* --------------------------------------------------------------- */
++  case ZEDIT_ZONE_FLAGS:
++    number = atoi(arg);
++    if (number <= -1 || number > NUM_ZONE_FLAGS) {
++      write_to_output(d, "That is not a valid choice!\r\n");
++      zedit_disp_flag_menu(d);
++    } else if (number == 0){
++      OLC_ZONE(d)->number = 1;
++      zedit_disp_menu(d);
++    } else {
++      /*
++       * Toggle the bit.
++       */
++      TOGGLE_BIT(OLC_ZONE(d)->zone_flags, number - 1); 
++      zedit_disp_flag_menu(d);
++    }
++    break;
++
++/*=======================================================================*/
++  case ZEDIT_MIN_LEVEL:
++    /* Parse new min level of zone. */
++    pos = atoi(arg);
++    if (!isdigit(*arg) || pos < 0 || pos > 36)
++      write_to_output(d, "Try again (0 - 36) : \r\n");
++    else {
++      OLC_ZONE(d)->min_level = pos;
++      OLC_ZONE(d)->number = 1;
++      zedit_disp_menu(d);
++      }
++    break;
++
++/*-------------------------------------------------------------------*/
++  case ZEDIT_MAX_LEVEL:
++    /* Parse new max level of zone. */
++    pos = atoi(arg);
++    if (!isdigit(*arg) || pos < 0 || pos > 36)
++      write_to_output(d, "Try again (0 - 36) : \r\n");
++    else if (OLC_ZONE(d)->min_level > pos)
++      write_to_output(d, "Max level can not be lower the Min level! :\r\n");
++    else { 
++      OLC_ZONE(d)->max_level = pos;
++      OLC_ZONE(d)->number = 1;
++      zedit_disp_menu(d);
++      }
++    break;      
++
+   default:
+     /*
+      * We should never get here, but just in case...

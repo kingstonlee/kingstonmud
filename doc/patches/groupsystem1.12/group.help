@@ -1,0 +1,43 @@
+GROUP
+
+Usage: group 
+       group < list | new | join | leave | options | kick >
+
+GROUP with no arguments shows the status of your group.  GROUP list will show
+you a listing of all groups within the game, as well as their zone location and
+whether or not they are seeking new members.
+
+If you are a group member, then you will share experience points for killing
+monsters equally among the group.  Experience points will only be shared among
+group members that are in the same location, at the time of the killing
+blow.  Sharing is regardless of whether the group members have been
+participating in the fight.
+
+To join a group, you must target a member of an "open" group (as in accepting
+new members) and use GROUP join <player name>.
+
+Example:
+  Rumble wishes to join Vatiken's group, so assuming Vatiken has set his group
+  to open. Rumble then types:
+
+  > group join Vatiken 
+
+To make a group, the wannabe "leader" will use the GROUP new command:
+  > group new
+  
+To leave a group, simple use GROUP leave:
+  > group leave
+  
+If the leader leaves the group and one or more members still exists, a new
+leader will be chosen at random, otherwise the group will be disbanded.
+
+Group Leaders:
+
+To edit the options in a group, use the GROUP option <option> commands.
+  > group option anonymous     : Group information will be hidden/revealed
+  > group option open          : Group will be open/closed to new members
+
+To kick someone from the group, use GROUP kick <player name>
+  > group kick rumble
+ 
+#0

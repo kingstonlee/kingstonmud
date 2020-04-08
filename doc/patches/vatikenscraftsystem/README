@@ -1,0 +1,60 @@
+Crafting Patch, Version 0.1 ALPHA VERSION:
+  Created by Vatiken, (Joseph Arnusch)
+  joseph.arnusch@gmail.com
+  June 21st, 2012
+
+  :: Patch created using tbaMUD 3.63 r318 ::
+
+Readme Version 1.0
+
+Files:
+  1) README:        This file
+  2) crafts.c:      The crafts.c file
+  3) crafts.h:      The crafts.h header file
+  4) crafts.patch:  The patch file
+
+Before you begin:
+
+             IMPORTANT     IMPORTANT     IMPORTANT     IMPORTANT
+  1) This is the ALPHA VERSION, which means it will contain bugs, issues, and so
+     forth and so forth. The purpose of this release is for help in troubleshooting
+     before an official release. I'd advise backing up your MUD just in case if you
+     choose to progress with applying this patch.
+
+  2) I assume no responsibility for any damage this causes in your MUD, apply at your
+     own risk.
+
+  3) Feel free to use this in anyway you see fit.
+
+What this does:
+
+  This patch adds a crafting system to your MUD. If you've previously used another
+  crafting system, you will most likely notice some similarities.
+
+  Features:
+    * Simple, Clean Interface using the 1,2,3 colour options for easy customization.
+    * Easy to expand upon.
+    * Duration based crafting, ie: Crafting X takes 6 seconds.
+    * Skill AND Blueprint based crafts.
+    * Customizable Display Messages for the character and the room.
+
+Things to note:
+
+  1) This system uses linked lists, which means if you intend on having 10000 crafts,
+     you may want to look at another option.
+  2) There is no VNUM system for this crafting system, just a reference ID number.
+  3) You can use > show craft <name> to display info on a craft. 
+       The information varies if the craft is a RECIPE(BLUEPRINT)/NON-RECIPE(NON-BLUEPRINT)
+  4) Typing "craft" will bring up the crafts list for your character, and colour code
+     which crafts you have the goods to create.
+
+  5) An OFFICIAL release will be coming in the near future, 99% of the additions/modifications
+     will be to crafts.c and crafts.h, so minimal work should be required to upgrade.
+
+Installation:
+ 
+  1) As this is an ALPHA VERSION, there is only a hand-patch patch file, and the .c and .h. file.
+     Should be easy enough to figure out.
+
+  2) Feel free to send any bugs to me either through the tbamud.com forums, or
+     by email at joseph.arnusch@gmail.com.

@@ -1,0 +1,382 @@
+Index: interpreter.c
+===================================================================
+--- interpreter.c	(revision 318)
++++ interpreter.c	(working copy)
+@@ -39,6 +39,7 @@
+ #include "prefedit.h"
+ #include "ibt.h"
+ #include "mud_event.h"
++#include "crafts.h"
+ 
+ /* local (file scope) functions */
+ static int perform_dupe_check(struct descriptor_data *d);
+@@ -124,6 +125,8 @@
+   { "commands" , "com"     , POS_DEAD    , do_commands , 0, SCMD_COMMANDS },
+   { "compact"  , "comp"    , POS_DEAD    , do_gen_tog  , 0, SCMD_COMPACT },
+   { "copyover" , "copyover", POS_DEAD    , do_copyover , LVL_GRGOD, 0 },
++  { "craft"    , "craft"   , POS_STANDING, do_craft    , 0, 0 },
++  { "craftedit", "crafte"  , POS_DEAD    , do_oasis_craftedit, LVL_GRGOD, 0 },
+   { "credits"  , "cred"    , POS_DEAD    , do_gen_ps   , 0, SCMD_CREDITS },
+ 
+   { "date"     , "da"      , POS_DEAD    , do_date     , LVL_IMMORT, SCMD_DATE },
+@@ -1333,6 +1336,7 @@
+     { CON_QEDIT, qedit_parse },
+     { CON_PREFEDIT, prefedit_parse },
+     { CON_IBTEDIT, ibtedit_parse },
++    { CON_CRAFTEDIT, craftedit_parse },
+     { -1, NULL }
+   };
+ 
+Index: oedit.c
+===================================================================
+--- oedit.c	(revision 318)
++++ oedit.c	(working copy)
+@@ -435,6 +435,9 @@
+   case ITEM_FURNITURE:
+     write_to_output(d, "Number of people it can hold : ");
+     break;
++  case ITEM_BLUEPRINT:
++    write_to_output(d, "Enter Craft ID number : ");
++    break;
+   case ITEM_NOTE:  // These object types have no 'values' so go back to menu
+   case ITEM_OTHER:
+   case ITEM_WORN:
+@@ -958,6 +961,9 @@
+     case ITEM_CONTAINER:
+       GET_OBJ_VAL(OLC_OBJ(d), 0) = LIMIT(atoi(arg), -1, MAX_CONTAINER_SIZE);
+       break;
++    case ITEM_BLUEPRINT:
++      GET_OBJ_VAL(OLC_OBJ(d), 0) = LIMIT(atoi(arg), 0, 1000);
++      break;    
+     default:
+       GET_OBJ_VAL(OLC_OBJ(d), 0) = atoi(arg);
+     }
+Index: db.c
+===================================================================
+--- db.c	(revision 318)
++++ db.c	(working copy)
+@@ -38,6 +38,7 @@
+ #include "quest.h"
+ #include "ibt.h"
+ #include "mud_event.h"
++#include "crafts.h"
+ #include <sys/stat.h>
+ 
+ /*  declarations of most of the 'global' variables */
+@@ -624,6 +625,17 @@
+   }
+   free(trig_index);
+ 
++  /* Craft Cleanup */
++  if (global_craft_list->iSize > 0) {
++    struct craft_data * craft;
++
++    while ((craft = (struct craft_data *) simple_list(global_craft_list)) != NULL) {
++      remove_from_list(craft, global_craft_list);
++      free_craft(craft);  
++    }
++  }
++  free_list(global_craft_list);
++
+   /* Events */
+   event_free_all();
+ 
+@@ -641,7 +653,8 @@
+   
+   log("Initialize Global Lists");
+   global_lists = create_list();
+-
++  global_craft_list = create_list();
++  
+   log("Initializing Events");
+   init_events();
+ 
+@@ -736,8 +749,11 @@
+   if (!mini_mud)  {
+     log("Booting houses.");
+     House_boot();
++    
++    log("Booting crafts.");
++    load_crafts();      
+   }
+-
++  
+   log("Cleaning up last log.");
+   clean_llog_entries();
+ 
+Index: db.h
+===================================================================
+--- db.h	(revision 318)
++++ db.h	(working copy)
+@@ -136,6 +136,7 @@
+ #define BAN_FILE	LIB_ETC"badsites"  /* for the siteban system	*/
+ #define HCONTROL_FILE	LIB_ETC"hcontrol"  /* for the house system	*/
+ #define TIME_FILE	LIB_ETC"time"	   /* for calendar system	*/
++#define CRAFT_FILE	LIB_ETC"crafts"	   /* for crafting system	*/
+ #define CHANGE_LOG_FILE "../changelog"     /* for the changelog         */
+ 
+ /* new bitvector data for use in player_index_element */
+Index: act.wizard.c
+===================================================================
+--- act.wizard.c	(revision 318)
++++ act.wizard.c	(working copy)
+@@ -34,6 +34,7 @@
+ #include "quest.h"
+ #include "ban.h"
+ #include "screen.h"
++#include "crafts.h"
+ 
+ /* local utility functions with file scope */
+ static int perform_set(struct char_data *ch, struct char_data *vict, int mode, char *val_arg);
+@@ -2486,6 +2487,7 @@
+     { "thaco",      LVL_IMMORT },
+     { "exp",        LVL_IMMORT },
+     { "colour",     LVL_IMMORT },
++    { "crafts",     LVL_IMMORT },
+     { "\n", 0 }
+   };
+ 
+@@ -2766,7 +2768,13 @@
+         }
+     page_string(ch->desc, buf, TRUE);
+     break;
+-
++  case 14:
++    if (!*value)
++      list_all_crafts(ch);
++    else
++      show_craft(ch, get_craft_from_arg(value));
++      
++    break;
+   /* show what? */
+   default:
+     send_to_char(ch, "Sorry, I don't understand that.\r\n");
+Index: class.c
+===================================================================
+--- class.c	(revision 318)
++++ class.c	(working copy)
+@@ -1562,6 +1562,13 @@
+  * skill. */
+ void init_spell_levels(void)
+ {
++  int i;
++  
++  /* ALL CLASSES */
++  for (i = 0; i < NUM_CLASSES; i++) {
++    spell_level(SKILL_CRAFT, i, 1);
++  }
++
+   /* MAGES */
+   spell_level(SPELL_MAGIC_MISSILE, CLASS_MAGIC_USER, 1);
+   spell_level(SPELL_DETECT_INVIS, CLASS_MAGIC_USER, 2);
+Index: spells.h
+===================================================================
+--- spells.h	(revision 318)
++++ spells.h	(working copy)
+@@ -108,6 +108,7 @@
+ #define SKILL_SNEAK                 138 /* Reserved Skill[] DO NOT CHANGE */
+ #define SKILL_STEAL                 139 /* Reserved Skill[] DO NOT CHANGE */
+ #define SKILL_TRACK		              140 /* Reserved Skill[] DO NOT CHANGE */
++#define SKILL_CRAFT                 141 /* Generic Crafting Skill */
+ /* New skills may be added here up to MAX_SKILLS (200) */
+ 
+ /* NON-PLAYER AND OBJECT SPELLS AND SKILLS: The practice levels for the spells
+Index: structs.h
+===================================================================
+--- structs.h	(revision 318)
++++ structs.h	(working copy)
+@@ -329,11 +329,12 @@
+ #define CON_QEDIT        28 /**< OLC mode - quest edit */
+ #define CON_PREFEDIT     29 /**< OLC mode - preference edit */
+ #define CON_IBTEDIT      30 /**< OLC mode - idea/bug/typo edit */
+-#define CON_GET_PROTOCOL 31 /**< Used at log-in while attempting to get protocols > */
++#define CON_CRAFTEDIT    31
++#define CON_GET_PROTOCOL 32 /**< Used at log-in while attempting to get protocols > */
+ 
+ /* OLC States range - used by IS_IN_OLC and IS_PLAYING */
+ #define FIRST_OLC_STATE CON_OEDIT     /**< The first CON_ state that is an OLC */
+-#define LAST_OLC_STATE  CON_IBTEDIT   /**< The last CON_ state that is an OLC  */
++#define LAST_OLC_STATE  CON_CRAFTEDIT /**< The last CON_ state that is an OLC  */
+ 
+ /* Character equipment positions: used as index for char_data.equipment[] */
+ /* NOTE: Don't confuse these constants with the ITEM_ bitvectors
+@@ -386,8 +387,9 @@
+ #define ITEM_PEN       21		/**< Item is a pen		*/
+ #define ITEM_BOAT      22		/**< Item is a boat		*/
+ #define ITEM_FOUNTAIN  23		/**< Item is a fountain		*/
++#define ITEM_BLUEPRINT 24
+ /** Total number of item types.*/
+-#define NUM_ITEM_TYPES    24
++#define NUM_ITEM_TYPES 25
+ 
+ /* Take/Wear flags: used by obj_data.obj_flags.wear_flags */
+ #define ITEM_WEAR_TAKE      0   /**< Item can be taken */
+Index: act.informative.c
+===================================================================
+--- act.informative.c	(revision 318)
++++ act.informative.c	(working copy)
+@@ -131,7 +131,9 @@
+     case ITEM_DRINKCON:
+       send_to_char(ch, "It looks like a drink container.");
+       break;
+-
++    case ITEM_BLUEPRINT:
++      show_craft(ch, get_craft_from_id(GET_OBJ_VAL(obj, 0)));
++      break;
+     default:
+       send_to_char(ch, "You see nothing special..");
+       break;
+Index: constants.c
+===================================================================
+--- constants.c	(revision 318)
++++ constants.c	(working copy)
+@@ -402,6 +402,7 @@
+   "PEN",
+   "BOAT",
+   "FOUNTAIN",
++  "BLUEPRINT",
+   "\n"
+ };
+ 
+@@ -951,6 +952,20 @@
+   "InProgress",
+   "\n"
+ };
++
++/* Craft Flags */
++const char * craft_flags[] = {
++  "Needs Recipe",
++  "\n"
++};
++
++/* Requirement Flags */
++const char * requirement_flags[] = {
++  "INROOM",
++  "!REMOVE",
++  "SAVEonFAIL",
++  "\n"
++};
+ /* --- End of constants arrays. --- */
+ 
+ /* Various arrays we count so we can check the world files.  These
+Index: constants.h
+===================================================================
+--- constants.h	(revision 318)
++++ constants.h	(working copy)
+@@ -58,5 +58,6 @@
+ extern size_t affected_bits_count;
+ extern size_t extra_bits_count;
+ extern size_t wear_bits_count;
+-
++extern const char *craft_flags[];
++extern const char *requirement_flags[];
+ #endif /* _CONSTANTS_H_ */
+Index: mud_event.c
+===================================================================
+--- mud_event.c	(revision 318)
++++ mud_event.c	(working copy)
+@@ -23,7 +23,8 @@
+ struct mud_event_list mud_event_index[] = {
+   { "Null"         , NULL           , -1          },  /* eNULL */
+   { "Protocol"     , get_protocols  , EVENT_DESC  },  /* ePROTOCOLS */
+-  { "Whirlwind"    , event_whirlwind, EVENT_CHAR  }   /* eWHIRLWIND */
++  { "Whirlwind"    , event_whirlwind, EVENT_CHAR  },   /* eWHIRLWIND */
++  { "Craft"        , event_craft, EVENT_CHAR } /* eCRAFT */
+ };
+ 
+ /* init_events() is the ideal function for starting global events. This
+Index: spell_parser.c
+===================================================================
+--- spell_parser.c	(revision 318)
++++ spell_parser.c	(working copy)
+@@ -951,5 +951,7 @@
+   skillo(SKILL_STEAL, "steal");
+   skillo(SKILL_TRACK, "track");
+   skillo(SKILL_WHIRLWIND, "whirlwind");
++  
++  skillo(SKILL_CRAFT, "craft");
+ }
+ 
+Index: mud_event.h
+===================================================================
+--- mud_event.h	(revision 318)
++++ mud_event.h	(working copy)
+@@ -25,6 +25,7 @@
+     eNULL,
+     ePROTOCOLS, /* The Protocol Detection Event */
+     eWHIRLWIND, /* The Whirlwind Attack */
++    eCRAFT 
+ } event_id;
+ 
+ struct mud_event_list {
+@@ -54,5 +55,5 @@
+ EVENTFUNC(event_countdown);
+ EVENTFUNC(get_protocols);
+ EVENTFUNC(event_whirlwind);
+-
++EVENTFUNC(event_craft);
+ #endif /* _MUD_EVENT_H_ */
+Index: oasis.c
+===================================================================
+--- oasis.c	(revision 318)
++++ oasis.c	(working copy)
+@@ -26,6 +26,7 @@
+ #include "handler.h" /* for is_name */
+ #include "quest.h"
+ #include "ibt.h"
++#include "crafts.h"
+ 
+ /* Internal Data Structures */
+ /** @deprecated olc_scmd_info appears to be deprecated. Commented out for now.
+@@ -178,6 +179,17 @@
+ 	 OLC_IBT(d) = NULL;
+    }
+ 
++   if (OLC_CRAFT(d)) {
++     free_craft(OLC_CRAFT(d));
++     OLC_CRAFT(d) = NULL;
++   }
++
++   if (OLC_CRAFT_REQ(d)) {
++     free(OLC_CRAFT_REQ(d));
++     OLC_CRAFT_REQ(d) = NULL;
++   }
++
++
+   /* Free storage if allocated (tedit, aedit, and trigedit). This is the command
+    * list - it's been copied to disk already, so just free it -Welcor. */
+    if (OLC_STORAGE(d)) {
+Index: oasis.h
+===================================================================
+--- oasis.h	(revision 318)
++++ oasis.h	(working copy)
+@@ -100,6 +100,8 @@
+   struct trig_data *trig;
+   struct prefs_data *prefs;      /* used for 'prefedit'      */
+   struct ibt_data *ibt;          /* used for 'ibtedit'       */
++  struct craft_data *craft;      /* used for 'craftedit'     */
++  struct requirement_data *req;  /*           ditto          */
+   int script_mode;
+   int trigger_position;
+   int item_type;
+@@ -132,6 +134,9 @@
+ #define OLC_HELP(d)    (OLC(d)->help)     /**< Hedit structure      */
+ #define OLC_PREFS(d)   (OLC(d)->prefs)    /**< Preferences structure */
+ #define OLC_IBT(d)     (OLC(d)->ibt)      /**< IBT (idea/bug/typo) structure */
++
++#define OLC_CRAFT(d)   (OLC(d)->craft)    /**< Craft structure      */
++#define OLC_CRAFT_REQ(d) (OLC(d)->req)
+ /* Other macros. */
+ #define OLC_EXIT(d)		(OLC_ROOM(d)->dir_option[OLC_VAL(d)])
+ 
+@@ -452,6 +457,10 @@
+ /* public functions from qedit.c */
+ ACMD(do_oasis_qedit);
+ 
++/* public functions from crafts.c */
++void craftedit_parse(struct descriptor_data *d, char *arg);
++ACMD(do_oasis_craftedit);
++
+ /* public functions from oasis_copy.c */
+ int buildwalk(struct char_data *ch, int dir);
+ ACMD(do_dig);

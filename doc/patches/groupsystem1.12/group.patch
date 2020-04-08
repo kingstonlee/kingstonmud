@@ -1,0 +1,1065 @@
+diff -rupN src/act.comm.c groupsrc/act.comm.c
+--- src/act.comm.c	2012-06-11 21:25:49.622535992 -0700
++++ groupsrc/act.comm.c	2012-06-11 21:25:33.314455116 -0700
+@@ -73,41 +73,26 @@ ACMD(do_say)
+ 
+ ACMD(do_gsay)
+ {
+-  struct char_data *k;
+-  struct follow_type *f;
+-
+   skip_spaces(&argument);
+-
+-  if (!AFF_FLAGGED(ch, AFF_GROUP)) {
+-    send_to_char(ch, "But you are not the member of a group!\r\n");
++  
++  if (!GROUP(ch)) {
++    send_to_char(ch, "But you are not a member of a group!\r\n");
+     return;
+   }
+   if (!*argument)
+     send_to_char(ch, "Yes, but WHAT do you want to group-say?\r\n");
+   else {
+-    char buf[MAX_STRING_LENGTH];
+-
++		
+     if (CONFIG_SPECIAL_IN_COMM && legal_communication(argument))
+-      parse_at(argument);
+-
+-    if (ch->master)
+-      k = ch->master;
+-    else
+-      k = ch;
+-
+-    snprintf(buf, sizeof(buf), "$n tells the group, '%s\tn'", argument);
+-
+-    if (AFF_FLAGGED(k, AFF_GROUP) && (k != ch))
+-      act(buf, FALSE, ch, 0, k, TO_VICT | TO_SLEEP);
+-    for (f = k->followers; f; f = f->next)
+-      if (AFF_FLAGGED(f->follower, AFF_GROUP) && (f->follower != ch))
+-        act(buf, FALSE, ch, 0, f->follower, TO_VICT | TO_SLEEP);
+-    
++      parse_at(argument);		
++		
++    send_to_group(ch, ch->group, "%s%s%s says, '%s'%s\r\n", CCGRN(ch, C_NRM), CCGRN(ch, C_NRM), GET_NAME(ch), argument, CCNRM(ch, C_NRM));
++	
+     if (!IS_NPC(ch) && PRF_FLAGGED(ch, PRF_NOREPEAT))
+       send_to_char(ch, "%s", CONFIG_OK);
+     else
+-      send_to_char(ch, "You tell the group, '%s\tn'\r\n", argument);
+-  }
++      send_to_char(ch, "%sYou group-say, '%s'%s\r\n", CCGRN(ch, C_NRM), argument, CCNRM(ch, C_NRM));
++	}
+ }
+ 
+ static void perform_tell(struct char_data *ch, struct char_data *vict, char *arg)
+diff -rupN src/act.h groupsrc/act.h
+--- src/act.h	2012-06-11 21:25:49.630535988 -0700
++++ groupsrc/act.h	2012-06-11 21:25:33.322455148 -0700
+@@ -249,7 +249,6 @@ ACMD(do_sneak);
+ ACMD(do_split);
+ ACMD(do_steal);
+ ACMD(do_title);
+-ACMD(do_ungroup);
+ ACMD(do_visible);
+ 
+ 
+diff -rupN src/act.informative.c groupsrc/act.informative.c
+--- src/act.informative.c	2012-06-11 21:25:49.638536062 -0700
++++ groupsrc/act.informative.c	2012-06-11 21:25:33.358455307 -0700
+@@ -309,6 +309,17 @@ static void list_one_char(struct char_da
+     }
+   }
+ 
++  if (GROUP(i)) {
++    if (GROUP(i) == GROUP(ch))
++      send_to_char(ch, "(%s%s%s) ", CBGRN(ch, C_NRM),
++	GROUP_LEADER(GROUP(i)) == i ? "leader" : "group",
++        CCNRM(ch, C_NRM));
++    else
++      send_to_char(ch, "(%s%s%s) ", CBRED(ch, C_NRM),
++        GROUP_LEADER(GROUP(i)) == i ? "leader" : "group",
++	CCNRM(ch, C_NRM));
++  }
++
+   if (IS_NPC(i) && i->player.long_descr && GET_POS(i) == GET_DEFAULT_POS(i)) {
+     if (AFF_FLAGGED(i, AFF_INVISIBLE))
+       send_to_char(ch, "*");
+@@ -1207,9 +1218,9 @@ ACMD(do_who)
+         continue;
+       if (showclass && !(showclass & (1 << GET_CLASS(tch))))
+         continue;
+-      if (showgroup && (!tch->master || !AFF_FLAGGED(tch, AFF_GROUP)))
++      if (showgroup && !GROUP(tch))
+         continue;
+-      if (showleader && (!tch->followers || !AFF_FLAGGED(tch, AFF_GROUP)))
++      if (showleader && (!GROUP(tch) || GROUP_LEADER(GROUP(tch)) != tch))
+         continue;
+       for (i = 0; *rank[i].disp != '\n'; i++)
+         if (GET_LEVEL(tch) >= rank[i].min_level && GET_LEVEL(tch) <= rank[i].max_level)
+@@ -1251,9 +1262,9 @@ ACMD(do_who)
+         continue;
+       if (showclass && !(showclass & (1 << GET_CLASS(tch))))
+         continue;
+-      if (showgroup && (!tch->master || !AFF_FLAGGED(tch, AFF_GROUP)))
++      if (showgroup && !GROUP(tch))
+         continue;
+-      if (showleader && (!tch->followers || !AFF_FLAGGED(tch, AFF_GROUP)))
++      if (showleader && (!GROUP(tch) || GROUP_LEADER(GROUP(tch)) != tch))
+         continue;
+ 
+       if (short_list) {
+diff -rupN src/act.movement.c groupsrc/act.movement.c
+--- src/act.movement.c	2012-06-11 21:25:49.654536121 -0700
++++ groupsrc/act.movement.c	2012-06-11 21:25:34.318460087 -0700
+@@ -970,7 +970,7 @@ ACMD(do_follow)
+       }
+       if (ch->master)
+ 	stop_follower(ch);
+-      REMOVE_BIT_AR(AFF_FLAGS(ch), AFF_GROUP);
++
+       add_follower(ch, leader);
+     }
+   }
+diff -rupN src/act.other.c groupsrc/act.other.c
+--- src/act.other.c	2012-06-11 21:25:49.666536197 -0700
++++ groupsrc/act.other.c	2012-06-11 21:25:33.318455132 -0700
+@@ -35,9 +35,8 @@
+ 
+ /* Local defined utility functions */
+ /* do_group utility functions */
+-static int perform_group(struct char_data *ch, struct char_data *vict);
+ static void print_group(struct char_data *ch);
+-
++static void display_group_list(struct char_data * ch);
+ 
+ ACMD(do_quit)
+ {
+@@ -319,185 +318,172 @@ ACMD(do_title)
+   }
+ }
+ 
+-static int perform_group(struct char_data *ch, struct char_data *vict)
+-{
+-  if (AFF_FLAGGED(vict, AFF_GROUP) || !CAN_SEE(ch, vict))
+-    return (0);
+-
+-  SET_BIT_AR(AFF_FLAGS(vict), AFF_GROUP);
+-  if (ch != vict)
+-    act("$N is now a member of your group.", FALSE, ch, 0, vict, TO_CHAR);
+-  act("You are now a member of $n's group.", FALSE, ch, 0, vict, TO_VICT);
+-  act("$N is now a member of $n's group.", FALSE, ch, 0, vict, TO_NOTVICT);
+-  return (1);
+-}
+-
+ static void print_group(struct char_data *ch)
+ {
+-  struct char_data *k;
+-  struct follow_type *f;
+-
+-  if (!AFF_FLAGGED(ch, AFF_GROUP))
+-    send_to_char(ch, "But you are not the member of a group!\r\n");
+-  else {
+-    char buf[MAX_STRING_LENGTH];
++  struct char_data * k;
+ 
+-    send_to_char(ch, "Your group consists of:\r\n");
++  send_to_char(ch, "Your group consists of:\r\n");
+ 
+-    k = (ch->master ? ch->master : ch);
+-
+-    if (AFF_FLAGGED(k, AFF_GROUP)) {
+-      snprintf(buf, sizeof(buf), "     [%3dH %3dM %3dV] [%2d %s] $N (Head of group)",
+-	      GET_HIT(k), GET_MANA(k), GET_MOVE(k), GET_LEVEL(k), CLASS_ABBR(k));
+-      act(buf, FALSE, ch, 0, k, TO_CHAR);
+-    }
+-
+-    for (f = k->followers; f; f = f->next) {
+-      if (!AFF_FLAGGED(f->follower, AFF_GROUP))
+-	continue;
+-
+-      snprintf(buf, sizeof(buf), "     [%3dH %3dM %3dV] [%2d %s] $N", GET_HIT(f->follower),
+-	      GET_MANA(f->follower), GET_MOVE(f->follower),
+-	      GET_LEVEL(f->follower), CLASS_ABBR(f->follower));
+-      act(buf, FALSE, ch, 0, f->follower, TO_CHAR);
+-    }
+-  }
++  while ((k = (struct char_data *) simple_list(ch->group->members)) != NULL)
++    send_to_char(ch, "%-*s: %s[%4d/%-4d]H [%4d/%-4d]M [%4d/%-4d]V%s\r\n",
++	    count_color_chars(GET_NAME(k))+22, GET_NAME(k), 
++	    GROUP_LEADER(GROUP(ch)) == k ? CBGRN(ch, C_NRM) : CCGRN(ch, C_NRM),
++	    GET_HIT(k), GET_MAX_HIT(k),
++	    GET_MANA(k), GET_MAX_MANA(k),
++	    GET_MOVE(k), GET_MAX_MOVE(k),
++	    CCNRM(ch, C_NRM));
++}
++
++static void display_group_list(struct char_data * ch)
++{
++  struct group_data * group;
++  int count = 0;
++	
++  if (group_list->iSize) {
++    send_to_char(ch, "#   Group Leader     # of Members    In Zone\r\n"
++                     "---------------------------------------------------\r\n");
++		
++    while ((group = (struct group_data *) simple_list(group_list)) != NULL) {
++			if (IS_SET(GROUP_FLAGS(group), GROUP_NPC))
++			  continue;
++      if (GROUP_LEADER(group) && !IS_SET(GROUP_FLAGS(group), GROUP_ANON))
++        send_to_char(ch, "%-2d) %s%-12s     %-2d              %s%s\r\n", 
++          ++count,
++          IS_SET(GROUP_FLAGS(group), GROUP_OPEN) ? CCGRN(ch, C_NRM) : CCRED(ch, C_NRM), 
++          GET_NAME(GROUP_LEADER(group)), group->members->iSize, zone_table[world[IN_ROOM(GROUP_LEADER(group))].zone].name,
++          CCNRM(ch, C_NRM));
++      else
++        send_to_char(ch, "%-2d) Hidden\r\n", ++count);
++				
++		}
++  }
++  if (count)
++    send_to_char(ch, "\r\n"
++                     "%sSeeking Members%s\r\n"
++                     "%sClosed%s\r\n", 
++                     CCGRN(ch, C_NRM), CCNRM(ch, C_NRM),
++                     CCRED(ch, C_NRM), CCNRM(ch, C_NRM));
++  else
++    send_to_char(ch, "\r\n"
++                     "Currently no groups formed.\r\n");
+ }
+ 
++/* Vatiken's Group System: Version 1.1 */
+ ACMD(do_group)
+ {
+   char buf[MAX_STRING_LENGTH];
+   struct char_data *vict;
+-  struct follow_type *f;
+-  int found;
+ 
+-  one_argument(argument, buf);
++  argument = one_argument(argument, buf);
+ 
+   if (!*buf) {
+-    print_group(ch);
+-    return;
+-  }
+-
+-  if (ch->master) {
+-    act("You cannot enroll group members without being head of a group.",
+-	FALSE, ch, 0, 0, TO_CHAR);
+-    return;
+-  }
+-
+-  if (!str_cmp(buf, "all")) {
+-    perform_group(ch, ch);
+-    for (found = 0, f = ch->followers; f; f = f->next)
+-      found += perform_group(ch, f->follower);
+-    if (!found)
+-      send_to_char(ch, "Everyone following you is already in your group.\r\n");
++    if (GROUP(ch))
++      print_group(ch);
++    else
++      send_to_char(ch, "You must specify a group option, or type HELP GROUP for more info.\r\n");
+     return;
+   }
+-
+-  if (!(vict = get_char_vis(ch, buf, NULL, FIND_CHAR_ROOM)))
+-    send_to_char(ch, "%s", CONFIG_NOPERSON);
+-  else if ((vict->master != ch) && (vict != ch))
+-    act("$N must follow you to enter your group.", FALSE, ch, 0, vict, TO_CHAR);
+-  else {
+-    if (!AFF_FLAGGED(vict, AFF_GROUP))
+-      perform_group(ch, vict);
+-    else {
+-      if (ch != vict)
+-	act("$N is no longer a member of your group.", FALSE, ch, 0, vict, TO_CHAR);
+-      act("You have been kicked out of $n's group!", FALSE, ch, 0, vict, TO_VICT);
+-      act("$N has been kicked out of $n's group!", FALSE, ch, 0, vict, TO_NOTVICT);
+-      REMOVE_BIT_AR(AFF_FLAGS(vict), AFF_GROUP);
+-    }
+-  }
+-}
+-
+-ACMD(do_ungroup)
+-{
+-  char buf[MAX_INPUT_LENGTH];
+-  struct follow_type *f, *next_fol;
+-  struct char_data *tch;
+-
+-  one_argument(argument, buf);
+-
+-  if (!*buf) {
+-    if (ch->master || !(AFF_FLAGGED(ch, AFF_GROUP))) {
+-      send_to_char(ch, "But you lead no group!\r\n");
++  
++  if (is_abbrev(buf, "new")) {
++    if (GROUP(ch))
++      send_to_char(ch, "You are already in a group.\r\n");
++    else
++      create_group(ch);
++  } else if (is_abbrev(buf, "list"))
++    display_group_list(ch);
++  else if (is_abbrev(buf, "join")) {
++    skip_spaces(&argument);
++    if (!(vict = get_char_vis(ch, argument, NULL, FIND_CHAR_ROOM))) {
++      send_to_char(ch, "Join who?\r\n");
++      return;
++    } else if (vict == ch) {
++      send_to_char(ch, "That would be one lonely grouping.\r\n");
++      return;
++    } else if (GROUP(ch)) {
++      send_to_char(ch, "But you are already part of a group.\r\n");
++      return;
++    } else if (!GROUP(vict)) {
++      send_to_char(ch, "They are not a part of a group!\r\n");
++      return;
++    } else if (!IS_SET(GROUP_FLAGS(GROUP(vict)), GROUP_OPEN)) {
++      send_to_char(ch, "That group isn't accepting members.\r\n");
++      return;
++    }   
++    join_group(ch, GROUP(vict)); 
++  } else if (is_abbrev(buf, "kick")) {
++    skip_spaces(&argument);
++    if (!(vict = get_char_vis(ch, argument, NULL, FIND_CHAR_ROOM))) {
++      send_to_char(ch, "Kick out who?\r\n");
++      return;
++    } else if (vict == ch) {
++      send_to_char(ch, "There are easier ways to leave the group.\r\n");
++      return;
++    } else if (!GROUP(ch) ) {
++      send_to_char(ch, "But you are not part of a group.\r\n");
++      return;
++    } else if (GROUP_LEADER(GROUP(ch)) != ch ) {
++      send_to_char(ch, "Only the group's leader can kick members out.\r\n");
++      return;
++    } else if (GROUP(vict) != GROUP(ch)) {
++      send_to_char(ch, "They are not a member of your group!\r\n");
++      return;
++    } 
++    send_to_char(ch, "You have kicked %s out of the group.\r\n", GET_NAME(vict));
++    send_to_char(vict, "You have been kicked out of the group.\r\n"); 
++    leave_group(vict);
++  } else if (is_abbrev(buf, "leave")) {
++    if (!GROUP(ch)) {
++      send_to_char(ch, "But you aren't apart of a group!\r\n");
+       return;
+     }
+-
+-    for (f = ch->followers; f; f = next_fol) {
+-      next_fol = f->next;
+-      if (AFF_FLAGGED(f->follower, AFF_GROUP)) {
+-	REMOVE_BIT_AR(AFF_FLAGS(f->follower), AFF_GROUP);
+-        act("$N has disbanded the group.", TRUE, f->follower, NULL, ch, TO_CHAR);
+-        if (!AFF_FLAGGED(f->follower, AFF_CHARM))
+-	  stop_follower(f->follower);
+-      }
++		
++    leave_group(ch);
++  } else if (is_abbrev(buf, "option")) {
++    skip_spaces(&argument);
++    if (!GROUP(ch)) {
++      send_to_char(ch, "But you aren't part of a group!\r\n");
++      return;
++    } else if (GROUP_LEADER(GROUP(ch)) != ch) {
++      send_to_char(ch, "Only the group leader can adjust the group flags.\r\n");
++      return;
+     }
+-
+-    REMOVE_BIT_AR(AFF_FLAGS(ch), AFF_GROUP);
+-    send_to_char(ch, "You disband the group.\r\n");
+-    return;
+-  }
+-  if (!(tch = get_char_vis(ch, buf, NULL, FIND_CHAR_ROOM))) {
+-    send_to_char(ch, "There is no such person!\r\n");
+-    return;
+-  }
+-  if (tch->master != ch) {
+-    send_to_char(ch, "That person is not following you!\r\n");
+-    return;
+-  }
+-
+-  if (!AFF_FLAGGED(tch, AFF_GROUP)) {
+-    send_to_char(ch, "That person isn't in your group.\r\n");
+-    return;
++    if (is_abbrev(argument, "open")) {
++      TOGGLE_BIT(GROUP_FLAGS(GROUP(ch)), GROUP_OPEN);
++      send_to_char(ch, "The group is now %s to new members.\r\n", IS_SET(GROUP_FLAGS(GROUP(ch)), GROUP_OPEN) ? "open" : "closed");
++    } else if (is_abbrev(argument, "anonymous")) {
++      TOGGLE_BIT(GROUP_FLAGS(GROUP(ch)), GROUP_ANON);
++      send_to_char(ch, "The group location is now %s to other players.\r\n", IS_SET(GROUP_FLAGS(GROUP(ch)), GROUP_ANON) ? "invisible" : "visible");
++    } else 
++      send_to_char(ch, "The flag options are: Open, Anonymous\r\n");
++  } else {
++    send_to_char(ch, "You must specify a group option, or type HELP GROUP for more info.\r\n");		
+   }
+ 
+-  REMOVE_BIT_AR(AFF_FLAGS(tch), AFF_GROUP);
+-
+-  act("$N is no longer a member of your group.", FALSE, ch, 0, tch, TO_CHAR);
+-  act("You have been kicked out of $n's group!", FALSE, ch, 0, tch, TO_VICT);
+-  act("$N has been kicked out of $n's group!", FALSE, ch, 0, tch, TO_NOTVICT);
+-
+-  if (!AFF_FLAGGED(tch, AFF_CHARM))
+-    stop_follower(tch);
+ }
+ 
+ ACMD(do_report)
+ {
+-  char buf[MAX_STRING_LENGTH];
+-  struct char_data *k;
+-  struct follow_type *f;
++  struct group_data *group;
+ 
+-  if (!AFF_FLAGGED(ch, AFF_GROUP)) {
++  if ((group = GROUP(ch)) == NULL) {
+     send_to_char(ch, "But you are not a member of any group!\r\n");
+     return;
+   }
+ 
+-  snprintf(buf, sizeof(buf), "$n reports: %d/%dH, %d/%dM, %d/%dV\r\n",
++  send_to_group(NULL, group, "%s reports: %d/%dH, %d/%dM, %d/%dV\r\n",
++	  GET_NAME(ch),
+ 	  GET_HIT(ch), GET_MAX_HIT(ch),
+ 	  GET_MANA(ch), GET_MAX_MANA(ch),
+ 	  GET_MOVE(ch), GET_MAX_MOVE(ch));
+-
+-  k = (ch->master ? ch->master : ch);
+-
+-  for (f = k->followers; f; f = f->next)
+-    if (AFF_FLAGGED(f->follower, AFF_GROUP) && f->follower != ch)
+-      act(buf, TRUE, ch, NULL, f->follower, TO_VICT);
+-
+-  if (k != ch)
+-    act(buf, TRUE, ch, NULL, k, TO_VICT);
+-
+-  send_to_char(ch, "You report to the group.\r\n");
+ }
+ 
+ ACMD(do_split)
+ {
+   char buf[MAX_INPUT_LENGTH];
+-  int amount, num, share, rest;
++  int amount, num = 0, share, rest;
+   size_t len;
+   struct char_data *k;
+-  struct follow_type *f;
+-
++  
+   if (IS_NPC(ch))
+     return;
+ 
+@@ -513,20 +499,13 @@ ACMD(do_split)
+       send_to_char(ch, "You don't seem to have that much gold to split.\r\n");
+       return;
+     }
+-    k = (ch->master ? ch->master : ch);
+-
+-    if (AFF_FLAGGED(k, AFF_GROUP) && (IN_ROOM(k) == IN_ROOM(ch)))
+-      num = 1;
+-    else
+-      num = 0;
++    
++    if (GROUP(ch))
++      while ((k = (struct char_data *) simple_list(GROUP(ch)->members)) != NULL)
++        if (IN_ROOM(ch) == IN_ROOM(k) && !IS_NPC(k))
++          num++;
+ 
+-    for (f = k->followers; f; f = f->next)
+-      if (AFF_FLAGGED(f->follower, AFF_GROUP) &&
+-	  (!IS_NPC(f->follower)) &&
+-	  (IN_ROOM(f->follower) == IN_ROOM(ch)))
+-	num++;
+-
+-    if (num && AFF_FLAGGED(ch, AFF_GROUP)) {
++    if (num && GROUP(ch)) {
+       share = amount / num;
+       rest = amount % num;
+     } else {
+@@ -544,22 +523,13 @@ ACMD(do_split)
+ 		"%d coin%s %s not splitable, so %s keeps the money.\r\n", rest,
+ 		(rest == 1) ? "" : "s", (rest == 1) ? "was" : "were", GET_NAME(ch));
+     }
+-    if (AFF_FLAGGED(k, AFF_GROUP) && IN_ROOM(k) == IN_ROOM(ch) &&
+-		!IS_NPC(k) && k != ch) {
+-      increase_gold(k, share);
+-      send_to_char(k, "%s", buf);
+-    }
+ 
+-    for (f = k->followers; f; f = f->next) {
+-      if (AFF_FLAGGED(f->follower, AFF_GROUP) &&
+-	  (!IS_NPC(f->follower)) &&
+-	  (IN_ROOM(f->follower) == IN_ROOM(ch)) &&
+-	  f->follower != ch) {
++    while ((k = (struct char_data *) simple_list(GROUP(ch)->members)) != NULL)
++      if (k != ch && IN_ROOM(ch) == IN_ROOM(k) && !IS_NPC(k)) {
++	      increase_gold(k, share);
++	      send_to_char(k, "%s", buf);
++			}
+ 
+-	  increase_gold(f->follower, share);
+-	  send_to_char(f->follower, "%s", buf);
+-      }
+-    }
+     send_to_char(ch, "You split %d coins among %d members -- %d coins each.\r\n",
+ 	    amount, num, share);
+ 
+diff -rupN src/act.wizard.c groupsrc/act.wizard.c
+--- src/act.wizard.c	2012-06-11 21:25:49.678536251 -0700
++++ groupsrc/act.wizard.c	2012-06-11 21:25:33.314455116 -0700
+@@ -3637,10 +3637,9 @@ ACMD (do_zcheck)
+           len += snprintf(buf + len, sizeof(buf) - len,
+                           "- Has %d experience (limit: %d)\r\n",
+                               GET_EXP(mob), MAX_EXP_ALLOWED);
+-        if ((AFF_FLAGGED(mob, AFF_GROUP) || AFF_FLAGGED(mob, AFF_CHARM) || AFF_FLAGGED(mob, AFF_POISON)) && (found = 1))
++        if ((AFF_FLAGGED(mob, AFF_CHARM) || AFF_FLAGGED(mob, AFF_POISON)) && (found = 1))
+ 	  len += snprintf(buf + len, sizeof(buf) - len,
+-                          "- Has illegal affection bits set (%s %s %s)\r\n",
+-                              AFF_FLAGGED(mob, AFF_GROUP) ? "GROUP" : "",
++                          "- Has illegal affection bits set (%s %s)\r\n",
+                               AFF_FLAGGED(mob, AFF_CHARM) ? "CHARM" : "",
+                               AFF_FLAGGED(mob, AFF_POISON) ? "POISON" : "");
+ 
+diff -rupN src/comm.c groupsrc/comm.c
+--- src/comm.c	2012-06-11 21:25:49.722536470 -0700
++++ groupsrc/comm.c	2012-06-11 21:25:33.310455074 -0700
+@@ -2410,6 +2410,29 @@ void send_to_room(room_rnum room, const
+   }
+ }
+ 
++/* Sends a message to the entire group, except for ch.
++ * Send 'ch' as NULL, if you want to message to reach
++ * everyone. -Vatiken */
++void send_to_group(struct char_data *ch, struct group_data *group, const char * msg, ...)
++{
++	struct char_data *tch;
++  va_list args;
++
++  if (msg == NULL)
++    return;
++    	
++  while ((tch = simple_list(group->members)) != NULL) {
++    if (tch != ch && !IS_NPC(tch) && tch->desc && STATE(tch->desc) == CON_PLAYING) {
++      write_to_output(tch->desc, "%s[%sGroup%s]%s ", 
++      CCGRN(tch, C_NRM), CBGRN(tch, C_NRM), CCGRN(tch, C_NRM), CCNRM(tch, C_NRM));
++      va_start(args, msg);
++      vwrite_to_output(tch->desc, msg, args);
++      va_end(args);
++    }
++  }
++}
++
++
+ /* Thx to Jamie Nelson of 4D for this contribution */
+ void send_to_range(room_vnum start, room_vnum finish, const char *messg, ...)
+ {
+diff -rupN src/comm.h groupsrc/comm.h
+--- src/comm.h	2012-06-11 21:25:49.734536531 -0700
++++ groupsrc/comm.h	2012-06-11 21:25:34.318460087 -0700
+@@ -27,6 +27,8 @@ void send_to_room(room_rnum room, const
+     (printf, 2, 3)));
+ void send_to_outdoor(const char *messg, ...) __attribute__ ((format (printf, 1,
+     2)));
++void send_to_group(struct char_data *ch, struct group_data *group, const char * msg, ...) __attribute__ ((format
++    (printf, 3, 4)));
+ void send_to_range(room_vnum start, room_vnum finish, const char *messg, ...)
+     __attribute__ ((format (printf, 3, 4)));
+ 
+diff -rupN src/db.c groupsrc/db.c
+--- src/db.c	2012-06-11 21:25:49.778536748 -0700
++++ groupsrc/db.c	2012-06-11 21:25:33.310455074 -0700
+@@ -641,6 +641,7 @@ void boot_db(void)
+   
+   log("Initialize Global Lists");
+   global_lists = create_list();
++  group_list   = create_list();
+ 
+   log("Initializing Events");
+   init_events();
+@@ -1714,7 +1715,6 @@ void parse_mobile(FILE *mob_f, int nr)
+     /* Make some basic checks. */
+     REMOVE_BIT_AR(AFF_FLAGS(mob_proto + i), AFF_CHARM);
+     REMOVE_BIT_AR(AFF_FLAGS(mob_proto + i), AFF_POISON);
+-    REMOVE_BIT_AR(AFF_FLAGS(mob_proto + i), AFF_GROUP);
+     REMOVE_BIT_AR(AFF_FLAGS(mob_proto + i), AFF_SLEEP);
+     if (MOB_FLAGGED(mob_proto + i, MOB_AGGRESSIVE) && MOB_FLAGGED(mob_proto + i, MOB_AGGR_GOOD))
+       REMOVE_BIT_AR(MOB_FLAGS(mob_proto + i), MOB_AGGR_GOOD);
+@@ -2336,7 +2336,8 @@ struct char_data *create_char(void)
+ 
+ void new_mobile_data(struct char_data *ch)
+ {
+-	ch->events   = create_list();
++  ch->events   = create_list();
++  ch->group    = NULL;
+ }
+ 
+ 
+diff -rupN src/fight.c groupsrc/fight.c
+--- src/fight.c	2012-06-11 21:25:49.826536986 -0700
++++ groupsrc/fight.c	2012-06-11 21:25:34.314460071 -0700
+@@ -355,6 +355,10 @@ void raw_kill(struct char_data * ch, str
+   if (killer)
+     autoquest_trigger_check(killer, ch, NULL, AQ_MOB_KILL);
+ 
++  /* Alert Group if Applicable */
++  if (GROUP(ch))
++    send_to_group(ch, GROUP(ch), "%s has died.\r\n", GET_NAME(ch));
++
+   update_pos(ch);
+ 
+   make_corpse(ch);
+@@ -400,20 +404,11 @@ static void perform_group_gain(struct ch
+ 
+ static void group_gain(struct char_data *ch, struct char_data *victim)
+ {
+-  int tot_members, base, tot_gain;
++  int tot_members = 0, base, tot_gain;
+   struct char_data *k;
+-  struct follow_type *f;
+-
+-  if (!(k = ch->master))
+-    k = ch;
+-
+-  if (AFF_FLAGGED(k, AFF_GROUP) && (IN_ROOM(k) == IN_ROOM(ch)))
+-    tot_members = 1;
+-  else
+-    tot_members = 0;
+-
+-  for (f = k->followers; f; f = f->next)
+-    if (AFF_FLAGGED(f->follower, AFF_GROUP) && IN_ROOM(f->follower) == IN_ROOM(ch))
++  
++  while ((k = (struct char_data *) simple_list(GROUP(ch)->members)) != NULL)
++    if (IN_ROOM(ch) == IN_ROOM(k))
+       tot_members++;
+ 
+   /* round up to the nearest tot_members */
+@@ -428,12 +423,9 @@ static void group_gain(struct char_data
+   else
+     base = 0;
+ 
+-  if (AFF_FLAGGED(k, AFF_GROUP) && IN_ROOM(k) == IN_ROOM(ch))
+-    perform_group_gain(k, base, victim);
+-
+-  for (f = k->followers; f; f = f->next)
+-    if (AFF_FLAGGED(f->follower, AFF_GROUP) && IN_ROOM(f->follower) == IN_ROOM(ch))
+-      perform_group_gain(f->follower, base, victim);
++  while ((k = (struct char_data *) simple_list(GROUP(ch)->members)) != NULL)
++    if (IN_ROOM(k) == IN_ROOM(ch))
++      perform_group_gain(k, base, victim);
+ }
+ 
+ static void solo_gain(struct char_data *ch, struct char_data *victim)
+@@ -820,7 +812,7 @@ int damage(struct char_data *ch, struct
+   /* Uh oh.  Victim died. */
+   if (GET_POS(victim) == POS_DEAD) {
+     if (ch != victim && (IS_NPC(victim) || victim->desc)) {
+-      if (AFF_FLAGGED(ch, AFF_GROUP))
++      if (GROUP(ch))
+ 	group_gain(ch, victim);
+       else
+         solo_gain(ch, victim);
+@@ -844,7 +836,7 @@ int damage(struct char_data *ch, struct
+     }
+ 
+     die(victim, ch);
+-    if (IS_AFFECTED(ch, AFF_GROUP) && (local_gold > 0) && PRF_FLAGGED(ch, PRF_AUTOSPLIT) ) {
++    if (GROUP(ch) && (local_gold > 0) && PRF_FLAGGED(ch, PRF_AUTOSPLIT) ) {
+       generic_find("corpse", FIND_OBJ_ROOM, ch, &tmp_char, &corpse_obj);
+       if (corpse_obj) {
+         do_get(ch, "all.coin corpse", 0, 0);
+@@ -982,8 +974,7 @@ void hit(struct char_data *ch, struct ch
+ /* control the fights going on.  Called every 2 seconds from comm.c. */
+ void perform_violence(void)
+ {
+-  struct char_data *ch;
+-  struct follow_type *k;
++  struct char_data *ch, *tch;
+ 
+   for (ch = combat_list; ch; ch = next_combat_list) {
+     next_combat_list = ch->next_fighting;
+@@ -1010,19 +1001,25 @@ void perform_violence(void)
+       continue;
+     }
+ 
+-    for (k = ch->followers; k; k=k->next) {
+-      /* should followers auto-assist master? */
+-      if (!IS_NPC(k->follower) && !FIGHTING(k->follower) && PRF_FLAGGED(k->follower,
+-	  PRF_AUTOASSIST) && (IN_ROOM(k->follower) == IN_ROOM(ch)))
+-        do_assist(k->follower, GET_NAME(ch), 0, 0);
++    if (GROUP(ch)) {
++      while ((tch = (struct char_data *) simple_list(GROUP(ch)->members)) != NULL) {
++        if (tch == ch)
++          continue;
++        if (!IS_NPC(tch) && !PRF_FLAGGED(tch, PRF_AUTOASSIST))
++          continue;
++        if (IN_ROOM(ch) != IN_ROOM(tch))
++          continue;
++        if (FIGHTING(tch))
++          continue;
++        if (GET_POS(tch) != POS_STANDING)
++          continue;
++        if (!CAN_SEE(tch, ch))
++          continue;
++      
++        do_assist(tch, GET_NAME(ch), 0, 0);				  
++      }
+     }
+ 
+-    /* should master auto-assist followers?  */
+-    if (ch->master && PRF_FLAGGED(ch->master, PRF_AUTOASSIST) &&
+-        FIGHTING(ch) && !FIGHTING(ch->master) && !IS_NPC(ch) &&
+-        (IN_ROOM(ch->master) == IN_ROOM(ch)) && !IS_NPC(ch->master))
+-      do_assist(ch->master, GET_NAME(ch), 0, 0);
+-
+     hit(ch, FIGHTING(ch), TYPE_UNDEFINED);
+     if (MOB_FLAGGED(ch, MOB_SPEC) && GET_MOB_SPEC(ch) && !MOB_FLAGGED(ch, MOB_NOTDEADYET)) {
+       char actbuf[MAX_INPUT_LENGTH] = "";
+diff -rupN src/handler.c groupsrc/handler.c
+--- src/handler.c	2012-06-11 21:25:49.878537240 -0700
++++ groupsrc/handler.c	2012-06-11 21:25:33.318455132 -0700
+@@ -15,6 +15,7 @@
+ #include "comm.h"
+ #include "db.h"
+ #include "handler.h"
++#include "screen.h"
+ #include "interpreter.h"
+ #include "spells.h"
+ #include "dg_scripts.h"
+@@ -910,6 +911,10 @@ void extract_char_final(struct char_data
+   if (ch->followers || ch->master)
+     die_follower(ch);
+ 
++  /* Check to see if we are grouped! */
++  if (GROUP(ch))
++    leave_group(ch);
++
+   /* transfer objects to room, if any */
+   while (ch->carrying) {
+     obj = ch->carrying;
+@@ -1375,3 +1380,97 @@ int find_all_dots(char *arg)
+   } else
+     return (FIND_INDIV);
+ }
++
++/* Group Handlers */
++struct group_data * create_group(struct char_data * leader) 
++{
++  struct group_data * new_group;
++  
++  /* Allocate Group Memory & Attach to Group List*/
++  CREATE(new_group, struct group_data, 1);
++  add_to_list(new_group, group_list);
++  
++  /* Allocate Members List */
++  new_group->members = create_list();
++  
++  /* Clear Data */
++  new_group->group_flags = 0;
++  
++  /* Assign Data */
++  SET_BIT(GROUP_FLAGS(new_group), GROUP_OPEN);
++  if (IS_NPC(leader))
++    SET_BIT(GROUP_FLAGS(new_group), GROUP_NPC);
++  
++  join_group(leader, new_group);
++  
++  return (new_group);
++}
++
++void free_group(struct group_data * group)
++{
++  struct char_data *tch;
++	struct iterator_data Iterator;
++	
++  if (group->members->iSize)
++		for (tch = (struct char_data *) merge_iterator(&Iterator, group->members);
++		  tch; 
++		    tch = next_in_list(&Iterator))
++          leave_group(tch);
++          
++  remove_iterator(&Iterator);
++  
++  free_list(group->members);
++  remove_from_list(group, group_list);
++  free(group);
++}
++
++void leave_group(struct char_data *ch)
++{
++  struct group_data *group;
++  struct char_data *tch;
++  struct iterator_data Iterator;
++  bool found_pc = FALSE;
++	
++  if ((group = ch->group) == NULL)
++    return;
++
++  send_to_group(NULL, group, "%s has left the group.\r\n", GET_NAME(ch));
++
++  remove_from_list(ch, group->members);
++  ch->group = NULL;
++  
++  if (group->members->iSize) {
++    for (tch = (struct char_data *) merge_iterator(&Iterator, group->members);
++      tch; 
++ 	 tch = next_in_list(&Iterator))
++          if (!IS_NPC(tch)) found_pc = TRUE;
++          
++  remove_iterator(&Iterator);  
++  }
++
++  if (!found_pc)
++    SET_BIT(GROUP_FLAGS(group), GROUP_NPC);
++  
++  if (GROUP_LEADER(group) == ch && group->members->iSize) {
++    group->leader = (struct char_data *) random_from_list(group->members);
++    send_to_group(NULL, group, "%s has assumed leadership of the group.\r\n", GET_NAME(GROUP_LEADER(group)));
++  } else if (group->members->iSize == 0)
++    free_group(group); 
++}
++
++void join_group(struct char_data *ch, struct group_data *group)
++{
++  add_to_list(ch, group->members);
++	
++  if (group->leader == NULL)
++    group->leader = ch;
++	  
++  ch->group = group;  
++  
++  if (IS_SET(group->group_flags, GROUP_NPC) && !IS_NPC(ch))
++    REMOVE_BIT(GROUP_FLAGS(group), GROUP_NPC);
++	
++  if (group->leader == ch)
++    send_to_group(NULL, group, "%s becomes leader of the group.\r\n", GET_NAME(ch));
++  else
++    send_to_group(NULL, group, "%s joins the group.\r\n", GET_NAME(ch));		
++}
+diff -rupN src/handler.h groupsrc/handler.h
+--- src/handler.h	2012-06-11 21:25:49.886537286 -0700
++++ groupsrc/handler.h	2012-06-11 21:25:33.314455116 -0700
+@@ -77,6 +77,11 @@ int	find_all_dots(char *arg);
+ #define FIND_ALL	1
+ #define FIND_ALLDOT	2
+ 
++/* group */
++struct group_data * create_group(struct char_data * leader);
++void free_group(struct group_data * group);
++void leave_group(struct char_data *ch);
++void join_group(struct char_data *ch, struct group_data *group);
+ 
+ /* Generic Find */
+ int	generic_find(char *arg, bitvector_t bitvector, struct char_data *ch,
+diff -rupN src/interpreter.c groupsrc/interpreter.c
+--- src/interpreter.c	2012-06-11 21:25:49.914537422 -0700
++++ groupsrc/interpreter.c	2012-06-11 21:25:33.342455266 -0700
+@@ -322,7 +322,6 @@ cpp_extern const struct command_info cmd
+   { "tstat"    , "tstat"   , POS_DEAD    , do_tstat    , LVL_BUILDER, 0 },
+ 
+   { "unlock"   , "unlock"  , POS_SITTING , do_gen_door , 0, SCMD_UNLOCK },
+-  { "ungroup"  , "ungroup" , POS_DEAD    , do_ungroup  , 0, 0 },
+   { "unban"    , "unban"   , POS_DEAD    , do_unban    , LVL_GRGOD, 0 },
+   { "unaffect" , "unaffect", POS_DEAD    , do_wizutil  , LVL_GOD, SCMD_UNAFFECT },
+   { "uptime"   , "uptime"  , POS_DEAD    , do_date     , LVL_GOD, SCMD_UPTIME },
+@@ -1139,7 +1138,6 @@ static int perform_dupe_check(struct des
+   d->character->char_specials.timer = 0;
+   REMOVE_BIT_AR(PLR_FLAGS(d->character), PLR_MAILING);
+   REMOVE_BIT_AR(PLR_FLAGS(d->character), PLR_WRITING);
+-  REMOVE_BIT_AR(AFF_FLAGS(d->character), AFF_GROUP);
+   STATE(d) = CON_PLAYING;
+   MXPSendTag( d, "<VERSION>" );
+ 
+@@ -1411,7 +1409,6 @@ void nanny(struct descriptor_data *d, ch
+           REMOVE_BIT_AR(PLR_FLAGS(d->character), PLR_WRITING);
+           REMOVE_BIT_AR(PLR_FLAGS(d->character), PLR_MAILING);
+           REMOVE_BIT_AR(PLR_FLAGS(d->character), PLR_CRYO);
+-          REMOVE_BIT_AR(AFF_FLAGS(d->character), AFF_GROUP);
+           d->character->player.time.logon = time(0);
+           write_to_output(d, "Password: ");
+           echo_off(d);
+diff -rupN src/lists.c groupsrc/lists.c
+--- src/lists.c	2012-06-11 21:25:49.926537495 -0700
++++ groupsrc/lists.c	2012-06-11 21:25:33.310455074 -0700
+@@ -14,6 +14,7 @@
+ 
+ /* Global lists */
+ struct list_data * global_lists = NULL;
++struct list_data * group_list   = NULL;
+ 
+ struct list_data * create_list(void) 
+ {
+diff -rupN src/lists.h groupsrc/lists.h
+--- src/lists.h	2012-06-11 21:25:49.938537533 -0700
++++ groupsrc/lists.h	2012-06-11 21:25:33.318455132 -0700
+@@ -33,6 +33,7 @@ struct iterator_data {
+ 
+ /* Externals */
+ extern struct list_data * global_lists;
++extern struct list_data * group_list;
+ 
+ /* Locals */
+ void add_to_list(void * pContent, struct list_data * pList);
+diff -rupN src/magic.c groupsrc/magic.c
+--- src/magic.c	2012-06-11 21:25:49.946537581 -0700
++++ groupsrc/magic.c	2012-06-11 21:25:34.322460105 -0700
+@@ -574,35 +574,22 @@ static void perform_mag_groups(int level
+  * Just add a new case to perform_mag_groups. */
+ void mag_groups(int level, struct char_data *ch, int spellnum, int savetype)
+ {
+-  struct char_data *tch, *k;
+-  struct follow_type *f, *f_next;
++  struct char_data *tch;
+ 
+   if (ch == NULL)
+     return;
+ 
+-  if (!AFF_FLAGGED(ch, AFF_GROUP))
++  if (!GROUP(ch))
+     return;
+-  if (ch->master != NULL)
+-    k = ch->master;
+-  else
+-    k = ch;
+-  for (f = k->followers; f; f = f_next) {
+-    f_next = f->next;
+-    tch = f->follower;
++    
++  while ((tch = (struct char_data *) simple_list(GROUP(ch)->members)) != NULL) {
+     if (IN_ROOM(tch) != IN_ROOM(ch))
+       continue;
+-    if (!AFF_FLAGGED(tch, AFF_GROUP))
+-      continue;
+-    if (ch == tch)
+-      continue;
+     perform_mag_groups(level, ch, tch, spellnum, savetype);
+   }
+-
+-  if ((k != ch) && AFF_FLAGGED(k, AFF_GROUP))
+-    perform_mag_groups(level, ch, k, spellnum, savetype);
+-  perform_mag_groups(level, ch, ch, spellnum, savetype);
+ }
+ 
++
+ /* Mass spells affect every creature in the room except the caster. No spells
+  * of this class currently implemented. */
+ void mag_masses(int level, struct char_data *ch, int spellnum, int savetype)
+@@ -663,8 +650,7 @@ void mag_areas(int level, struct char_da
+       continue;
+     if (!IS_NPC(ch) && IS_NPC(tch) && AFF_FLAGGED(tch, AFF_CHARM))
+       continue;
+-    if (!IS_NPC(tch) && spell_info[spellnum].violent && AFF_FLAGGED(tch, AFF_GROUP) && AFF_FLAGGED(ch, AFF_GROUP) &&
+-      ( ((ch->master == NULL) ? ch : ch->master) == ((tch->master == NULL) ? tch : tch->master) )  )
++    if (!IS_NPC(tch) && spell_info[spellnum].violent && GROUP(tch) && GROUP(ch) && GROUP(ch) == GROUP(tch))
+       continue;
+ 	if ((spellnum == SPELL_EARTHQUAKE) && AFF_FLAGGED(tch, AFF_FLYING))
+ 	  continue;
+@@ -784,6 +770,9 @@ void mag_summons(int level, struct char_
+     act(mag_summon_msgs[msg], FALSE, ch, 0, mob, TO_ROOM);
+     load_mtrigger(mob);
+     add_follower(mob, ch);
++    
++    if (GROUP(ch) && GROUP_LEADER(GROUP(ch)) == ch)
++      join_group(mob, GROUP(ch));    
+   }
+   if (handle_corpse) {
+     for (tobj = obj->contains; tobj; tobj = next_obj) {
+diff -rupN src/medit.c groupsrc/medit.c
+--- src/medit.c	2012-06-11 21:25:49.982537760 -0700
++++ groupsrc/medit.c	2012-06-11 21:25:33.370455397 -0700
+@@ -901,7 +901,6 @@ void medit_parse(struct descriptor_data
+     /* Remove unwanted bits right away. */
+     REMOVE_BIT_AR(AFF_FLAGS(OLC_MOB(d)), AFF_CHARM);
+     REMOVE_BIT_AR(AFF_FLAGS(OLC_MOB(d)), AFF_POISON);
+-    REMOVE_BIT_AR(AFF_FLAGS(OLC_MOB(d)), AFF_GROUP);
+     REMOVE_BIT_AR(AFF_FLAGS(OLC_MOB(d)), AFF_SLEEP);
+     medit_disp_aff_flags(d);
+     return;
+diff -rupN src/mobact.c groupsrc/mobact.c
+--- src/mobact.c	2012-06-11 21:25:49.990537799 -0700
++++ groupsrc/mobact.c	2012-06-11 21:25:33.318455132 -0700
+@@ -156,6 +156,8 @@ void mobile_activity(void)
+       {
+ 	      if (ch == vict || !IS_NPC(vict) || !FIGHTING(vict))
+           continue; 
++        if (GROUP(vict) && GROUP(vict) == GROUP(ch))
++          continue;
+ 	      if (IS_NPC(FIGHTING(vict)) || ch == FIGHTING(vict))
+           continue;
+ 
+diff -rupN src/spell_parser.c groupsrc/spell_parser.c
+--- src/spell_parser.c	2012-06-11 21:25:50.070538188 -0700
++++ groupsrc/spell_parser.c	2012-06-11 21:25:33.342455266 -0700
+@@ -473,7 +473,7 @@ int cast_spell(struct char_data *ch, str
+     send_to_char(ch, "You cannot cast this spell upon yourself!\r\n");
+     return (0);
+   }
+-  if (IS_SET(SINFO.routines, MAG_GROUPS) && !AFF_FLAGGED(ch, AFF_GROUP)) {
++  if (IS_SET(SINFO.routines, MAG_GROUPS) && !GROUP(ch)) {
+     send_to_char(ch, "You can't cast this spell if you're not in a group!\r\n");
+     return (0);
+   }
+diff -rupN src/structs.h groupsrc/structs.h
+--- src/structs.h	2012-06-11 21:25:50.082538258 -0700
++++ groupsrc/structs.h	2012-06-11 21:25:33.342455266 -0700
+@@ -148,6 +148,11 @@
+ 
+ #define HISTORY_SIZE   5 /**< Number of last commands kept in each history */
+ 
++/* Group Defines */
++#define GROUP_OPEN    (1 << 0)  /**< Group is open for members */
++#define GROUP_ANON    (1 << 1)  /**< Group is Anonymous */
++#define GROUP_NPC     (1 << 2)  /**< Group created by NPC and thus not listed */
++
+ /* PC classes */
+ #define CLASS_UNDEFINED	  (-1) /**< PC Class undefined */
+ #define CLASS_MAGIC_USER  0    /**< PC Class Magic User */
+@@ -834,6 +839,15 @@ struct time_data
+   int played;   /**< This is the total accumulated time played in secs */
+ };
+ 
++/* Group Data Struct */
++struct group_data
++{
++  struct char_data * leader;
++  struct list_data * members;
++  int group_flags;
++};
++
++
+ /** The pclean_criteria_data is set up in config.c and used in db.c to determine
+  * the conditions which will cause a player character to be deleted from disk
+  * if the automagic pwipe system is enabled (see config.c). */
+@@ -1034,6 +1048,8 @@ struct char_data
+   struct follow_type *followers; /**< List of characters following */
+   struct char_data *master;      /**< List of character being followed */
+ 
++  struct group_data *group;      /**< Character's Group */
++
+   long pref; /**< unique session id */
+   
+   struct list_data * events;
+diff -rupN src/utils.c groupsrc/utils.c
+--- src/utils.c	2012-06-11 21:25:50.098538335 -0700
++++ groupsrc/utils.c	2012-06-11 21:25:33.358455307 -0700
+@@ -573,7 +573,6 @@ void stop_follower(struct char_data *ch)
+ 
+   ch->master = NULL;
+   REMOVE_BIT_AR(AFF_FLAGS(ch), AFF_CHARM);
+-  REMOVE_BIT_AR(AFF_FLAGS(ch), AFF_GROUP);
+ }
+ 
+ /** Finds the number of follows that are following, and charmed by, the
+diff -rupN src/utils.h groupsrc/utils.h
+--- src/utils.h	2012-06-11 21:25:50.110538394 -0700
++++ groupsrc/utils.h	2012-06-11 21:25:33.342455266 -0700
+@@ -866,6 +866,11 @@ do
+ /** Defines if ch is outdoors or not. */
+ #define OUTSIDE(ch) (!ROOM_FLAGGED(IN_ROOM(ch), ROOM_INDOORS))
+ 
++/* Group related defines */
++#define GROUP(ch)            (ch->group)
++#define GROUP_LEADER(group)  (group->leader)
++#define GROUP_FLAGS(group)   (group->group_flags)
++
+ /* Happy-hour defines */
+ #define IS_HAPPYQP   (happy_data.qp_rate > 0)
+ #define IS_HAPPYEXP  (happy_data.exp_rate > 0)

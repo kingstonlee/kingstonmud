@@ -1,0 +1,140 @@
+Shockingly, there's no snippet for a disarm skill.  Well, there sort
+of is with in the contrib/code/mobiles/classprocs.txt on the ftp site,
+but obviously that's for mobs and requires some reworking for players.
+So, here's my disarm skill, loosely based upon the above mentioned
+snippet.  It's tested and should work fine.
+
+You should credit BoxBoy <baez@as-if.com> (author of the classprocs.txt)
+as well as myself (Ed Glamkowski <eglamkowski@angelfire.com>) if you 
+use it.  Thanks :-)
+
+I assume you know how to add a new skill, so here's the core of the
+skill itself (for version 3.1):
+
+Note: this has been updated as of 5/8/13 to work on tbaMUD 3.64.  Since stock tbaMUD does not have dual-wielding, that part has been commented out, making it easy to put back in if someone does put in dual-wielding.
+
+ACMD(do_disarm)
+{
+  int goal, roll;
+  char arg[MAX_INPUT_LENGTH];
+  struct obj_data *weap;
+  struct char_data *vict;
+  int success = FALSE;
+
+  if (IS_NPC(ch) || !GET_SKILL(ch, SKILL_DISARM)) {
+    send_to_char(ch, "You have no idea how.\r\n");
+    return;
+  }
+  if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_PEACEFUL)) {
+    send_to_char(ch, "This room just has such a peaceful, easy feeling...\r\n");
+    return;
+  }
+
+  one_argument(argument, arg);
+
+  if (!(vict = get_char_vis(ch, arg, NULL, FIND_CHAR_ROOM))) {
+    if (FIGHTING(ch) && IN_ROOM(ch) == IN_ROOM(FIGHTING(ch)))
+      vict = FIGHTING(ch);
+    else {
+      send_to_char(ch, "Disarm who?\r\n");
+      return;
+    }
+  }
+  if (vict == ch) {
+    send_to_char(ch, "Try REMOVE and DROP instead...\r\n");
+    return;
+  }
+
+  weap = GET_EQ(vict, WEAR_WIELD);
+  if (!weap) {
+    send_to_char(ch, "But your opponent is not wielding a weapon!\r\n");
+    return;
+  }
+
+  goal = GET_SKILL(ch, SKILL_DISARM) / 3;
+
+  /* Lots o' modifiers: */
+  roll = rand_number(0, 101);
+  roll -= GET_DEX(ch);   /* Improve odds */
+  roll += GET_DEX(vict); /* Degrade odds */
+
+  roll -= GET_LEVEL(ch);
+  roll += GET_LEVEL(vict);
+
+  roll += GET_OBJ_WEIGHT(weap);
+
+  if (GET_LEVEL(vict) >= LVL_IMMORT) /* No disarming an immort. */
+    roll = 1000;
+  if (GET_LEVEL(ch) >= LVL_IMMORT)   /* But immorts never fail! */
+    roll = -1000;
+
+  if (roll <= goal) {
+    success = TRUE;
+    //if ((weap = GET_EQ(vict, WEAR_DWIELD))) {
+    //  if (IS_NPC(vict))
+    //    LOST_WEAPON(vict) = weap;
+
+    //  act("You disarm $p from $N's off-hand!", FALSE, ch, weap, vict, TO_CHAR);
+    //  act("$n disarms $p from your off-hand!", FALSE, ch, weap, vict, TO_VICT);
+    //  act("$n disarms $p from $N's off-hand!", FALSE, ch, weap, vict, TO_NOTVICT);
+    //  obj_to_char(unequip_char(vict, WEAR_DWIELD), vict); // used obj_to_room before
+    if ((weap = GET_EQ(vict, WEAR_WIELD))) {  // originally: } else if ((weap = GET_EQ(vict, WEAR_WIELD))) {
+      if (IS_NPC(vict)) {
+        LOST_WEAPON(vict) = weap;
+        vict->mob_specials.disarmwait = 3;
+      }
+
+      act("You disarm $p from $N's hand!", FALSE, ch, weap, vict, TO_CHAR);
+      act("$n disarms $p from your hand!", FALSE, ch, weap, vict, TO_VICT);
+      act("$n disarms $p from $N's hand!", FALSE, ch, weap, vict, TO_NOTVICT);
+      obj_to_char(unequip_char(vict, WEAR_WIELD), vict); // originally used obj_to_room
+    } else {
+      log("SYSERR: do_disarm(), should have a weapon to be disarmed, but lost it!");
+    }
+  } else {
+      act("You fail to disarm $N.", FALSE, ch, weap, vict, TO_CHAR);
+      act("$n fails to disarm you.", FALSE, ch, weap, vict, TO_VICT);
+      act("$n fails to disarm $N.", FALSE, ch, weap, vict, TO_NOTVICT);
+  }
+
+  if (GET_LEVEL(ch) < LVL_IMMORT)
+    WAIT_STATE(ch, PULSE_VIOLENCE);
+
+  if (success && IS_NPC(vict))
+    set_fighting(ch, vict);
+}
+
+
+Note that you will need to add some stuff so that mobs can pick up and
+re-wield their weapons (it takes a few seconds for them to do this, so
+the players do get some benefit from disarming, but mobs shouldn't be
+so dumb as to ignore the fact that they just got disarmed...). So, go
+into structs.h and in struct mob_special_data, add:
+struct mob_special_data
+{
+  memory_rec *memory; /**< List of PCs to remember */
+  byte attack_type;   /**< The primary attack type (bite, sting, hit, etc.) */
+  byte default_pos;   /**< Default position (standing, sleeping, etc.) */
+  byte damnodice;     /**< The number of dice to roll for damage */
+  byte damsizedice;   /**< The size of each die rolled for damage. */
+
++  int disarmwait;     /**< This is used to make the mob wait for a few rounds before rewielding a disarmed weapon */
+
++  struct obj_data *lost_weapon; /* Weapon that was just disarmed */
+};
+
+in utils.h, after #define MEMORY(ch), add: 
+#define LOST_WEAPON(ch) ((ch)->mob_specials.lost_weapon)
+
+in db.c, in parse_simple_mob(), add: 
+  mob_proto[i].mob_specials.lost_weapon = NULL;
+
+in fight.c, in perform_violence(), add:
+
+    if (LOST_WEAPON(ch)) {
+      ch->mob_specials.disarmwait -= 1;
+      if (ch->mob_specials.disarmwait == 0) {
+          do_wield(ch, OBJN(LOST_WEAPON(ch), ch), 0, 0);
+          LOST_WEAPON(ch) = NULL;
+      }
+    }

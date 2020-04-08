@@ -1,0 +1,53 @@
+Add commas to your mud that can read numbers higher than 2.14b!  Updated from comma 0.01.
+
+I am not the original author of the add_commas.  I found it on my hard drive awhile ago.  I did modifiy it to read past 2.14b tho.
+
+- Liko
+
+1. open utils.h and search weather_and_time and under that add:
+
+char* add_commas(long long X);
+
+close utils.h
+
+2. open utils.c and go to the end of the file and paste:
+
+char *add_commas(long long num)
+{
+  #define DIGITS_PER_GROUP      3
+  #define BUFFER_COUNT         10
+  #define DIGITS_PER_BUFFER    16
+
+  int i, j, len, negative = (num < 0);
+  char num_string[DIGITS_PER_BUFFER];
+  static char comma_string[BUFFER_COUNT][DIGITS_PER_BUFFER];
+  static int which = 0;
+
+  sprintf(num_string, "%Ld", num);
+  len = strlen(num_string);
+
+  for (i = j = 0; num_string[i]; ++i) {
+    if ((len - i) % DIGITS_PER_GROUP == 0 && i && i - negative)
+      comma_string[which][j++] = ',';
+    comma_string[which][j++] = num_string[i];
+  }
+  comma_string[which][j] = '\0';
+
+  i = which;
+  which = (which + 1) % BUFFER_COUNT;
+
+  return comma_string[i];
+
+  #undef DIGITS_PER_GROUP
+  #undef BUFFER_COUNT
+  #undef DIGITS_PER_BUFFER
+}
+
+close utils.c and compile :).
+
+Here is an example on how to use commas:
+
+send_to_char(ch, "You have %s gold coins.\r\n", add_commas(GET_GOLD(ch)));
+
+
+

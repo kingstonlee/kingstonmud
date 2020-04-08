@@ -1,0 +1,94 @@
+diff -BbuprN -x '*.o' /home/zizazat/tmp/glimblade/gen/src/class.c gen/src/class.c
+--- /home/zizazat/tmp/glimblade/gen/src/class.c	2004-02-29 12:40:35.000000000 -0600
++++ gen/src/class.c	2004-05-10 19:31:02.000000000 -0500
+@@ -1472,7 +1472,7 @@ void do_start(struct char_data *ch)
+     SET_BIT_AR(AFF_FLAGS(ch), AFF_INFRAVISION);
+ 
+   set_title(ch, NULL);
+-  roll_real_abils(ch);
++  /* roll_real_abils(ch); */
+ 
+   GET_MAX_HIT(ch)  = 10;
+   GET_MAX_MANA(ch) = 100;
+diff -BbuprN -x '*.o' /home/zizazat/tmp/glimblade/gen/src/constants.c gen/src/constants.c
+--- /home/zizazat/tmp/glimblade/gen/src/constants.c	2004-05-01 18:16:18.000000000 -0500
++++ gen/src/constants.c	2004-05-10 19:16:21.000000000 -0500
+@@ -342,6 +342,7 @@ const char *connected_types[] = {
+   "Race help",
+   "Class help",
+   "Guild edit",
++  "Reroll stats",
+   "\n"
+ };
+ 
+diff -BbuprN -x '*.o' /home/zizazat/tmp/glimblade/gen/src/db.c gen/src/db.c
+--- /home/zizazat/tmp/glimblade/gen/src/db.c	2004-03-30 19:59:52.000000000 -0600
++++ gen/src/db.c	2004-05-10 19:40:44.000000000 -0500
+@@ -3777,13 +3777,13 @@ void init_char(struct char_data *ch)
+   for (i = 0; i < 5; i++)
+     GET_SAVE(ch, i) = 0;
+ 
+-  ch->real_abils.intel = 25;
++/*  ch->real_abils.intel = 25;
+   ch->real_abils.wis = 25;
+   ch->real_abils.dex = 25;
+   ch->real_abils.str = 25;
+   ch->real_abils.str_add = 100;
+   ch->real_abils.con = 25;
+-  ch->real_abils.cha = 25;
++  ch->real_abils.cha = 25; */
+ 
+   for (i = 0; i < 3; i++)
+     GET_COND(ch, i) = (GET_LEVEL(ch) == LVL_IMPL ? -1 : 24);
+diff -BbuprN -x '*.o' /home/zizazat/tmp/glimblade/gen/src/interpreter.c gen/src/interpreter.c
+--- /home/zizazat/tmp/glimblade/gen/src/interpreter.c	2004-05-01 18:16:04.000000000 -0500
++++ gen/src/interpreter.c	2004-05-10 19:34:53.000000000 -0500
+@@ -72,6 +72,7 @@ extern const char *class_display[];
+ extern const char *race_display[];
+ void gedit_disp_menu(struct descriptor_data *d);
+ void gedit_parse(struct descriptor_data *d, char *arg);
++void roll_real_abils(struct char_data *ch);
+ 
+ /* local functions */
+ int perform_dupe_check(struct descriptor_data *d);
+@@ -1876,6 +1877,29 @@ void nanny(struct descriptor_data *d, ch
+     } else
+       GET_CLASS(d->character) = load_result;
+ 
++    write_to_output(d, "\r\nPress enter to roll your stats.");
++    STATE(d) = CON_QROLLSTATS;
++    break;
++
++  case CON_QROLLSTATS:
++    switch (*arg) {
++      case 'y':
++      case 'Y':
++        break;
++      case 'n':
++      case 'N':
++      default:
++        roll_real_abils(d->character);
++        write_to_output(d, "\r\nStr: [%d/%d] Int: [%d] Wis: [%d] Dex:"
++           " [%d] Con: [%d] Cha: [%d]",
++           GET_STR(d->character), GET_ADD(d->character),
++           GET_INT(d->character), GET_WIS(d->character),
++           GET_DEX(d->character), GET_CON(d->character),
++           GET_CHA(d->character));
++        write_to_output(d, "\r\n\r\nKeep these stats? (y/N)");
++        return;
++    }
++
+     if (GET_PFILEPOS(d->character) < 0)
+       GET_PFILEPOS(d->character) = create_entry(GET_PC_NAME(d->character));
+     /* Now GET_NAME() will work properly. */
+diff -BbuprN -x '*.o' /home/zizazat/tmp/glimblade/gen/src/structs.h gen/src/structs.h
+--- /home/zizazat/tmp/glimblade/gen/src/structs.h	2004-05-01 18:10:59.000000000 -0500
++++ gen/src/structs.h	2004-05-10 19:16:02.000000000 -0500
+@@ -321,6 +321,7 @@
+ #define CON_CLASS_HELP   30	/* Class Help 				*/
+ #define CON_QANSI		 31	/* Ask for ANSI support     */
+ #define CON_GEDIT	 32	/* OLC mode - guild editor 		*/
++#define CON_QROLLSTATS	 33	/* OLC mode - guild editor 		*/
+ 
+ /* Character equipment positions: used as index for char_data.equipment[] */
+ /* NOTE: Don't confuse these constants with the ITEM_ bitvectors

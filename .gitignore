@@ -1,3 +1,4 @@
+log/*
 bin/*
 src/*.o
 src/util/*.o
@@ -10,3 +11,7 @@ src/util/Makefile
 src/.accepted
 src/depend
 src/util/depend
+lib/etc/*
+lib/plr*/*
+syslog*
+.fastboot

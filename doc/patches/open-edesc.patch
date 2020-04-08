@@ -1,0 +1,55 @@
+diff -BbuprN -x '*.o' suntzu/src/act.movement.c suntzu-ken/src/act.movement.c
+--- suntzu/src/act.movement.c	2003-11-29 22:52:42.000000000 -0600
++++ suntzu-ken/src/act.movement.c	2003-12-27 19:03:20.000000000 -0600
+@@ -29,10 +29,11 @@ void death_cry(struct char_data *ch);
+ int find_eq_pos(struct char_data *ch, struct obj_data *obj, char *arg);
+ int buildwalk(struct char_data *ch, int dir);
+ struct obj_data *find_vehicle_by_vnum(int vnum);
++char *find_exdesc(char *word, struct extra_descr_data *list);
+ 
+ /* local functions */
+ int has_boat(struct char_data *ch);
+-int find_door(struct char_data *ch, const char *type, char *dir, const char *cmdname);
++int find_door(struct char_data *ch, const char *type, char *dir, const char *cmdname, int silent);
+ int has_key(struct char_data *ch, obj_vnum key);
+ void do_doorcmd(struct char_data *ch, struct obj_data *obj, int door, int scmd);
+ int ok_pick(struct char_data *ch, obj_vnum keynum, int pickproof, int scmd);
+@@ -254,7 +255,7 @@ ACMD(do_move)
+ }
+ 
+ 
+-int find_door(struct char_data *ch, const char *type, char *dir, const char *cmdname)
++int find_door(struct char_data *ch, const char *type, char *dir, const char *cmdname, int silent)
+ {
+   int door;
+ 
+@@ -289,8 +290,10 @@ int find_door(struct char_data *ch, cons
+ 	  if (isname(type, EXIT(ch, door)->keyword))
+ 	    return (door);
+ 
++    if (!silent)
+     send_to_char(ch, "There doesn't seem to be %s %s here.\r\n", AN(type), type);
+-    return (-1);
++    return (-2); /* We specified a keyword only, but none found on any doors */
++
+   }
+ }
+ 
+@@ -500,8 +503,15 @@ ACMD(do_gen_door)
+     return;
+   }
+   two_arguments(argument, type, dir);
+-  if (!generic_find(type, FIND_OBJ_INV | FIND_OBJ_ROOM, ch, &victim, &obj))
+-    door = find_door(ch, type, dir, cmd_door[subcmd]);
++
++  if (!generic_find(type, FIND_OBJ_INV | FIND_OBJ_ROOM, ch, &victim, &obj)) {
++    if ((door = find_door(ch, type, dir, cmd_door[subcmd], TRUE)) == -2) {
++      if (find_exdesc(type, world[IN_ROOM(ch)].ex_description) != NULL)
++        act("You can't $F that!", FALSE, ch, 0, cmd_door[subcmd], TO_CHAR);
++      else
++        act("There is no $F here!", FALSE, ch, 0, type, TO_CHAR);
++    }
++  }
+ 
+   if ((obj) || (door >= 0)) {
+     keynum = DOOR_KEY(ch, obj, door);

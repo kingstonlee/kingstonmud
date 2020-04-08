@@ -1,0 +1,317 @@
+New version; Fixes security bugs. 
+Thanks to 'Mysidia' (mysidia-v@DARKFIRE.NET) for the bug report.
+
+
+The following snippet will enable you to lookup words in the 
+Merriam-Webster online dictionary from within the mud.
+
+The snippet hooks into the tell command, and is used like this:
+
+tell m-w <word>
+
+to look up <word> in M-W.
+
+The lookup is asynchronous, and will not slow down your mud.
+
+The snippet alters four files:
+comm.c, act.comm.c, util/Makefile and a new file, util/webster.c
+
+
+Enjoy,
+
+Welcor
+
+
+In comm.c:
+
+Near the top:
+
+byte webster_file_ready = FALSE;/* signal: SIGUSR2 */
+RETSIGTYPE websterlink(int sig);
+extern void handle_webster_file();
+
+in game_loop(), near the bottom (after the other signal handlers):
+
+    if (webster_file_ready) {
+      webster_file_ready = FALSE;
+      handle_webster_file();
+    }
+
+after RETSIGTYPE unrestrict_game():
+
+RETSIGTYPE websterlink(int sig)
+{
+  webster_file_ready = TRUE;
+}
+
+
+change:
+  my_signal(SIGUSR2, unrestrict_game);
+to
+  my_signal(SIGUSR2, websterlink);
+
+
+In act.comm.c:
+
+Near the top:
+
+static long last_webster_teller = -1L;
+
+
+in do_tell:
+
+  if (!*buf || !*buf2)
+    send_to_char(ch, "Who do you wish to tell what??\r\n");
++  else if (!strcmp(buf, "m-w")) {
++    char word[MAX_INPUT_LENGTH], *p, *q; 
++    
++    if (last_webster_teller != -1L) {
++      if (GET_IDNUM(ch) == last_webster_teller) {
++        send_to_char(ch, "You are still waiting for a response.\r\n");
++        return;
++      } else {
++        send_to_char(ch, "Hold on, m-w is busy. Try again in a couple of seconds.\r\n");
++        return;
++      }
++    }
++    /* only a-z and +/- allowed */
++    for (p = buf2, q = word; *p ; p++) {
++      if ((LOWER(*p) <= 'z' && LOWER(*p) >= 'a') || (*p == '+') || (*p == '-')) 
++        *q++ = *p;
++    }
++    *q = '\0';
++    
++    snprintf(buf, sizeof(buf), "../bin/webster %s %d &", word, (int) getpid());
++    system(buf);
++    last_webster_teller = GET_IDNUM(ch);
++    send_to_char(ch, "You look up '%s' in Merriam-Webster.\r\n", word);
++    
++  } else if (GET_LEVEL(ch) < LVL_IMMORT && !(vict = get_player_vis(ch, buf, NULL, FIND_CHAR_WORLD)))
+-  else if (GET_LEVEL(ch) < LVL_IMMORT && !(vict = get_player_vis(ch, buf, NULL, FIND_CHAR_WORLD)))
+    send_to_char(ch, "%s", CONFIG_NOPERSON);
+
+At the bottom of the file:
+
+void handle_webster_file(void) {
+  struct char_data *find_char(long uid);
+  FILE *fl;
+  struct char_data *ch = find_char(last_webster_teller);
+  char info[MAX_STRING_LENGTH], line[READ_SIZE];
+  size_t len = 0, nlen = 0;
+
+  last_webster_teller = -1L;
+
+  if (!ch) /* they quit ? */
+    return;
+  
+  fl = fopen("websterinfo", "r");
+  if (!fl) {
+    send_to_char(ch, "It seems Merriam-Webster is offline..\r\n");
+    return;
+  }
+  
+  unlink("websterinfo");
+
+  get_line(fl, line);
+  while (!feof(fl)) {
+    nlen = snprintf(info + len, sizeof(info) - len, "%s\r\n", line);
+    if (len + nlen >= sizeof(info) || nlen < 0)
+      break;
+    len += nlen;
+    get_line(fl, line);
+  }
+ 
+  if (len >= sizeof(info)) {
+    const char *overflow = "\r\n**OVERFLOW**\r\n";
+    strcpy(info + sizeof(info) - strlen(overflow) - 1, overflow); /* strcpy: OK */
+  }
+  fclose(fl);
+
+
+  send_to_char(ch, "You get this feedback from Merriam-Webster:\r\n");
+  page_string(ch->desc, info, 1);
+
+}
+
+A new file in src/util/ called webster.c:
+/* ************************************************************************
+*   File: webster.c                                                       *
+*  Usage: communicate with Meriam-Webster Online dictionary and parse     *
+*         the resulting html page into a new file called websterinfo      *
+*         Please note that this program needs updates when M-W changes    *
+*         web layout.                                                     *
+*                                                                         *
+*  Requires the wget program to contact M-W                               *
+*                                                                         *
+*  This program is in the public domain.                                  *
+*  Written by Thomas Arp (welcor@builderacademy.net)                      *
+************************************************************************ */
+
+#define log(msg) fprintf(stderr, "%s\n", msg)
+
+#include "conf.h"
+#include "sysdep.h"
+
+#define MEM_USE 10000
+char buf[MEM_USE];
+
+int get_line(FILE * fl, char *buf);
+void skip_spaces(char **string);
+void parse_webster_html(void);
+int main(int argc, char **argv)
+{
+  int pid = 0;
+  
+  if (argc != 3) {
+    return 0; /* no word/pid given */
+  }
+  pid = atoi(argv[2]);
+  
+  snprintf(buf, sizeof(buf), 
+    "wget http://www.m-w.com/cgi-bin/dictionary?book=Dictionary\\&va=%s"
+    " -Owebster.html -o/dev/null", argv[1]);
+  system(buf);
+
+  parse_webster_html();
+
+  if (pid)
+    kill(pid, SIGUSR2);
+
+  return (0);
+}
+
+void parse_webster_html(void) {
+  FILE *infile, *outfile;
+  char scanbuf[MEM_USE], *p, *q;
+  
+  outfile = fopen("websterinfo", "w");
+  if (!outfile) 
+    exit(1);
+
+  infile = fopen("webster.html", "r");
+  if (!infile) {
+    fprintf(outfile, "A bug has occured in webster. (no webster.html)");
+    fclose(outfile);
+    return;
+  }
+
+  unlink("webster.html"); /* We can still read */
+  
+  for ( ; get_line(infile, buf)!=0; ) {
+    p = buf;
+    skip_spaces(&p);
+    /* <PRE> tag means word wasn't found in dictionary */
+    /* list on the form 
+
+	 1. <a href="/cgi-bin/dictionary?va=XXX">XXX</a>
+	 2. <a href="/cgi-bin/dictionary?va=YYY">YYY</a>
+         ...
+         </PRE>
+       follows */
+    if (!strncmp(p, "<PRE>", 5)) {
+      fprintf(outfile, "Did you really mean any of these instead ?\n");
+      for (; get_line(infile, buf) != 0;) {
+        p = buf;
+        skip_spaces(&p);
+        if (!strncmp(p, "</PRE>", 6))
+          break;
+        p = strchr(p, '>');
+        p++; /* p now points to first letter of word. */
+        q = strchr(p, '<');
+        *q = '\0';
+        fprintf(outfile, "%s\n", p);
+      }
+      break;
+    } else if (!strncmp(p, "Main Entry:", 10)) {
+      int coloumn = 0;
+      /* Date: means word was found in dictionary */
+      /* M-W has changed their site layout, so we need to find the correct line :*/
+      while (*p != '<') {
+        get_line(infile, buf);
+        p = buf;
+        skip_spaces(&p);
+      }  
+      /* The next line contains ALL info on that word. 
+       * Including html tags, this can be very much 
+       */
+      fprintf(outfile, "That means:\n");
+      /* remove all tags from this line - ALL tags */
+      for (q = scanbuf; *p && q - scanbuf < sizeof(scanbuf); p++) {
+        if (*p == '&') {
+          /* &gt; and &lt; translates into '"' */
+          if ((*(p+1) == 'l' || *(p+1) == 'g') && *(p+2) == 't' && *(p+3) == ';') {
+            *q++='"';
+            coloumn++;
+            p += 3;
+            continue;
+          }
+        }
+        if (*p == '<') {
+          /* <br> tags translate into '\n' */
+          if (*(p+1) == 'b' && *(p+2) == 'r') {
+            *q++='\n';
+            coloumn = 0;
+          }
+          for (; *p && *p != '>';p++) ;
+          continue;
+        }
+        if (isspace(*p) && coloumn > 70) { /* wrap at first space after 70th coloumn */
+          *q++='\n';
+          coloumn = 0;
+          continue;
+        }
+          
+        *q++ = *p;
+        coloumn++;
+      }
+      *q = '\0';
+
+      fprintf(outfile, "%s\n", scanbuf);
+      break;
+    }
+  }
+  fclose(infile);
+ 
+  fprintf(outfile, "~");
+  fclose(outfile);
+}
+
+/* get_line reads the next non-blank line off of the input stream.
+ * The newline character is removed from the input.  
+ */
+int get_line(FILE * fl, char *buf)
+{
+  char temp[MEM_USE];
+
+  do {
+    fgets(temp, MEM_USE, fl);
+    if (*temp)
+      temp[strlen(temp) - 1] = '\0';
+  } while (!feof(fl) && !*temp);
+
+  if (feof(fl))
+    return (0);
+  else {
+    strcpy(buf, temp);
+    return (1);
+  }
+}
+
+/*
+ * Function to skip over the leading spaces of a string.
+ */
+void skip_spaces(char **string)
+{
+  for (; **string && isspace(**string); (*string)++);
+}
+
+
+And finally, to add webster to the available commands, copy all
+lines containing 'wld2html' in src/util/Makefile.in and
+edit them to contain 'webster' instead. 
+run 
+    config.status
+    make all
+reboot, and pray.
+
+Welcor

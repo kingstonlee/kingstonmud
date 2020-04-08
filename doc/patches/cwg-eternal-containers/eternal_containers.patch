@@ -1,0 +1,198 @@
+diff -BpubrN -x '*.o' suntzu.vanilla/src/act.informative.c suntzu.magic_containers/src/act.informative.c
+--- suntzu.vanilla/src/act.informative.c	2003-03-26 20:13:03.000000000 -0800
++++ suntzu.magic_containers/src/act.informative.c	2003-04-13 19:13:44.000000000 -0700
+@@ -570,7 +570,13 @@ void look_in_obj(struct char_data *ch, c
+       if (GET_OBJ_VAL(obj, 1) <= 0)
+ 	send_to_char(ch, "It is empty.\r\n");
+       else {
+-	if (GET_OBJ_VAL(obj,0) <= 0 || GET_OBJ_VAL(obj,1)>GET_OBJ_VAL(obj,0)) {
++        if (GET_OBJ_VAL(obj, 0) < 0)
++        {
++          char buf2[MAX_STRING_LENGTH];
++	  sprinttype(GET_OBJ_VAL(obj, 2), color_liquid, buf2, sizeof(buf2));
++	  send_to_char(ch, "It's full of a %s liquid.\r\n", buf2);
++        }
++	else if (GET_OBJ_VAL(obj,1)>GET_OBJ_VAL(obj,0)) {
+ 	  send_to_char(ch, "Its contents seem somewhat murky.\r\n"); /* BUG */
+ 	} else {
+           char buf2[MAX_STRING_LENGTH];
+diff -BpubrN -x '*.o' suntzu.vanilla/src/act.item.c suntzu.magic_containers/src/act.item.c
+--- suntzu.vanilla/src/act.item.c	2003-04-07 19:44:55.000000000 -0700
++++ suntzu.magic_containers/src/act.item.c	2003-04-19 21:04:18.000000000 -0700
+@@ -115,7 +115,8 @@ void perform_put(struct char_data *ch, s
+   if (!obj) /* object might be extracted by drop_otrigger */
+     return;
+ 
+-  if (GET_OBJ_WEIGHT(cont) + GET_OBJ_WEIGHT(obj) > GET_OBJ_VAL(cont, 0))
++  if ((GET_OBJ_VAL(cont, 0) > 0) &&
++      (GET_OBJ_WEIGHT(cont) + GET_OBJ_WEIGHT(obj) > GET_OBJ_VAL(cont, 0)))
+     act("$p won't fit in $P.", FALSE, ch, obj, cont, TO_CHAR);
+   else if (OBJ_FLAGGED(obj, ITEM_NODROP) && IN_ROOM(cont) != NOWHERE)
+     act("You can't get $p out of your hand.", FALSE, ch, obj, NULL, TO_CHAR);
+@@ -955,10 +956,14 @@ ACMD(do_drink)
+ 
+   amount = MIN(amount, GET_OBJ_VAL(temp, 1));
+ 
+-  /* You can't subtract more than the object weighs */
++  /* You can't subtract more than the object weighs
++     Objects that are eternal (max capacity -1) don't get a
++     weight subtracted */
++  if (GET_OBJ_VAL(temp, 0) > 0)
++  {
+   weight = MIN(amount, GET_OBJ_WEIGHT(temp));
+-
+   weight_change_object(temp, -weight);	/* Subtract amount */
++  }
+ 
+   gain_condition(ch, DRUNK,  drink_aff[GET_OBJ_VAL(temp, 2)][DRUNK]  * amount / 4);
+   gain_condition(ch, FULL,   drink_aff[GET_OBJ_VAL(temp, 2)][FULL]   * amount / 4);
+@@ -984,13 +989,17 @@ ACMD(do_drink)
+     af.bitvector = AFF_POISON;
+     affect_join(ch, &af, FALSE, FALSE, FALSE, FALSE);
+   }
+-  /* empty the container, and no longer poison. */
++  /* empty the container, and no longer poison.
++     Only remove if it's max capacity > 0, not eternal */
++  if (GET_OBJ_VAL(temp, 0) > 0)
++  {
+   GET_OBJ_VAL(temp, 1) -= amount;
+   if (!GET_OBJ_VAL(temp, 1)) {	/* The last bit */
+     name_from_drinkcon(temp);
+     GET_OBJ_VAL(temp, 2) = 0;
+     GET_OBJ_VAL(temp, 3) = 0;
+   }
++  }
+   return;
+ }
+ 
+@@ -1071,7 +1080,7 @@ ACMD(do_pour)
+ {
+   char arg1[MAX_INPUT_LENGTH], arg2[MAX_INPUT_LENGTH];
+   struct obj_data *from_obj = NULL, *to_obj = NULL;
+-  int amount;
++  int amount = 0;
+ 
+   two_arguments(argument, arg1, arg2);
+ 
+@@ -1125,6 +1134,8 @@ ACMD(do_pour)
+       return;
+     }
+     if (!str_cmp(arg2, "out")) {
++      if (GET_OBJ_VAL(from_obj, 0) > 0)
++      {
+       act("$n empties $p.", TRUE, ch, from_obj, 0, TO_ROOM);
+       act("You empty $p.", FALSE, ch, from_obj, 0, TO_CHAR);
+ 
+@@ -1134,6 +1145,11 @@ ACMD(do_pour)
+       GET_OBJ_VAL(from_obj, 1) = 0;
+       GET_OBJ_VAL(from_obj, 2) = 0;
+       GET_OBJ_VAL(from_obj, 3) = 0;
++      }
++      else
++      {
++        send_to_char(ch, "You can't possibly pour that container out!\r\n");
++      }
+ 
+       return;
+     }
+@@ -1156,7 +1172,8 @@ ACMD(do_pour)
+     send_to_char(ch, "There is already another liquid in it!\r\n");
+     return;
+   }
+-  if (!(GET_OBJ_VAL(to_obj, 1) < GET_OBJ_VAL(to_obj, 0))) {
++  if ((GET_OBJ_VAL(to_obj, 0) < 0) ||
++      (!(GET_OBJ_VAL(to_obj, 1) < GET_OBJ_VAL(to_obj, 0)))) {
+     send_to_char(ch, "There is no room for more.\r\n");
+     return;
+   }
+@@ -1175,6 +1192,8 @@ ACMD(do_pour)
+   GET_OBJ_VAL(to_obj, 2) = GET_OBJ_VAL(from_obj, 2);
+ 
+   /* Then how much to pour */
++  if (GET_OBJ_VAL(from_obj, 0) > 0)
++  {
+   GET_OBJ_VAL(from_obj, 1) -= (amount =
+ 			 (GET_OBJ_VAL(to_obj, 0) - GET_OBJ_VAL(to_obj, 1)));
+ 
+@@ -1188,12 +1207,21 @@ ACMD(do_pour)
+     GET_OBJ_VAL(from_obj, 2) = 0;
+     GET_OBJ_VAL(from_obj, 3) = 0;
+   }
++  }
++  else
++  {
++    GET_OBJ_VAL(to_obj, 1) = GET_OBJ_VAL(to_obj, 0);
++  }
++
+   /* Then the poison boogie */
+   GET_OBJ_VAL(to_obj, 3) =
+     (GET_OBJ_VAL(to_obj, 3) || GET_OBJ_VAL(from_obj, 3));
+ 
+-  /* And the weight boogie */
++  /* And the weight boogie for non-eternal from_objects */
++  if (GET_OBJ_VAL(from_obj, 0) > 0)
++  { 
+   weight_change_object(from_obj, -amount);
++  }
+   weight_change_object(to_obj, amount);	/* Add weight */
+ }
+ 
+diff -BpubrN -x '*.o' suntzu.vanilla/src/db.c suntzu.magic_containers/src/db.c
+--- suntzu.vanilla/src/db.c	2003-03-28 16:38:47.000000000 -0800
++++ suntzu.magic_containers/src/db.c	2003-04-13 19:21:33.000000000 -0700
+@@ -3661,7 +3661,7 @@ int check_object(struct obj_data *obj)
+   }
+   /* Fall through. */
+   case ITEM_FOUNTAIN:
+-    if (GET_OBJ_VAL(obj, 1) > GET_OBJ_VAL(obj, 0) && (error = TRUE))
++    if ((GET_OBJ_VAL(obj,0) > 0) && (GET_OBJ_VAL(obj, 1) > GET_OBJ_VAL(obj, 0) && (error = TRUE)))
+       log("SYSERR: Object #%d (%s) contains (%d) more than maximum (%d).",
+ 		GET_OBJ_VNUM(obj), obj->short_description,
+ 		GET_OBJ_VAL(obj, 1), GET_OBJ_VAL(obj, 0));
+diff -BpubrN -x '*.o' suntzu.vanilla/src/handler.c suntzu.magic_containers/src/handler.c
+--- suntzu.vanilla/src/handler.c	2003-02-06 19:20:03.000000000 -0800
++++ suntzu.magic_containers/src/handler.c	2003-04-13 19:06:09.000000000 -0700
+@@ -780,7 +780,12 @@ void obj_to_obj(struct obj_data *obj, st
+   obj->next_content = obj_to->contains;
+   obj_to->contains = obj;
+   obj->in_obj = obj_to;
++  tmp_obj = obj->in_obj;
+ 
++  /* Only add weight to container, or back to carrier for non-eternal
++     containers.  Eternal means max capacity < 0 */
++  if (GET_OBJ_VAL(obj->in_obj, 0) > 0)
++  {
+   for (tmp_obj = obj->in_obj; tmp_obj->in_obj; tmp_obj = tmp_obj->in_obj)
+     GET_OBJ_WEIGHT(tmp_obj) += GET_OBJ_WEIGHT(obj);
+ 
+@@ -788,6 +793,7 @@ void obj_to_obj(struct obj_data *obj, st
+   GET_OBJ_WEIGHT(tmp_obj) += GET_OBJ_WEIGHT(obj);
+   if (tmp_obj->carried_by)
+     IS_CARRYING_W(tmp_obj->carried_by) += GET_OBJ_WEIGHT(obj);
++  }
+ }
+ 
+ 
+@@ -801,9 +807,14 @@ void obj_from_obj(struct obj_data *obj)
+     return;
+   }
+   obj_from = obj->in_obj;
++  temp = obj->in_obj;
+   REMOVE_FROM_LIST(obj, obj_from->contains, next_content);
+ 
+   /* Subtract weight from containers container */
++  /* Only worry about weight for non-eternal containers
++     Eternal means max capacity < 0 */
++  if (GET_OBJ_VAL(obj->in_obj, 0) > 0)
++  {
+   for (temp = obj->in_obj; temp->in_obj; temp = temp->in_obj)
+     GET_OBJ_WEIGHT(temp) -= GET_OBJ_WEIGHT(obj);
+ 
+@@ -811,6 +822,7 @@ void obj_from_obj(struct obj_data *obj)
+   GET_OBJ_WEIGHT(temp) -= GET_OBJ_WEIGHT(obj);
+   if (temp->carried_by)
+     IS_CARRYING_W(temp->carried_by) -= GET_OBJ_WEIGHT(obj);
++  }
+ 
+   obj->in_obj = NULL;
+   obj->next_content = NULL;

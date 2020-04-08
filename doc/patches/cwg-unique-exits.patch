@@ -1,0 +1,366 @@
+diff -BbuprN -x '*.o' suntzu/src/act.informative.c suntzunew/src/act.informative.c
+--- suntzu/src/act.informative.c	2004-05-27 21:36:14.000000000 -0400
++++ suntzunew/src/act.informative.c	2004-07-21 17:52:11.062500000 -0400
+@@ -59,6 +59,9 @@ void view_room_by_rnum(struct char_data 
+ int check_disabled(const struct command_info *command);
+ 
+ /* local functions */
++int add_unique_exits(struct obj_data * list, struct char_data * ch);
++int add_unique_complete_exits(struct obj_data * list, struct char_data * ch, int has_light);
++int command_unique_exit(struct char_data * ch, char *arg);
+ int sort_commands_helper(const void *a, const void *b);
+ void print_object_location(int num, struct obj_data *obj, struct char_data *ch, int recur);
+ void show_obj_to_char(struct obj_data *obj, struct char_data *ch, int mode);
+@@ -251,7 +254,9 @@ void list_obj_to_char(struct obj_data *l
+         else if ((j->item_number == i->item_number) && (j->item_number != -1))
+           num++;
+     }
+-    if (CAN_SEE_OBJ(ch, i) || (GET_OBJ_TYPE(i) == ITEM_LIGHT)) {
++    if (((CAN_SEE_OBJ(ch, i) || (GET_OBJ_TYPE(i) == ITEM_LIGHT)) && 
++		((GET_OBJ_TYPE(i) != ITEM_EXIT) && (GET_LEVEL(ch) < LVL_GOD))) || 
++		(GET_LEVEL(ch) >= LVL_GOD)) {
+       if (num > 1)
+         send_to_char(ch, "(%2i) ", num);
+       show_obj_to_char(i, ch, mode);
+@@ -262,6 +267,97 @@ void list_obj_to_char(struct obj_data *l
+   send_to_char(ch, " Nothing.\r\n");
+ }
+ 
++
++int add_unique_exits(struct obj_data * list, struct char_data * ch)
++{
++	  struct obj_data *i, *j;
++	  bool xfactor;
++	  int num;
++
++	  xfactor = FALSE;
++	  for (i = list; i; i = i->next_content) {
++	    num = 0;
++	    for (j = list; j != i; j = j->next_content)
++
++	    if (j->item_number==NOTHING) {
++	      if(strcmp(j->short_description,i->short_description)==0)
++	        break;
++	    }
++
++	    else if (j->item_number==i->item_number)
++	      break;
++	    if (j!=i)
++	      continue;
++
++	    if (GET_OBJ_TYPE(i) == ITEM_EXIT) {
++	        send_to_char(ch,"%s ",i->name);
++	        xfactor = TRUE;
++		}
++	  }
++	  return xfactor;
++}
++
++int add_unique_complete_exits(struct obj_data * list, struct char_data * ch, int has_light)
++{
++	  struct obj_data *i, *j;
++	  bool xfactor;
++	  int num, nroom;
++
++	  xfactor = FALSE;
++	  for (i = list; i; i = i->next_content) {
++	    num = 0;
++	    for (j = list; j != i; j = j->next_content)
++
++	    if (j->item_number==NOTHING) {
++	      if(strcmp(j->short_description,i->short_description)==0)
++	        break;
++	    }
++
++	    else if (j->item_number==i->item_number)
++	      break;
++	    if (j!=i)
++	      continue;
++
++	    if (GET_OBJ_TYPE(i) == ITEM_EXIT) {
++			nroom = real_room(GET_OBJ_VAL(i, 0));
++			if (GET_LEVEL(ch) >= LVL_IMMORT) {
++				send_to_char(ch, "%-9s - [%5d] %s.\r\n", i->name,
++					world[nroom].number,
++					world[nroom].name);
++				xfactor = TRUE;
++			} else {
++				send_to_char(ch, "%-9s - %s\r\n", i->name,
++					IS_DARK(nroom) &&
++					!CAN_SEE_IN_DARK(ch) && !has_light ?
++					"Too dark to tell." :
++                world[nroom].name);
++				xfactor = TRUE;
++			}
++		}
++	  }
++	  return xfactor;
++}
++
++
++int command_unique_exit(struct char_data * ch, char *arg)
++{
++	struct obj_data *i;
++	int length, j;
++
++	  length = strlen(arg);
++	  for (i = world[IN_ROOM(ch)].contents; i; i = i->next_content) {
++
++	    if (GET_OBJ_TYPE(i) == ITEM_EXIT) {
++	        if (!strncmp((i)->name, arg, length)) {
++	          j = perform_unique_move(ch, GET_OBJ_VAL(i, 0), arg);
++	          return j;
++		    }
++		}
++	  }
++	  return 0;
++}
++
++
+ void diag_obj_to_char(struct obj_data *obj, struct char_data *ch)
+ {
+   struct {
+@@ -530,6 +626,8 @@ void do_auto_exits(room_rnum target_room
+         send_to_char(ch, "%s ", abbr_dirs[door]);
+       door_found++;
+     }
++	if (add_unique_exits(world[IN_ROOM(ch)].contents, ch) != FALSE)
++      door_found++;
+     send_to_char(ch, "%s]%s\r\n", door_found ? "" : "None!", CCNRM(ch, C_NRM));
+   }
+   if (exit_mode == EXIT_COMPLETE) {
+@@ -596,6 +694,8 @@ void do_auto_exits(room_rnum target_room
+         }
+       }
+     }
++	if (add_unique_complete_exits(world[IN_ROOM(ch)].contents, ch, has_light) != FALSE)
++      door_found++;
+     if (!door_found)
+     send_to_char(ch, " None.\r\n");
+   }
+diff -BbuprN -x '*.o' suntzu/src/act.item.c suntzunew/src/act.item.c
+--- suntzu/src/act.item.c	2004-05-27 21:36:14.000000000 -0400
++++ suntzunew/src/act.item.c	2004-07-20 14:25:50.328125000 -0400
+@@ -245,6 +245,9 @@ int can_take_obj(struct char_data *ch, s
+   } else if ((IS_CARRYING_W(ch) + GET_OBJ_WEIGHT(obj)) > CAN_CARRY_W(ch)) {
+     act("$p: you can't carry that much weight.", FALSE, ch, obj, 0, TO_CHAR);
+     return (0);
++  } else if ((GET_OBJ_TYPE(obj) == ITEM_EXIT) && (GET_LEVEL(ch) < LVL_GOD)) {
++	act("You don't see any $p here.", FALSE, ch, obj, 0, TO_CHAR);
++	return (0);
+   }
+   return (1);
+ }
+@@ -382,7 +385,8 @@ void get_from_room(struct char_data *ch,
+   if (dotmode == FIND_INDIV) {
+    if ((descword = find_exdesc_keywords(arg, world[IN_ROOM(ch)].ex_description)) != NULL)
+      send_to_char(ch, "%s: you can't take that!\r\n", fname(descword));
+-   else if (!(obj = get_obj_in_list_vis(ch, arg, NULL, world[IN_ROOM(ch)].contents)))
++   else if (!(obj = get_obj_in_list_vis(ch, arg, NULL, world[IN_ROOM(ch)].contents)) ||
++	   ((GET_OBJ_TYPE(obj) == ITEM_EXIT) && (GET_LEVEL(ch) < LVL_GOD)))
+       send_to_char(ch, "You don't see %s %s here.\r\n", AN(arg), arg);
+     else {
+       struct obj_data *obj_next;
+@@ -448,6 +452,8 @@ ACMD(do_get)
+ 	send_to_char(ch, "You don't have %s %s.\r\n", AN(arg2), arg2);
+       else if (GET_OBJ_TYPE(cont) == ITEM_VEHICLE)
+         send_to_char(ch, "You will need to enter it first.\r\n");
++	  else if ((GET_OBJ_TYPE(cont) == ITEM_EXIT) && (GET_LEVEL(ch) < LVL_GOD))
++	    send_to_char(ch, "You can't seem to find any %ss here.\r\n", arg2);
+       else if ((GET_OBJ_TYPE(cont) != ITEM_CONTAINER) && 
+            !((GET_OBJ_TYPE(cont) == ITEM_PORTAL) && (OBJVAL_FLAGGED(cont, CONT_CLOSEABLE))))
+ 	act("$p is not a container.", FALSE, ch, cont, 0, TO_CHAR);
+diff -BbuprN -x '*.o' suntzu/src/act.movement.c suntzunew/src/act.movement.c
+--- suntzu/src/act.movement.c	2004-02-24 19:05:22.000000000 -0500
++++ suntzunew/src/act.movement.c	2004-07-20 14:27:01.937500000 -0400
+@@ -244,6 +244,113 @@ int perform_move(struct char_data *ch, i
+ }
+ 
+ 
++int perform_unique_move(struct char_data *ch, int room, char *arg)
++{
++  room_rnum was_in;
++  int nroom;
++  struct follow_type *k, *next;
++
++  if (ch == NULL || FIGHTING(ch))
++    return (0);
++  else if ((nroom = real_room(room)) == NOWHERE) {
++    send_to_char(ch, "Alas, an error has occurred.  Please contact an immortal.\r\n");
++    log("Error in Perform Unique Move, non-existant room exit value.");
++  } else {
++    if (!ch->followers)
++      return (do_unique_move(ch, nroom, arg));
++
++    was_in = IN_ROOM(ch);
++    if (!do_unique_move(ch, nroom, arg))
++      return (0);
++
++    for (k = ch->followers; k; k = next) {
++      next = k->next;
++      if ((IN_ROOM(k->follower) == was_in) &&
++	  (GET_POS(k->follower) >= POS_STANDING)) {
++	act("You follow $N.\r\n", FALSE, k->follower, 0, ch, TO_CHAR);
++	perform_unique_move(k->follower, nroom, arg);
++      }
++    }
++    return (1);
++  }
++  return (0);
++}
++
++int do_unique_move(struct char_data *ch, int room, char *arg)
++{
++  room_rnum was_in;
++
++  /* charmed? */
++  if (AFF_FLAGGED(ch, AFF_CHARM) && ch->master && IN_ROOM(ch) == IN_ROOM(ch->master)) {
++    send_to_char(ch, "The thought of leaving your master makes you weep.\r\n");
++    act("$n bursts into tears.", FALSE, ch, 0, 0, TO_ROOM);
++    return (0);
++  }
++
++  /* if this room or the one we're going to needs a boat, check for one */
++  if ((SECT(IN_ROOM(ch)) == SECT_WATER_NOSWIM) ||
++      (SECT(room) == SECT_WATER_NOSWIM)) {
++    if (!has_boat(ch)) {
++      send_to_char(ch, "You need a boat to go there.\r\n");
++      return (0);
++    }
++  }
++
++  if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_ATRIUM)) {
++    if (!House_can_enter(ch, GET_ROOM_VNUM(room))) {
++      send_to_char(ch, "That's private property -- no trespassing!\r\n");
++      return (0);
++    }
++  }
++  if (ROOM_FLAGGED(room, ROOM_TUNNEL) &&
++      num_pc_in_room(&(world[room])) >= CONFIG_TUNNEL_SIZE) {
++    if (CONFIG_TUNNEL_SIZE > 1)
++      send_to_char(ch, "There isn't enough room for you to go there!\r\n");
++    else
++      send_to_char(ch, "There isn't enough room there for more than one person!\r\n");
++    return (0);
++  }
++  /* Mortals and low level gods cannot enter greater god rooms. */
++  if (ROOM_FLAGGED(room, ROOM_GODROOM) &&
++	GET_LEVEL(ch) < LVL_GRGOD) {
++    send_to_char(ch, "You aren't godly enough to use that room!\r\n");
++    return (0);
++  }
++
++  if (!AFF_FLAGGED(ch, AFF_SNEAK)) {
++    char buf2[MAX_STRING_LENGTH];
++
++    snprintf(buf2, sizeof(buf2), "$n exits %s.", arg);
++    act(buf2, TRUE, ch, 0, 0, TO_ROOM);
++  }
++  send_to_char(ch, "You exit %s.\r\n", arg);
++  was_in = IN_ROOM(ch);
++  char_from_room(ch);
++  char_to_room(ch, room);
++
++  /* move them first, then move them back if they aren't allowed to go. */
++  /* see if an entry trigger disallows the move */
++
++  if (!AFF_FLAGGED(ch, AFF_SNEAK))
++    act("$n has arrived.", TRUE, ch, 0, 0, TO_ROOM);
++
++  if (ch->desc != NULL)
++    look_at_room(IN_ROOM(ch), ch, 0);
++
++  if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_DEATH) && GET_LEVEL(ch) < LVL_IMMORT) {
++    log_death_trap(ch);
++    death_cry(ch);
++    extract_char(ch);
++    return (0);
++  }
++
++  entry_memory_mtrigger(ch);
++  greet_memory_mtrigger(ch);
++
++  return (1);
++}
++
++
+ ACMD(do_move)
+ {
+   /*
+diff -BbuprN -x '*.o' suntzu/src/constants.c suntzunew/src/constants.c
+--- suntzu/src/constants.c	2004-05-27 21:36:14.000000000 -0400
++++ suntzunew/src/constants.c	2004-07-22 00:02:59.687500000 -0400
+@@ -448,6 +448,7 @@ const char *item_types[] = {
+   "WINDOW",
+   "CONTROL",
+   "PORTAL",
++  "EXIT",
+   "\n"
+ };
+ 
+diff -BbuprN -x '*.o' suntzu/src/interpreter.c suntzunew/src/interpreter.c
+--- suntzu/src/interpreter.c	2004-06-01 09:17:02.000000000 -0400
++++ suntzunew/src/interpreter.c	2004-07-20 14:12:22.187500000 -0400
+@@ -686,8 +686,12 @@ void command_interpreter(struct char_dat
+       if (GET_LEVEL(ch) >= complete_cmd_info[cmd].minimum_level)
+ 	break;
+   }
+-  if (*complete_cmd_info[cmd].command == '\n')
++  if (*complete_cmd_info[cmd].command == '\n') {
++	  if (command_unique_exit(ch, arg))
++      return;
++    else
+     send_to_char(ch, "Huh?!?\r\n");
++  }
+   else if (check_disabled(&complete_cmd_info[cmd]))    /* is it disabled? */
+       send_to_char(ch, "This command has been temporarily disabled.\r\n");
+   else if (!IS_NPC(ch) && PLR_FLAGGED(ch, PLR_FROZEN) && GET_LEVEL(ch) < LVL_IMPL)
+diff -BbuprN -x '*.o' suntzu/src/oasis.h suntzunew/src/oasis.h
+--- suntzu/src/oasis.h	2004-05-27 21:36:16.000000000 -0400
++++ suntzunew/src/oasis.h	2004-07-20 14:23:19.718750000 -0400
+@@ -38,7 +38,7 @@
+ #define NUM_AFF_FLAGS		27
+ #define NUM_ATTACK_TYPES	15
+ 
+-#define NUM_ITEM_TYPES		29
++#define NUM_ITEM_TYPES		30
+ #define NUM_ITEM_FLAGS		32
+ #define NUM_ITEM_WEARS 		19
+ #define NUM_APPLIES		27
+diff -BbuprN -x '*.o' suntzu/src/oedit.c suntzunew/src/oedit.c
+--- suntzu/src/oedit.c	2004-05-27 21:46:56.000000000 -0400
++++ suntzunew/src/oedit.c	2004-07-20 14:18:48.125000000 -0400
+@@ -533,6 +533,9 @@ void oedit_disp_val1_menu(struct descrip
+   case ITEM_ARMOR:
+     write_to_output(d, "Apply to AC : ");
+     break;
++  case ITEM_EXIT:
++    write_to_output(d, "Room Vnum exit to : ");
++    break;
+   case ITEM_CONTAINER:
+     write_to_output(d, "Max weight to contain : ");
+     break;
+diff -BbuprN -x '*.o' suntzu/src/structs.h suntzunew/src/structs.h
+--- suntzu/src/structs.h	2004-05-31 22:54:52.000000000 -0400
++++ suntzunew/src/structs.h	2004-07-20 14:17:59.984375000 -0400
+@@ -415,6 +415,7 @@
+ #define ITEM_WINDOW    26               /* Item is a vehicle window     */
+ #define ITEM_CONTROL   27               /* Item is a vehicle control    */
+ #define ITEM_PORTAL    28               /* Item is a portal	        */
++#define ITEM_EXIT	   29				/* Item is a custom exit        */
+ 
+ 
+ /* Take/Wear flags: used by obj_data.obj_flags.wear_flags */
+diff -BbuprN -x '*.o' suntzu/src/utils.h suntzunew/src/utils.h
+--- suntzu/src/utils.h	2004-05-27 21:36:16.000000000 -0400
++++ suntzunew/src/utils.h	2004-07-20 14:14:35.125000000 -0400
+@@ -80,6 +80,9 @@ void	look_at_room(room_rnum target_room,
+ /* in act.movmement.c */
+ int	do_simple_move(struct char_data *ch, int dir, int following);
+ int	perform_move(struct char_data *ch, int dir, int following);
++int perform_unique_move(struct char_data *ch, int room, char *arg);
++int do_unique_move(struct char_data *ch, int room, char *arg);
++int command_unique_exit(struct char_data *ch, char *arg);
+ 
+ /* in limits.c */
+ int	mana_gain(struct char_data *ch);

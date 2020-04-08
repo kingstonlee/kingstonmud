@@ -1,0 +1,345 @@
+#3000 (the high cleric)~
+Skill list (skillnum, lowest, highest, priceadd)
+1 0 95 0
+327 0 95 0
+326 0 95 0
+317 0 95 0
+28 0 95 0
+23 0 95 0
+22 0 95 0
+21 0 95 0
+18 0 95 0
+16 0 95 0
+15 0 95 0
+14 0 95 0
+13 0 95 0
+12 0 95 0
+11 0 95 0
+6 0 95 0
+3 0 95 0
+31 0 95 0
+34 0 95 0
+35 0 95 0
+36 0 95 0
+40 0 95 0
+41 0 95 0
+42 0 95 0
+43 0 95 0
+44 0 95 0
+47 0 95 0
+48 0 95 0
+49 0 95 0
+54 0 95 0
+56 0 95 0
+60 0 95 0
+63 0 95 0
+72 0 95 0
+77 0 95 0
+79 0 95 0
+82 0 95 0
+99 0 95 0
+100 0 95 0
+98 0 95 0
+108 0 95 0
+27 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3001
+Withwho: e
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3001 (the lord vampire)~
+Skill list (skillnum, lowest, highest, priceadd)
+344 0 95 0
+324 0 95 0
+317 0 95 0
+313 0 95 0
+7 0 95 0
+9 0 95 0
+53 0 95 0
+61 0 95 0
+81 0 95 0
+96 0 95 0
+340 0 95 0
+114 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Vampires only.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Only the Undead may learn from me.~
+Charge :  1.0
+GMnum  : 3003
+Withwho: hq
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3002 (the master magician)~
+Skill list (skillnum, lowest, highest, priceadd)
+111 0 95 0
+81 0 95 0
+69 0 95 0
+71 0 95 0
+45 0 95 0
+313 0 95 0
+70 0 95 0
+25 0 95 0
+17 0 95 0
+329 0 95 0
+328 0 95 0
+76 0 95 0
+75 0 95 0
+74 0 95 0
+68 0 95 0
+67 0 95 0
+66 0 95 0
+65 0 95 0
+64 0 95 0
+62 0 95 0
+61 0 95 0
+57 0 95 0
+52 0 95 0
+51 0 95 0
+50 0 95 0
+39 0 95 0
+38 0 95 0
+37 0 95 0
+32 0 95 0
+30 0 95 0
+29 0 95 0
+26 0 95 0
+24 0 95 0
+20 0 95 0
+19 0 95 0
+10 0 95 0
+9 0 95 0
+8 0 95 0
+7 0 95 0
+5 0 95 0
+2 0 95 0
+1 0 95 0
+87 0 95 0
+90 0 95 0
+112 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3005
+Withwho: dn
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3003 (the master assassin)~
+Skill list (skillnum, lowest, highest, priceadd)
+329 0 95 0
+328 0 95 0
+324 0 95 0
+317 0 95 0
+316 0 95 0
+315 0 95 0
+310 0 95 0
+309 0 95 0
+308 0 95 0
+305 0 95 0
+303 0 95 0
+301 0 95 0
+342 0 95 0
+343 0 95 0
+344 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3007
+Withwho: f
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3004 (the weapons master)~
+Skill list (skillnum, lowest, highest, priceadd)
+348 0 95 0
+331 0 95 0
+330 0 95 0
+329 0 95 0
+328 0 95 0
+327 0 95 0
+326 0 95 0
+325 0 95 0
+323 0 95 0
+318 0 95 0
+317 0 95 0
+314 0 95 0
+312 0 95 0
+311 0 95 0
+307 0 95 0
+304 0 95 0
+302 0 95 0
+340 0 95 0
+341 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3012
+Withwho: g
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3005 (the guildmaster)~
+Skill list (skillnum, lowest, highest, priceadd)
+114 0 95 0
+339 0 95 0
+337 0 95 0
+336 0 95 0
+324 0 95 0
+317 0 95 0
+92 0 95 0
+90 0 95 0
+62 0 95 0
+61 0 95 0
+57 0 95 0
+2 0 95 0
+340 0 95 0
+110 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3097
+Withwho: j
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3006 (the Guildmaster of the Death Knights)~
+Skill list (skillnum, lowest, highest, priceadd)
+341 0 95 0
+332 0 95 0
+330 0 95 0
+328 0 95 0
+323 0 95 0
+322 0 95 0
+317 0 95 0
+311 0 95 0
+304 0 95 0
+302 0 95 0
+83 0 95 0
+81 0 95 0
+58 0 95 0
+57 0 95 0
+46 0 95 0
+37 0 95 0
+8 0 95 0
+87 0 95 0
+-1 -1 -1 -1
+%s I've never heard of that skill!~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s I don't like the looks of you. Go somewhere that likes your race better!~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3098
+Withwho: p
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+#3007 (the Druid Guildmaster)~
+Skill list (skillnum, lowest, highest, priceadd)
+18 0 95 0
+321 0 20 0
+328 0 95 0
+327 0 95 0
+107 0 95 0
+106 0 95 0
+105 0 95 0
+104 0 95 0
+103 0 95 0
+102 0 95 0
+101 0 95 0
+95 0 95 0
+94 0 95 0
+93 0 95 0
+92 0 95 0
+91 0 95 0
+82 0 95 0
+57 0 95 0
+56 0 95 0
+43 0 95 0
+21 0 95 0
+16 0 95 0
+15 0 95 0
+11 0 95 0
+6 0 95 0
+3 0 95 0
+80 0 20 0
+-1 -1 -1 -1
+%s That knowledge is not for druids.~
+%s You cannot afford to pay my charge!~
+%s I don't know that any better than you.~
+%s You must have a basic knowledge of that before I'll teach you.~
+%s Seek another guild, if you want to train. I don't train your class.~
+%s 11~
+%s Get out, before I get mad!~
+%s Yeach! I don't like your type!~
+Charge :  1.0
+GMnum  : 3099
+Withwho: m
+Open   : 28
+Close  : 28
+Gainlvl: 0 0
+%s Go away! You're beneath me!~
+%s With your skills, you should teach me!~
+$~

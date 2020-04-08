@@ -1,0 +1,159 @@
+diff -BbuprN -x '*.o' tbamud-original/src/db.c tbamud-3.68/src/db.c
+--- tbamud-original/src/db.c	2017-02-21 18:20:32.000000000 +1300
++++ tbamud-3.68/src/db.c	2017-12-18 11:09:02.407205700 +1300
+@@ -1348,17 +1348,8 @@ void setup_dir(FILE *fl, int room, int d
+     log("SYSERR: Format error, %s", buf2);
+     exit(1);
+   }
+-  if (t[0] == 1)
+-    world[room].dir_option[dir]->exit_info = EX_ISDOOR;
+-  else if (t[0] == 2)
+-    world[room].dir_option[dir]->exit_info = EX_ISDOOR | EX_PICKPROOF;
+-  else if (t[0] == 3)
+-    world[room].dir_option[dir]->exit_info = EX_ISDOOR | EX_HIDDEN;
+-  else if (t[0] == 4)
+-    world[room].dir_option[dir]->exit_info = EX_ISDOOR | EX_PICKPROOF | EX_HIDDEN;
+-  else
+-    world[room].dir_option[dir]->exit_info = 0;
+ 
++  world[room].dir_option[dir]->exit_info = t[0];
+   world[room].dir_option[dir]->key = ((t[1] == -1 || t[1] == 65535) ? NOTHING : t[1]);
+   world[room].dir_option[dir]->to_room = ((t[2] == -1  || t[2] == 0) ? NOWHERE : t[2]);
+ }
+diff -BbuprN -x '*.o' tbamud-original/src/genwld.c tbamud-3.68/src/genwld.c
+--- tbamud-original/src/genwld.c	2017-02-21 18:20:34.000000000 +1300
++++ tbamud-3.68/src/genwld.c	2017-12-18 11:21:46.221579500 +1300
+@@ -326,17 +326,7 @@ int save_rooms(zone_rnum rzone)
+ 	    *buf = '\0';
+ 
+ 	  /* Figure out door flag. */
+-	  if (IS_SET(R_EXIT(room, j)->exit_info, EX_ISDOOR)) {
+-	    if (IS_SET(R_EXIT(room, j)->exit_info, EX_PICKPROOF))
+-	      dflag = 2;
+-	    else
+-	      dflag = 1;
+-	      
+-	   if (IS_SET(R_EXIT(room, j)->exit_info, EX_HIDDEN))
+-          dflag += 2;   
+-          
+-	  } else
+-	    dflag = 0;
++	  dflag = R_EXIT(room, j)->exit_info;
+ 
+ 	  if (R_EXIT(room, j)->keyword)
+ 	    strncpy(buf1, R_EXIT(room, j)->keyword, sizeof(buf1)-1 );
+diff -BbuprN -x '*.o' tbamud-original/src/redit.c tbamud-3.68/src/redit.c
+--- tbamud-original/src/redit.c	2017-02-21 18:20:34.000000000 +1300
++++ tbamud-3.68/src/redit.c	2017-12-18 11:25:33.743329400 +1300
+@@ -336,25 +336,14 @@ static void redit_disp_extradesc_menu(st
+ /* For exits. */
+ static void redit_disp_exit_menu(struct descriptor_data *d)
+ {
+-  char door_buf[24];
++  char buf[MAX_STRING_LENGTH];
+   /* if exit doesn't exist, alloc/create it */
+   if (OLC_EXIT(d) == NULL) {
+     CREATE(OLC_EXIT(d), struct room_direction_data, 1);
+     OLC_EXIT(d)->to_room = NOWHERE;
+   }
+   
+-  /* Weird door handling! */
+-  if (IS_SET(OLC_EXIT(d)->exit_info, EX_ISDOOR)) {
+-    if (IS_SET(OLC_EXIT(d)->exit_info, EX_PICKPROOF) && IS_SET(OLC_EXIT(d)->exit_info, EX_HIDDEN))
+-      strncpy(door_buf, "Hidden Pickproof", sizeof(door_buf)-1);
+-    else if (IS_SET(OLC_EXIT(d)->exit_info, EX_PICKPROOF))
+-      strncpy(door_buf, "Pickproof", sizeof(door_buf)-1);
+-    else if (IS_SET(OLC_EXIT(d)->exit_info, EX_HIDDEN))
+-      strncpy(door_buf, "Is a Hidden Door", sizeof(door_buf)-1);
+-    else
+-      strncpy(door_buf, "Is a door", sizeof(door_buf)-1);
+-  } else
+-    strncpy(door_buf, "No door", sizeof(door_buf)-1);
++  sprintbit(OLC_EXIT(d)->exit_info, exit_bits, buf, sizeof(buf));
+ 
+   get_char_colors(d->character);
+   clear_screen(d);
+@@ -363,7 +352,7 @@ static void redit_disp_exit_menu(struct
+ 	  "%s2%s) Description :-\r\n%s%s\r\n"
+ 	  "%s3%s) Door name   : %s%s\r\n"
+ 	  "%s4%s) Key         : %s%d\r\n"
+-	  "%s5%s) Door flags  : %s%s\r\n"
++	  "%s5%s) Exit flags  : %s%s\r\n"
+ 	  "%s6%s) Purge exit.\r\n"
+ 	  "Enter choice, 0 to quit : ",
+ 
+@@ -371,7 +360,7 @@ static void redit_disp_exit_menu(struct
+ 	  grn, nrm, yel, OLC_EXIT(d)->general_description ? OLC_EXIT(d)->general_description : "<NONE>",
+ 	  grn, nrm, yel, OLC_EXIT(d)->keyword ? OLC_EXIT(d)->keyword : "<NONE>",
+ 	  grn, nrm, cyn, OLC_EXIT(d)->key != NOTHING ? OLC_EXIT(d)->key : -1,
+-	  grn, nrm, cyn, door_buf, grn, nrm
++	  grn, nrm, cyn, buf, grn, nrm
+ 	  );
+ 
+   OLC_MODE(d) = REDIT_EXIT_MENU;
+@@ -380,13 +369,22 @@ static void redit_disp_exit_menu(struct
+ /* For exit flags. */
+ static void redit_disp_exit_flag_menu(struct descriptor_data *d)
+ {
++  int counter, columns = 0;
++  char buf[MAX_STRING_LENGTH], buf1[MAX_STRING_LENGTH];;
++    
+   get_char_colors(d->character);
+-  write_to_output(d, "%s0%s) No door\r\n"
+-	  "%s1%s) Closeable door\r\n"
+-      "%s2%s) Pickproof Door\r\n"
+-      "%s3%s) Hidden Door\r\n"
+-      "%s4%s) Hidden, Pickproof Door\r\n"
+-      "Enter choice : ", grn, nrm, grn, nrm, grn, nrm, grn, nrm, grn, nrm);
++  clear_screen(d);
++  
++  for (counter = 0; counter < NUM_EXIT_FLAGS; counter++) {
++    snprintf(buf, sizeof(buf), "%s%2d%s) %-20.20s %s", grn, counter + 1, nrm,
++        exit_bits[counter], !(++columns % 2) ? "\r\n" : "");
++    write_to_output(d, buf);
++  }
++  sprintbit(OLC_EXIT(d)->exit_info, exit_bits, buf1, sizeof(buf1));
++  snprintf(buf, sizeof(buf),"\r\nExit flags: %s%s%s\r\n"
++      "Enter exit flags, 0 to quit : ", cyn, buf1, nrm);
++  write_to_output(d, buf);
++  OLC_MODE(d) = REDIT_EXIT_DOORFLAGS;
+ }
+ 
+ /* For room flags. */
+@@ -810,18 +808,16 @@ void redit_parse(struct descriptor_data
+ 
+   case REDIT_EXIT_DOORFLAGS:
+     number = atoi(arg);
+-    if (number < 0 || number > 4) {
++    if (number < 0 || number > NUM_EXIT_FLAGS) {
+       write_to_output(d, "That's not a valid choice!\r\n");
+       redit_disp_exit_flag_menu(d);
+-    } else {
+-      /* Doors are a bit idiotic, don't you think? :) -- I agree. -gg */
+-      OLC_EXIT(d)->exit_info = (number == 0 ? 0 :
+-				(number == 1 ? EX_ISDOOR :
+-                (number == 2 ? EX_ISDOOR | EX_PICKPROOF :
+-                (number == 3 ? EX_ISDOOR | EX_HIDDEN :
+-                (number == 4 ? EX_ISDOOR | EX_PICKPROOF | EX_HIDDEN : 0)))));
++    } else if (number == 0)
+       /* Jump back to the menu system. */
+       redit_disp_exit_menu(d);
++   else {
++       /* Toggle the bit. */
++        TOGGLE_BIT(OLC_EXIT(d)->exit_info, 1 << (number - 1));
++      redit_disp_exit_flag_menu(d);
+     }
+     return;
+ 
+diff -BbuprN -x '*.o' tbamud-original/src/structs.h tbamud-3.68/src/structs.h
+--- tbamud-original/src/structs.h	2017-02-21 18:20:34.000000000 +1300
++++ tbamud-3.68/src/structs.h	2017-12-18 11:09:02.393204300 +1300
+@@ -117,6 +117,8 @@
+ #define EX_PICKPROOF (1 << 3) /**< Lock can't be picked */
+ #define EX_HIDDEN    (1 << 4) /**< Exit is hidden, secret */
+ 
++#define NUM_EXIT_FLAGS  4
++
+ /* Sector types: used in room_data.sector_type */
+ #define SECT_INSIDE          0		/**< Indoors, connected to SECT macro. */
+ #define SECT_CITY            1		/**< In a city			*/
