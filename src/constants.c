@@ -324,6 +324,7 @@ const char *connected_types[] = {
   "IBT edit",
   "Message edit",
   "Protocol Detection",
+  "Select race",
   "\n"
 };
 
@@ -451,6 +452,11 @@ const char *extra_bits[] = {
   "ANTI_WARRIOR",
   "NO_SELL",
   "QUEST_ITEM",
+  "ANTI_HUMANOID",
+  "ANTI_ELF",
+  "ANTI_GNOME",
+  "ANTI_DWARF",
+  "ANTI_HALFLING",
   "\n"
 };
 
