@@ -153,7 +153,7 @@
 /** Total number of available PC Classes */
 #define NUM_CLASSES	  4
 
-+/* PC Races */
+/* PC Races */
 #define RACE_UNDEFINED	  (-1) /**< PC race undefined */
 #define RACE_HUMANOID	  0    /**< PC race 'H' */
 #define RACE_ELF	      1    /**< PC race 'E' */

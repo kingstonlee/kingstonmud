@@ -766,6 +766,7 @@ static void do_stat_object(struct char_data *ch, struct obj_data *j)
 static void do_stat_character(struct char_data *ch, struct char_data *k)
 {
   char buf[MAX_STRING_LENGTH];
+  char buf2[MAX_STRING_LENGTH];
   int i, i2, column, found = FALSE;
   struct obj_data *j;
   struct follow_type *fol;
