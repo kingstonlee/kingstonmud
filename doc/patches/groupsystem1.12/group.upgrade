@@ -1,0 +1,183 @@
+Index: mobact.c
+===================================================================
+--- mobact.c	(revision 1)
++++ mobact.c	(working copy)
+@@ -156,6 +156,8 @@
+       {
+ 	      if (ch == vict || !IS_NPC(vict) || !FIGHTING(vict))
+           continue; 
++             if (GROUP(vict) && GROUP(vict) == GROUP(ch))
++          continue;
+ 	      if (IS_NPC(FIGHTING(vict)) || ch == FIGHTING(vict))
+           continue;
+ 
+Index: structs.h
+===================================================================
+--- structs.h	(revision 11)
++++ structs.h	(working copy)
+@@ -156,6 +156,7 @@
+ /* Group Defines */
+ #define GROUP_OPEN    (1 << 0)  /**< Group is open for members */
+ #define GROUP_ANON    (1 << 1)  /**< Group is Anonymous */
++#define GROUP_NPC     (1 << 2)  /**< Group created by NPC and thus not listed */
+ 
+ /* PC classes */
+ #define CLASS_UNDEFINED	  (-1) /**< PC Class undefined */
+Index: magic.c
+===================================================================
+--- magic.c	(revision 11)
++++ magic.c	(working copy)
+@@ -857,6 +857,10 @@
+     act(mag_summon_msgs[msg], FALSE, ch, 0, mob, TO_ROOM);
+     load_mtrigger(mob);
+     add_follower(mob, ch);
++    
++    if (GROUP(ch) && GROUP_LEADER(GROUP(ch)) == ch)
++      join_group(mob, GROUP(ch));
++      
+   }
+   if (handle_corpse) {
+     for (tobj = obj->contains; tobj; tobj = next_obj) {
+Index: handler.c
+===================================================================
+--- handler.c	(revision 11)
++++ handler.c	(working copy)
+@@ -1488,7 +1488,9 @@
+   new_group->group_flags = 0;
+   
+   /* Assign Data */
+-  SET_BIT(new_group->group_flags, GROUP_OPEN);
++  SET_BIT(GROUP_FLAGS(new_group), GROUP_OPEN);
++  if (IS_NPC(leader))
++    SET_BIT(GROUP_FLAGS(new_group), GROUP_NPC);
+   
+   join_group(leader, new_group);
+   
+@@ -1498,14 +1500,17 @@
+ void free_group(struct group_data * group)
+ {
+   struct char_data *tch;
++	struct iterator_data Iterator;
+ 	
+-  if (group->members->iSize) {
+-    while ((tch = (struct char_data *) simple_list(group->members)) != NULL)
+-      leave_group(tch);
+-  }
++  if (group->members->iSize)
++    for (tch = (struct char_data *) merge_iterator(&Iterator, group->members);
++      tch; 
++        tch = next_in_list(&Iterator))
++          leave_group(tch);
++          
++  remove_iterator(&Iterator);
+   
++  free_list(group->members);
+-	
+   remove_from_list(group, group_list);
+   free(group);
+ }
+@@ -1513,6 +1518,9 @@
+ void leave_group(struct char_data *ch)
+ {
+   struct group_data *group;
++  struct char_data *tch;
++  struct iterator_data Iterator;
++  bool found_pc = FALSE;
+ 	
+   if ((group = ch->group) == NULL)
+     return;
+@@ -1522,6 +1530,14 @@
+   remove_from_list(ch, group->members);
+   ch->group = NULL;
+   
++  if (group->members->iSize) {
++    for (tch = (struct char_data *) merge_iterator(&Iterator, group->members);
++      tch; 
++        tch = next_in_list(&Iterator))
++          if (!IS_NPC(tch)) found_pc = TRUE;
++          
++  remove_iterator(&Iterator);  
++  }
++  
++ if (!found_pc)
++   SET_BIT(GROUP_FLAGS(group), GROUP_NPC);
+ 
+   if (GROUP_LEADER(group) == ch && group->members->iSize) {
+     group->leader = (struct char_data *) random_from_list(group->members);
+     send_to_group(NULL, group, "%s has assumed leadership of the group.\r\n", GET_NAME(GROUP_LEADER(group)));
+@@ -1537,6 +1553,9 @@
+     group->leader = ch;
+ 	  
+   ch->group = group;  
++  
++  if (IS_SET(group->group_flags, GROUP_NPC) && !IS_NPC(ch))
++    REMOVE_BIT(GROUP_FLAGS(group), GROUP_NPC);
+ 	
+   if (group->leader == ch)
+     send_to_group(NULL, group, "%s becomes leader of the group.\r\n", GET_NAME(ch));
+Index: act.informative.c
+===================================================================
+--- act.informative.c	(revision 11)
++++ act.informative.c	(working copy)
+@@ -323,6 +323,17 @@
+     }
+   }
+ 
++  if (GROUP(i)) {
++    if (GROUP(i) == GROUP(ch))
++      send_to_char(ch, "(%s%s%s) ", CBGRN(ch, C_NRM),
++	GROUP_LEADER(GROUP(i)) == i ? "leader" : "group",
++        CCNRM(ch, C_NRM));
++    else
++      send_to_char(ch, "(%s%s%s) ", CBRED(ch, C_NRM),
++        GROUP_LEADER(GROUP(i)) == i ? "leader" : "group",
++	CCNRM(ch, C_NRM));
++  }
++
+   if (IS_NPC(i) && i->player.long_descr && GET_POS(i) == GET_DEFAULT_POS(i)) {
+     if (AFF_FLAGGED(i, AFF_INVISIBLE))
+       send_to_char(ch, "*");
+Index: act.other.c
+===================================================================
+--- act.other.c	(revision 11)
++++ act.other.c	(working copy)
+@@ -332,29 +332,33 @@
+ static void display_group_list(struct char_data * ch)
+ {
+   struct group_data * group;
+-  int count = 1;
++  int count = 0;
+ 	
+   if (group_list->iSize) {
+     send_to_char(ch, "#   Group Leader     # of Members    In Zone\r\n"
+                      "---------------------------------------------------\r\n");
+ 		
+-    while ((group = (struct group_data *) simple_list(group_list)) != NULL)
++    while ((group = (struct group_data *) simple_list(group_list)) != NULL) {
++      if (IS_SET(GROUP_FLAGS(group), GROUP_NPC))
++        continue;
+       if (GROUP_LEADER(group) && !IS_SET(GROUP_FLAGS(group), GROUP_ANON))
+         send_to_char(ch, "%-2d) %s%-12s     %-2d              %s%s\r\n", 
+-          count++,
++          ++count,
+           IS_SET(GROUP_FLAGS(group), GROUP_OPEN) ? CCGRN(ch, C_NRM) : CCRED(ch, C_NRM), 
+           GET_NAME(GROUP_LEADER(group)), group->members->iSize, zone_table[world[IN_ROOM(GROUP_LEADER(group))].zone].name,
+           CCNRM(ch, C_NRM));
+       else
+-        send_to_char(ch, "%-2d) Hidden\r\n", count++);
++        send_to_char(ch, "%-2d) Hidden\r\n", ++count);
+ 				
++		}
++  }
++  if (count)
+     send_to_char(ch, "\r\n"
+                      "%sSeeking Members%s\r\n"
+                      "%sClosed%s\r\n", 
+                      CCGRN(ch, C_NRM), CCNRM(ch, C_NRM),
+                      CCRED(ch, C_NRM), CCNRM(ch, C_NRM));
+-
+-  } else
++  else
+     send_to_char(ch, "\r\n"
+                      "Currently no groups formed.\r\n");
+ }

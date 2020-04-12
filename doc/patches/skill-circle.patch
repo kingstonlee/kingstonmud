@@ -1,0 +1,123 @@
+diff -BbuprN -x '*.o' -x conf.h /home/zizazat/tmp/src/act.offensive.c /home/zizazat/circle/yoda/src/act.offensive.c
+--- /home/zizazat/tmp/src/act.offensive.c	2003-08-31 18:32:44.000000000 -0500
++++ /home/zizazat/circle/yoda/src/act.offensive.c	2004-01-18 17:47:30.000000000 -0600
+@@ -654,3 +654,56 @@ ACMD(do_turn)
+   }
+ }
+ 
++ACMD(do_circle) 
++{ 
++  char buf[MAX_INPUT_LENGTH]; 
++  struct char_data *vict; 
++  int percent, prob; 
++
++  if (IS_NPC(ch) || !GET_SKILL(ch, SKILL_CIRCLE)) { 
++    send_to_char(ch, "You have to know how to circle before you can circle someone.\r\n"); 
++    return; 
++  } 
++
++  one_argument(argument, buf); 
++
++  //allow player to circle without a target when fighting  
++  if (!FIGHTING(ch)) {
++    send_to_char(ch, "You must be fighting someone to circle around behind them while fighting!!\r\n");
++    return;
++  } else { 
++    if (*buf == '\0') {
++      vict = FIGHTING(ch);
++    }
++    else if(!(vict = get_char_vis(ch, buf, NULL, FIND_CHAR_ROOM))) {
++      send_to_char(ch, "Circle behind who?\r\n");
++      return;
++    }
++    if (vict == ch) {
++      send_to_char(ch, "How do you think you are going to circle behind yourself?\r\n");
++      return;
++    }
++    if (!GET_EQ(ch, WEAR_WIELD)) {
++      send_to_char(ch, "You need to wield a weapon to do that!\r\n");
++      return;
++    }
++    if (GET_OBJ_VAL(GET_EQ(ch, WEAR_WIELD), 3) != TYPE_PIERCE - TYPE_HIT) {
++      send_to_char(ch, "Only piercing weapons can be used for this type of attack.\r\n");
++      return;
++    }
++  }
++
++  percent = rand_number(1, 101); /* 101% is a complete failure */ 
++  prob = GET_SKILL(ch, SKILL_CIRCLE); 
++
++  if (AWAKE(vict) && (percent > prob))
++    damage(ch, vict, 0, SKILL_CIRCLE); 
++  else 
++    hit(ch, vict, SKILL_CIRCLE); 
++
++  if (percent < SG_MIN) 
++    skill_gain(ch, SKILL_CIRCLE); 
++
++  WAIT_STATE(ch, 2 * PULSE_VIOLENCE); 
++} 
++
+diff -BbuprN -x '*.o' -x conf.h /home/zizazat/tmp/src/class.c /home/zizazat/circle/yoda/src/class.c
+--- /home/zizazat/tmp/src/class.c	2004-01-14 19:05:00.000000000 -0600
++++ /home/zizazat/circle/yoda/src/class.c	2004-01-18 17:52:06.000000000 -0600
+@@ -1900,6 +1900,7 @@ void init_spell_levels(void)
+   spell_level(SKILL_WP_STAFF, CLASS_THIEF, 3);
+   spell_level(SKILL_WP_MACE, CLASS_THIEF, 4);
+   spell_level(SKILL_WP_HAMMER, CLASS_THIEF, 5);
++  spell_level(SKILL_CIRCLE, CLASS_THIEF, 5);
+   spell_level(SKILL_WP_AXE, CLASS_THIEF, 6);
+   spell_level(SKILL_WP_SWORD_LONG, CLASS_THIEF, 7);
+   spell_level(SKILL_WP_SPEAR, CLASS_THIEF, 8);
+diff -BbuprN -x '*.o' -x conf.h /home/zizazat/tmp/src/fight.c /home/zizazat/circle/yoda/src/fight.c
+--- /home/zizazat/tmp/src/fight.c	2004-01-17 10:12:33.000000000 -0600
++++ /home/zizazat/circle/yoda/src/fight.c	2004-01-18 17:49:45.000000000 -0600
+@@ -1110,6 +1110,8 @@ void hit(struct char_data *ch, struct ch
+ 
+     if (type == SKILL_BACKSTAB)
+       damage(ch, victim, dam * backstab_mult(GET_LEVEL(ch)), SKILL_BACKSTAB);
++    else if (type == SKILL_CIRCLE)
++      damage(ch, victim, dam + GET_DEX(ch), SKILL_CIRCLE);
+     else
+       damage(ch, victim, dam, w_type);
+   }
+diff -BbuprN -x '*.o' -x conf.h /home/zizazat/tmp/src/interpreter.c /home/zizazat/circle/yoda/src/interpreter.c
+--- /home/zizazat/tmp/src/interpreter.c	2004-01-16 21:23:22.000000000 -0600
++++ /home/zizazat/circle/yoda/src/interpreter.c	2004-01-18 17:40:29.000000000 -0600
+@@ -90,6 +90,7 @@ ACMD(do_ban);
+ ACMD(do_bash);
+ ACMD(do_break);
+ ACMD(do_cast);
++ACMD(do_circle);
+ ACMD(do_color);
+ ACMD(do_compare);
+ ACMD(do_copyover);
+@@ -314,6 +315,7 @@ cpp_extern const struct command_info cmd
+   { "cast"     , "c"	, POS_SITTING , do_cast     , 1, 0 },
+   { "cedit"    , "cedit"	, POS_DEAD    , do_oasis    , LVL_IMPL, SCMD_OASIS_CEDIT },
+   { "check"    , "ch"	, POS_STANDING, do_not_here , 1, 0 },
++  { "circle"   , "cir"	, POS_SITTING , do_circle   , 0, 0 },
+   { "clear"    , "cle"	, POS_DEAD    , do_gen_ps   , 0, SCMD_CLEAR },
+   { "close"    , "cl"	, POS_SITTING , do_gen_door , 0, SCMD_CLOSE },
+   { "cls"      , "cls"	, POS_DEAD    , do_gen_ps   , 0, SCMD_CLEAR },
+diff -BbuprN -x '*.o' -x conf.h /home/zizazat/tmp/src/spell_parser.c /home/zizazat/circle/yoda/src/spell_parser.c
+--- /home/zizazat/tmp/src/spell_parser.c	2003-11-29 09:37:11.000000000 -0600
++++ /home/zizazat/circle/yoda/src/spell_parser.c	2004-01-18 17:40:29.000000000 -0600
+@@ -1109,5 +1109,6 @@ void mag_assign_spells(void)
+   skillo(SKILL_WP_FLAIL, "flail");
+   skillo(SKILL_WP_STAFF, "staff");
+   skillo(SKILL_WP_HAMMER, "hammer");
++  skillo(SKILL_CIRCLE, "circle");
+ }
+ 
+diff -BbuprN -x '*.o' -x conf.h /home/zizazat/tmp/src/spells.h /home/zizazat/circle/yoda/src/spells.h
+--- /home/zizazat/tmp/src/spells.h	2003-11-29 09:36:56.000000000 -0600
++++ /home/zizazat/circle/yoda/src/spells.h	2004-01-18 17:40:29.000000000 -0600
+@@ -114,6 +114,7 @@
+ #define SKILL_LANG_DWARVEN   	    144
+ #define SKILL_DISARM                160 
+ #define SKILL_TURNING               161 
++#define SKILL_CIRCLE                163 
+ #define SKILL_WP_DAGGER             170 /* Weapon prof */
+ #define SKILL_WP_SWORD_SHORT        171
+ #define SKILL_WP_SWORD_LONG         172

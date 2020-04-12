@@ -1,0 +1,95 @@
+This is an add on to the ascii map that will allow players, npcs, and objects to be displayed on the map.  Its line of sight is 3.  It was developed by Vatiken.  It was buried in the old forums.
+
+- Shulk
+
+1. Search SECT_EMPTY and find the following and under it add:
+
+#define SECT_EMPTY 30 /* anything greater than num sect types */
+#define SECT_STRANGE (SECT_EMPTY + 1)
+#define SECT_HERE  (SECT_STRANGE + 1)
++#define SECT_PC  (SECT_HERE + 1)
++#define SECT_NPC (SECT_PC + 1)
++#define SECT_OBJ   (SECT_NPC + 1)
+
++#define MAP_MODE_NONE   0
++#define MAP_MODE_CHARS  1
++#define MAP_MODE_OBJS   2
++#define MAP_MODE_HIDDEN 3 
++#define MAP_MODE_ALL    4
+
+2. Find static struct map_info_type and add:
+  { SECT_EMPTY,        "   "     }, /* 30 */
+  { SECT_STRANGE,      "[@R?@n]" },
+  { SECT_HERE,         "[@W@@@n]"     },
++  { SECT_PC,         "[@WP@n]" },
++  { SECT_NPC,          "[@BM@n]" },
++  { SECT_OBJ,           "[@YO@n]" }
+
+3. find  static struct map_info_type world_map_info and add:
+
+  { SECT_EMPTY,        " "    }, /* 30 */
+  { SECT_STRANGE,      "@R?"  },
+  { SECT_HERE,         "@B!"  },
++  { SECT_PC,         "@WP" },
++  { SECT_NPC,          "@BM" },
++  { SECT_OBJ,           "@YO" }
+
+4. Find MapArea and under   sh_int prospect_xpos, prospect_ypos;
+add:
+
++  struct char_data *tch;
++  struct obj_data *obj;
++  int found = 0;
++ int mode = MAP_MODE_ALL;
+
+5. Find:
+
+ /* marks the room as visited */
+  if(room == IN_ROOM(ch))
+    map[x][y] = SECT_HERE;
+  else
+    map[x][y] = SECT(room);
+
+Under that add:
+
+/* Search Room For Characters*/
+  if (mode == MAP_MODE_ALL || mode == MAP_MODE_CHARS) {
+  	for (tch = world[room].people; tch; tch = tch->next_in_room) {
+	/* If not displaying world map and "tch" is within field of vision, display. -JA */
+        /* Field of Vision: The player is located at 25, 25 and the map draws out tiles from there. */
+        /* The following line displays PC/NPCs within 3 tiles EAST/WEST of the PC, and 3 tiles NORTH/SOUTH */
+        /* It works out to approximately 1 room... this is designed to keep NPCs from cluttering the map in largely*/
+        /* populated areas. */
+	  if (!worldmap && x < 28 && x > 22 && y < 28 && y > 22) {
+		if (!CAN_SEE(ch, tch)) /* Can't see? Ignore */
+	          continue;
+                if (!IS_NPC(tch)) {
+		 map[x][y] = SECT_PC; /* Assign MAP tile to SECT_PC */
+                 break;               /* If we find a PC, then we break the loop */
+              } else
+ 		 map[x][y] = SECT_NPC; /* Assign MAP tile to SECT_NPC, and continue the loop */
+                found++;               /* Mark found so that a PC/NPC will take priority over objects */
+	  }
+        }
+  }
+
+  if (mode == MAP_MODE_ALL || mode == MAP_MODE_OBJS) {
+	/* If we already found a PC or NPC ignore loop, else continue to search for objects */
+  	for (obj = world[room].contents; obj && !found; obj = obj->next_content) {
+	  /* Once again, only search if not worldmap, and within field of view */
+	  if (!worldmap && x < 28 && x > 22 && y < 28 && y > 22) {
+		map[x][y] = SECT_OBJ; /* Mark MAP as SECT_OBJ */
+		found++; /* Mark found and break loop... kinda redundant*/
+		break;
+	  }	  
+        }
+  }
+  
+6. Find perform_map and under this line:
+  count += sprintf(buf + count, "\tn%s You\\\\", map_info[SECT_HERE].disp); add:
+
++  count += sprintf(buf + count, "@n%s Player\\", map_info[SECT_PC].disp);
++  count += sprintf(buf + count, "@n%s NPC\\", map_info[SECT_NPC].disp);
++  count += sprintf(buf + count, "@n%s Item\\", map_info[SECT_OBJ].disp);
+
+7. close asciimap and compile then copyover

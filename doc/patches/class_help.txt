@@ -1,0 +1,123 @@
+**************************************************
+* This snippet allows players to read the classes*
+* help file while in the creation screen.  If you*
+* need any help use the forum or contact me at   *
+* liko@xidus.net                                 *
+**************************************************
+
+
+
+1. Open comm.c and at the bottom of the file add:
+
+void show_help(struct descriptor_data *t, const char *entry)
+{
+  int chk, bot, top, mid, minlen;
+  char buf[MAX_STRING_LENGTH];
+
+  if (!help_table)
+        return;
+
+  bot = 0;
+  top = top_of_helpt;
+  minlen = strlen(entry);
+
+  for (;;) {
+    mid = (bot + top) / 2;
+
+    if (bot > top) {
+      return;
+    }
+    else if (!(chk = strn_cmp(entry, help_table[mid].keywords, minlen))) {
+      while ((mid > 0) &&
+       (!(chk = strn_cmp(entry, help_table[mid - 1].keywords, minlen))))
+       mid--;
+      write_to_output(t, "\r\n");
+      snprintf(buf, sizeof(buf), "%s\r\n[ PRESS RETURN TO CONTINUE ]",
+       help_table[mid].entry);
+      page_string(t, buf, 0);
+      return;
+    } else {
+      if (chk > 0) bot = mid + 1;
+      else top = mid - 1;
+    }
+  }
+}
+
+
+2. close comm.c and open comm.h
+
+3. Under void copyover_recover(void); add this:
+
+void show_help(struct descriptor_data *t, const char *entry);
+
+4. close comm.c and open class.c
+
+
+5. Where all your other const char's are, add this:
+*Note: this is what show_help uses to read the help files.  Do not add color to these.  Also, you may need to add more for your classes.
+
+const char *class_names[] = {
+        "Magic User",
+        "Cleric",
+        "Thief",
+        "Warrior",
+        "\n"
+};
+
+6. close class.c and open class.h
+
+7. where your extern const chars are defined add this:
+
+extern const char *class_names[];
+
+8. close class.h and open structs.h
+
+9. Find your CON_XX defines and under your last define add this:
+*Note: remember to change the XX's to what your last number is.
+
+#define CON_QCLASS_HELP  XX /* Class Help*/
+
+10. close structs.h and open constants.c:
+
+11. find your connected_types and right above the "\n" add this:
+
+  "Class Help",
+
+12. close constants.c and open interpreter.c
+
+
+13. Find case CON_QCLASS: and right under add this:
+
+        if(!strcmp(arg, "z") || !strcmp(arg, "Z")) {
+                write_to_output(d, "%s\r\nClass Help: ", class_menu);
+                STATE(d) = CON_QCLASS_HELP;
+                return;
+        }
+
+14. Now right after case CON_QCLASS's block of code add this:
+
+  case CON_QCLASS_HELP:
+        if(!strcmp(arg, "z") || !strcmp(arg, "Z")) {
+                write_to_output(d,"%s\r\nClass: ", class_menu);
+                STATE(d) = CON_QCLASS;
+                return;
+        }
+        if(*arg) {
+        load_result = parse_class(*arg);
+                if (load_result == CLASS_UNDEFINED) {
+                        write_to_output(d, "\r\nThat's not a class.\r\n%s\r\nClass Help: ", class_menu);
+                        return;
+                }
+        show_help(d, class_names[load_result]);
+        } else {
+                write_to_output(d, "\r\n%s\r\nClass Help: ", class_menu);
+                break;
+        }
+        STATE(d) = CON_QCLASS_HELP;
+        break;
+
+15. close interpreter.c and make.
+
+*Notes:  You might also want to make it known in your class menu that they can switch to class help mode with Z/z.  Make sure you have the help file created for the class or it wont output anything, but it'll just leave them with the letter they entered then display the class menu stateing its in class help mode.
+
+I hope you enjoy this.  This can easily be ported to use for races also.

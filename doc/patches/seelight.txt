@@ -1,0 +1,45 @@
+: Updated SeeLight
+
+The old seelight was really stupid, this works much better....
+
+Okay, here is something i think you will like.
+I've heard so many people say, "damn.. its annoying that you
+can't grab a light when you are in a dark room". They are
+right, it is :P, soooo i decided to add it. These changes will
+allow your players to see the light they are carrying when
+they are in a dark room, it will also make it possible for them
+use it. Hope you find this useful.
+
+I did not include the code to see containers containing a light
+nor the possibility to get lights from container, why? because of
+the roleplaying factor, you wouldn't see your backpack in the dark,
+but ..eh.. you would feel it.. so.. bah!
+You are probably thinking "that sounds stupid" ..... i know... ;)
+If you really want to add it, but don't know how, send me a mail.
+
+Alot more can and should be added.
+
+Note: this has been updated to work in tbaMUD 3.64.
+
+-----------------------------[ Step One ]-----------------------------
+> in file act.informative.c
+> in void list_obj_to_char
+> search for else if (j->item_number==i->item_number) num++;
+> replace if (CAN_SEE_OBJ(ch, i))
+> with:
+      if (CAN_SEE_OBJ(ch, i) || (GET_OBJ_TYPE(i) == ITEM_LIGHT)) {
+-----------------------------[ Step Two ]-----------------------------
+> in file handler.c
+> in struct obj_data *get_obj_in_list_vis
+> search for (i = list; i && (j <= number); i = i->next_content)
+> replace if (CAN_SEE_OBJ(ch, i))
+> with:
+      if (CAN_SEE_OBJ(ch, i) || (GET_OBJ_TYPE(i) == ITEM_LIGHT))
+----------------------------------------------------------------------
+Do whatever you want with this snippet.
+Enjoy it, hate it, smash it, remake it......
+
+If you decide to use it, please send me a mail, including the address
+to your mud. A line in your credit file is of course also appreciated
+
+/ Hugor (hugor@freebox.com)

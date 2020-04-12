@@ -1,0 +1,351 @@
+diff -BburpN -x '*.0' /src/act.informative.c /new_src/act.informative.c
+--- /src/act.informative.c	2009-09-19 15:59:29.000000000 -0400
++++ /new_src/act.informative.c	2009-12-02 14:00:46.000000000 -0500
+@@ -414,9 +414,9 @@ static void do_auto_exits(struct char_da
+     if (EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED) && !CONFIG_DISP_CLOSED_DOORS)
+       continue;
+     if (EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED))
+-      send_to_char(ch, "%s(%c)%s ", CCRED(ch, C_NRM), LOWER(*dirs[door]), CCCYN(ch, C_NRM));
++      send_to_char(ch, "%s(%s)%s ", CCRED(ch, C_NRM), autoexits[door] , CCCYN(ch, C_NRM));
+     else
+-      send_to_char(ch, "%c ", LOWER(*dirs[door]));
++      send_to_char(ch, "%s ", autoexits[door]);
+     slen++;
+   }
+ 
+diff -BburpN -x '*.0' /src/asciimap.c /new_src/asciimap.c
+--- /src/asciimap.c	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/asciimap.c	2009-12-02 14:07:50.000000000 -0500
+@@ -36,8 +36,8 @@
+ #define MAX_MAP_SIZE (CANVAS_WIDTH - 1)/4
+ #define MAX_MAP      CANVAS_WIDTH
+ 
+-#define MAX_MAP_DIR 6
+-#define MAX_MAP_FOLLOW 4
++#define MAX_MAP_DIR 10
++#define MAX_MAP_FOLLOW 10
+ 
+ #define SECT_EMPTY 30 /* anything greater than num sect types */
+ #define SECT_STRANGE (SECT_EMPTY + 1)
+@@ -47,10 +47,16 @@
+ #define DOOR_EW   -2
+ #define DOOR_UP   -3
+ #define DOOR_DOWN -4
+-#define VDOOR_NS  -5
+-#define VDOOR_EW  -6
+-#define DOOR_NONE -7
+-#define NUM_DOOR_TYPES 7
++#define DOOR_DIAGNE      -5
++#define DOOR_DIAGNW      -6
++#define VDOOR_NS         -7
++#define VDOOR_EW         -8
++#define VDOOR_DIAGNE     -9
++#define VDOOR_DIAGNW     -10
++#define DOOR_UP_AND_NE   -11
++#define DOOR_DOWN_AND_SE -12
++#define DOOR_NONE        -13
++#define NUM_DOOR_TYPES 13
+ 
+ #define MAP_CIRCLE    0
+ #define MAP_RECTANGLE 1
+@@ -67,8 +73,14 @@ struct map_info_type
+ static struct map_info_type door_info[] =
+ {
+   { DOOR_NONE, "   " },
++  { DOOR_DOWN_AND_SE, "@r-@n\\ " },
++  { DOOR_UP_AND_NE,   "@r+@n/ " },
++  { VDOOR_DIAGNW,     " @m+@n " },
++  { VDOOR_DIAGNE,     " @m+@n "},
+   { VDOOR_EW,  " @m+@n " },
+   { VDOOR_NS,  " @m+@n "},
++  { DOOR_DIAGNW,      " \\ " },
++  { DOOR_DIAGNE,      " / " },
+   { DOOR_DOWN, "@r-@n  " },
+   { DOOR_UP,   "@r+@n  " },
+   { DOOR_EW,   " - " },
+@@ -78,8 +90,14 @@ static struct map_info_type door_info[] 
+ static struct map_info_type compact_door_info[] =
+ {
+   { DOOR_NONE, " " },
++  { DOOR_DOWN_AND_SE, "@R\\@n" },
++  { DOOR_UP_AND_NE,   "@R/@n" },
++  { VDOOR_DIAGNW,   "@m+@n" },
++  { VDOOR_DIAGNE,   "@m+@n"},
+   { VDOOR_EW,  " @m+@n " },
+   { VDOOR_NS,  " @m+@n "},
++  { DOOR_DIAGNW,"\\" },
++  { DOOR_DIAGNE,"/" },
+   { DOOR_DOWN, "@r-@n" },
+   { DOOR_UP,   "@r+@n" },
+   { DOOR_EW,   "-" },
+@@ -165,10 +183,10 @@ static struct map_info_type world_map_in
+ 
+ 
+ static int map[MAX_MAP][MAX_MAP];
+-static int offsets[4][2] ={ {-2, 0},{ 0, 2},{ 2, 0},{ 0, -2} };
+-static int offsets_worldmap[4][2] ={ {-1, 0},{ 0, 1},{ 1, 0},{ 0, -1} };
+-static int door_offsets[6][2] ={ {-1, 0},{ 0, 1},{ 1, 0},{ 0, -1},{ -1, 1},{ 1, 1} };
+-static int door_marks[6] = { DOOR_NS, DOOR_EW, DOOR_NS, DOOR_EW, DOOR_UP, DOOR_DOWN };
++static int offsets[10][2] ={ {-2, 0},{ 0, 2},{ 2, 0},{ 0, -2},{0, 0},{ 0, 0},{ -2, -2},{ -2, 2},{2, 2},{ 2, -2} };
++static int offsets_worldmap[10][2] ={ {-1, 0},{ 0, 1},{ 1, 0},{ 0, -1},{0, 0},{ 0, 0},{ -1, -1},{ -1, 1},{1, 1},{ 1, -1} };
++static int door_offsets[10][2] ={ {-1, 0},{ 0, 1},{ 1, 0},{ 0, -1},{ -1, 1},{ 1, 1},{ -1, -1},{ -1, 1},{ 1, 1},{ 1, -1} };
++static int door_marks[10] = { DOOR_NS, DOOR_EW, DOOR_NS, DOOR_EW, DOOR_UP, DOOR_DOWN, DOOR_DIAGNW, DOOR_DIAGNE, DOOR_DIAGNW, DOOR_DIAGNE};
+ static int vdoor_marks[4] = { VDOOR_NS, VDOOR_EW, VDOOR_NS, VDOOR_EW };
+ /******************************************************************************
+  * End Local (File Scope) Defines and Global Variables
+@@ -250,6 +268,18 @@ static void MapArea(room_rnum room, stru
+       case WEST:
+         if(ypos > 0 || xpos!=x_exit_pos) continue;
+         break;
++      case NORTHWEST:
++        if(xpos > 0 || ypos!=y_exit_pos || ypos > 0 || xpos!=x_exit_pos) continue;
++        break;
++      case NORTHEAST:
++        if(xpos > 0 || ypos!=y_exit_pos || ypos < ew_size || xpos!=x_exit_pos) continue;
++        break;
++      case SOUTHEAST:
++        if(xpos < ns_size || ypos!=y_exit_pos || ypos < ew_size || xpos!=x_exit_pos) continue;
++        break;
++      case SOUTHWEST:
++        if(xpos < ns_size || ypos!=y_exit_pos || ypos > 0 || xpos!=x_exit_pos) continue;
++        break;
+       }
+ 
+ 
+@@ -264,7 +294,21 @@ static void MapArea(room_rnum room, stru
+         }
+ 
+       if(!worldmap)
+-        map[x+door_offsets[door][0]][y+door_offsets[door][1]] = door_marks[door] ;
++        if(!worldmap) {
++        	if ((map[x+door_offsets[door][0]][y+door_offsets[door][1]] == DOOR_NONE) ||
++        		(map[x+door_offsets[door][0]][y+door_offsets[door][1]] == SECT_EMPTY)  ) {
++        		map[x+door_offsets[door][0]][y+door_offsets[door][1]] = door_marks[door];
++        	} else {
++        		if ( ((door == NORTHEAST) && (map[x+door_offsets[door][0]][y+door_offsets[door][1]] == DOOR_UP)) ||
++        		((door == UP) && (map[x+door_offsets[door][0]][y+door_offsets[door][1]] == DOOR_DIAGNE))  ) {
++        		map[x+door_offsets[door][0]][y+door_offsets[door][1]] = DOOR_UP_AND_NE;
++        		}
++        		else if ( ((door == SOUTHEAST) && (map[x+door_offsets[door][0]][y+door_offsets[door][1]] == DOOR_DOWN)) ||
++        		((door == DOWN) && (map[x+door_offsets[door][0]][y+door_offsets[door][1]] == DOOR_DIAGNW))  ) {
++        			map[x+door_offsets[door][0]][y+door_offsets[door][1]] = DOOR_DOWN_AND_SE;
++        		}
++        	}
++        }
+ 
+       prospect_xpos = prospect_ypos = 0;
+       switch (door) {
+@@ -277,6 +321,14 @@ static void MapArea(room_rnum room, stru
+         prospect_ypos = ew_size;
+       case EAST:
+         prospect_xpos = world[prospect_room].dir_option[rev_dir[door]] ? x_exit_pos : ns_size/2;
++      break;
++        case NORTHEAST:
++        case NORTHWEST:
++        case SOUTHEAST:
++        case SOUTHWEST:
++        	prospect_xpos = world[prospect_room].dir_option[rev_dir[door]] ? x_exit_pos : ns_size/2;
++        	prospect_ypos = world[prospect_room].dir_option[rev_dir[door]] ? y_exit_pos : ew_size/2;
++        break;
+       }
+ 
+       if(worldmap) {
+diff -BburpN -x '*.0' /src/constants.c /new_src/constants.c
+--- /src/constants.c	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/constants.c	2009-12-02 13:59:40.000000000 -0500
+@@ -40,6 +40,10 @@ const char *dirs[] =
+   "west",
+   "up",
+   "down",
++  "northwest",
++  "northeast",
++  "southeast",
++  "southwest",
+   "\n"
+ };
+ 
+@@ -772,7 +776,11 @@ int rev_dir[] =
+   NORTH,
+   EAST,
+   DOWN,
+-  UP
++  UP,
++  SOUTHEAST,
++  SOUTHWEST,
++  NORTHWEST,
++  NORTHEAST
+ };
+ 
+ /** How much movement is lost moving through a particular sector type. */
+@@ -912,6 +920,21 @@ const char *history_types[] = {
+   "auction",
+   "\n"
+ };
++
++const char *autoexits[] =
++{
++  "n",
++  "e",
++  "s",
++  "w",
++  "u",
++  "d",
++  "nw",
++  "ne",
++  "se",
++  "sw",
++  "\n"
++};
+ /* --- End of constants arrays. --- */
+ 
+ /* Various arrays we count so we can check the world files.  These
+diff -BburpN -x '*.0' /src/constants.h /new_src/constants.h
+--- /src/constants.h	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/constants.h	2009-12-02 13:57:22.000000000 -0500
+@@ -56,5 +56,6 @@ extern size_t action_bits_count;
+ extern size_t affected_bits_count;
+ extern size_t extra_bits_count;
+ extern size_t wear_bits_count;
++extern const char *autoexits[];
+ 
+ #endif /* _CONSTANTS_H_ */
+diff -BburpN -x '*.0' /src/interpreter.c /new_src/interpreter.c
+--- /src/interpreter.c	2009-09-19 15:59:19.000000000 -0400
++++ /new_src/interpreter.c	2009-12-02 13:56:46.000000000 -0500
+@@ -69,6 +69,14 @@ cpp_extern const struct command_info cmd
+   { "west"     , "w"       , POS_STANDING, do_move     , 0, SCMD_WEST },
+   { "up"       , "u"       , POS_STANDING, do_move     , 0, SCMD_UP },
+   { "down"     , "d"       , POS_STANDING, do_move     , 0, SCMD_DOWN },
++  { "northwest", "northw"  , POS_STANDING, do_move     , 0, SCMD_NW },
++  { "nw"       , "nw"      , POS_STANDING, do_move     , 0, SCMD_NW },
++  { "northeast", "northe"  , POS_STANDING, do_move     , 0, SCMD_NE },
++  { "ne"       , "ne"      , POS_STANDING, do_move     , 0, SCMD_NE },
++  { "southeast", "southe"  , POS_STANDING, do_move     , 0, SCMD_SE },
++  { "se"       , "se"      , POS_STANDING, do_move     , 0, SCMD_SE },
++  { "southwest", "southw"  , POS_STANDING, do_move     , 0, SCMD_SW },
++  { "sw"       , "sw"      , POS_STANDING, do_move     , 0, SCMD_SW },
+ 
+   /* now, the main list */
+   { "at"       , "at"      , POS_DEAD    , do_at       , LVL_IMMORT, 0 },
+diff -BburpN -x '*.0' /src/interpreter.h /new_src/interpreter.h
+--- /src/interpreter.h	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/interpreter.h	2009-12-02 13:55:46.000000000 -0500
+@@ -99,6 +99,10 @@ struct alias_data {
+ #define SCMD_WEST    WEST
+ #define SCMD_UP      UP
+ #define SCMD_DOWN    DOWN
++#define SCMD_NW      NORTHWEST
++#define SCMD_NE      NORTHEAST
++#define SCMD_SE      SOUTHEAST
++#define SCMD_SW      SOUTHWEST
+ 
+ /** @deprecated all old do_poof stuff is deprecated and unused. */
+ #define SCMD_POOFIN   0
+diff -BburpN -x '*.0' /src/redit.c /new_src/redit.c
+--- /src/redit.c	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/redit.c	2009-12-02 14:17:55.781250000 -0500
+@@ -418,13 +418,13 @@ static void redit_disp_menu(struct descr
+ 	  "%s2%s) Description :\r\n%s%s"
+ 	  "%s3%s) Room flags  : %s%s\r\n"
+ 	  "%s4%s) Sector type : %s%s\r\n"
+-	  "%s5%s) Exit north  : %s%d\r\n"
+-	  "%s6%s) Exit east   : %s%d\r\n"
+-	  "%s7%s) Exit south  : %s%d\r\n"
+-	  "%s8%s) Exit west   : %s%d\r\n"
++	  "%s5%s) Exit north  : %s%d%s,  %sB%s) Exit northwest : %s%d\r\n"
++	  "%s6%s) Exit east   : %s%d%s,  %sC%s) Exit northeast : %s%d\r\n"
++	  "%s7%s) Exit south  : %s%d%s,  %sD%s) Exit southeast : %s%d\r\n"
++	  "%s8%s) Exit west   : %s%d%s,  %sE%s) Exit southwest : %s%d\r\n"
+ 	  "%s9%s) Exit up     : %s%d\r\n"
+ 	  "%sA%s) Exit down   : %s%d\r\n"
+-	  "%sB%s) Extra descriptions menu\r\n"
++	  "%sF%s) Extra descriptions menu\r\n"
+ 	  "%sS%s) Script      : %s%s\r\n"
+           "%sW%s) Copy Room\r\n"
+ 	  "%sX%s) Delete Room\r\n"
+@@ -440,15 +440,27 @@ static void redit_disp_menu(struct descr
+ 	  grn, nrm, cyn,
+ 	  room->dir_option[NORTH] && room->dir_option[NORTH]->to_room != NOWHERE ?
+ 	  world[room->dir_option[NORTH]->to_room].number : -1,
++	  nrm, grn, nrm, cyn,
++	  room->dir_option[NORTHWEST] && room->dir_option[NORTHWEST]->to_room != NOWHERE ?
++	  world[room->dir_option[NORTHWEST]->to_room].number : -1,
+ 	  grn, nrm, cyn,
+ 	  room->dir_option[EAST] && room->dir_option[EAST]->to_room != NOWHERE ?
+ 	  world[room->dir_option[EAST]->to_room].number : -1,
++	  nrm, grn, nrm, cyn,
++	  room->dir_option[NORTHEAST] && room->dir_option[NORTHEAST]->to_room != NOWHERE ?
++	  world[room->dir_option[NORTHEAST]->to_room].number : -1,
+ 	  grn, nrm, cyn,
+ 	  room->dir_option[SOUTH] && room->dir_option[SOUTH]->to_room != NOWHERE ?
+ 	  world[room->dir_option[SOUTH]->to_room].number : -1,
++	  nrm, grn, nrm, cyn,
++	  room->dir_option[SOUTHEAST] && room->dir_option[SOUTHEAST]->to_room != NOWHERE ?
++	  world[room->dir_option[SOUTHEAST]->to_room].number : -1,
+ 	  grn, nrm, cyn,
+ 	  room->dir_option[WEST] && room->dir_option[WEST]->to_room != NOWHERE ?
+ 	  world[room->dir_option[WEST]->to_room].number : -1,
++	  nrm, grn, nrm, cyn,
++	  room->dir_option[SOUTHWEST] && room->dir_option[SOUTHWEST]->to_room != NOWHERE ?
++	  world[room->dir_option[SOUTHWEST]->to_room].number : -1,
+ 	  grn, nrm, cyn,
+ 	  room->dir_option[UP] && room->dir_option[UP]->to_room != NOWHERE ?
+ 	  world[room->dir_option[UP]->to_room].number : -1,
+@@ -560,6 +572,26 @@ void redit_parse(struct descriptor_data 
+       break;
+     case 'b':
+     case 'B':
++      OLC_VAL(d) = NORTHWEST;
++      redit_disp_exit_menu(d);
++      break;
++	case 'c':
++	case 'C':
++      OLC_VAL(d) = NORTHEAST;
++      redit_disp_exit_menu(d);
++      break;
++    case 'd':
++    case 'D':
++      OLC_VAL(d) = SOUTHEAST;
++      redit_disp_exit_menu(d);
++      break;
++    case 'e':
++    case 'E':
++      OLC_VAL(d) = SOUTHWEST;
++      redit_disp_exit_menu(d);
++      break;
++    case 'f':
++    case 'F':
+       /* If the extra description doesn't exist. */
+       if (!OLC_ROOM(d)->ex_description)
+ 	CREATE(OLC_ROOM(d)->ex_description, struct extra_descr_data, 1);
+diff -BburpN -x '*.0' /src/spec_procs.c /new_src/spec_procs.c
+--- /src/spec_procs.c	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/spec_procs.c	2009-12-02 13:50:54.000000000 -0500
+@@ -434,7 +434,7 @@ SPECIAL(guild_guard) 
+    
+   /* find out what direction they are trying to go */ 
+   for (direction = 0; direction < NUM_OF_DIRS; direction++) 
+-    if (!strcmp(cmd_info[cmd].command, dirs[direction])) 
++    if (!strcmp(cmd_info[cmd].command, dirs[direction]) || !strcmp(cmd_info[cmd].command, autoexits[direction])) 
+       break; 
+ 
+   for (i = 0; guild_info[i].guild_room != NOWHERE; i++) { 
+diff -BburpN -x '*.0' /src/structs.h /new_src/structs.h
+--- /src/structs.h	2009-09-19 15:54:48.000000000 -0400
++++ /new_src/structs.h	2009-12-02 13:50:08.000000000 -0500
+@@ -64,10 +64,14 @@
+ #define WEST           3    /**< The direction west */
+ #define UP             4    /**< The direction up */
+ #define DOWN           5    /**< The direction down */
++#define NORTHWEST      6    /**< The direction north-west */
++#define NORTHEAST      7    /**< The direction north-east */
++#define SOUTHEAST      8    /**< The direction south-east */
++#define SOUTHWEST      9    /**< The direction south-west */
+ /** Total number of directions available to move in. BEFORE CHANGING THIS, make
+  * sure you change every other direction and movement based item that this will
+  * impact. */
+-#define NUM_OF_DIRS    6
++#define NUM_OF_DIRS    10
+ 
+ /* Room flags: used in room_data.room_flags */
+ /* WARNING: In the world files, NEVER set the bits marked "R" ("Reserved") */

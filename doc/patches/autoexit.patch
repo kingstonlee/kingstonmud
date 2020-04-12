@@ -1,0 +1,371 @@
+diff -BbuprN -x '*.o' suntzu/src/act.informative.c suntzu-ken/src/act.informative.c
+--- suntzu/src/act.informative.c	2003-11-27 10:09:47.000000000 -0600
++++ suntzu-ken/src/act.informative.c	2003-12-27 22:31:46.000000000 -0600
+@@ -89,7 +89,8 @@ void diag_obj_to_char(struct obj_data *o
+ void look_at_char(struct char_data *i, struct char_data *ch);
+ void list_one_char(struct char_data *i, struct char_data *ch);
+ void list_char_to_char(struct char_data *list, struct char_data *ch);
+-void do_auto_exits(room_rnum target_room, struct char_data *ch);
++ACMD(do_autoexit);
++void do_auto_exits(room_rnum target_room, struct char_data *ch, int exit_mode);
+ ACMD(do_exits);
+ void look_in_direction(struct char_data *ch, int dir);
+ void look_in_obj(struct char_data *ch, char *arg);
+@@ -486,60 +487,146 @@ void list_char_to_char(struct char_data 
+   } /* loop through all characters in room */
+ }
+ 
+-
+-void do_auto_exits(room_rnum target_room, struct char_data *ch)
++void do_auto_exits(room_rnum target_room, struct char_data *ch, int exit_mode)
+ {
+-  int door, slen = 0;
++  int door, door_found = 0, has_light = FALSE;
+ 
++  if (exit_mode == EXIT_BASIC) {
++    /* Standard behaviour - just list the available exit directions */
+   send_to_char(ch, "%s[ Exits: ", CCCYN(ch, C_NRM));
+-
+   for (door = 0; door < NUM_OF_DIRS; door++) {
+-    if (!W_EXIT(target_room, door) || W_EXIT(target_room, door)->to_room == NOWHERE)
++      if (!W_EXIT(target_room, door) ||
++           W_EXIT(target_room, door)->to_room == NOWHERE)
+       continue;
+-    if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_CLOSED))
++      if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_CLOSED) &&
++          !CONFIG_DISP_CLOSED_DOORS)
+       continue;
+-
++      if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_SECRET))
++        continue;
++      if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_CLOSED))
++        send_to_char(ch, "%s(%s)%s ",
++                     CCRED(ch, C_NRM), abbr_dirs[door], CCCYN(ch, C_NRM));
++      else
+     send_to_char(ch, "%s ", abbr_dirs[door]);
+-    slen++;
++      door_found++;
++    }
++    send_to_char(ch, "%s]%s\r\n", door_found ? "" : "None!", CCNRM(ch, C_NRM));
++  }
++  if (exit_mode == EXIT_FULL) {
++    send_to_char(ch, "%sObvious Exits:%s\r\n", CCCYN(ch, C_NRM), CCNRM(ch,C_NRM));
++    if (IS_AFFECTED(ch, AFF_BLIND)) {
++      send_to_char(ch, "You can't see a damned thing, you're blind!\r\n");
++      return;
++    }
++    if (IS_DARK(IN_ROOM(ch)) && !CAN_SEE_IN_DARK(ch)) {
++      send_to_char(ch, "It is pitch black...\r\n");
++      return;
+   }
+ 
+-  send_to_char(ch, "%s]%s\r\n", slen ? "" : "None!", CCNRM(ch, C_NRM));
+-}
++    /* Is the character using a working light source? */
++    if (GET_EQ(ch, WEAR_LIGHT))
++      if (GET_OBJ_TYPE(GET_EQ(ch, WEAR_LIGHT)) == ITEM_LIGHT)
++        if (GET_OBJ_VAL(GET_EQ(ch, WEAR_LIGHT),2))
++          has_light = TRUE;
+ 
++    for (door = 0; door < NUM_OF_DIRS; door++) {
++      if (W_EXIT(target_room, door) &&
++          W_EXIT(target_room, door)->to_room != NOWHERE) {
++        /* We have a door that leads somewhere */
++        if (GET_LEVEL(ch) >= LVL_IMMORT) {
++          /* Immortals see everything */
++          door_found++;
++          send_to_char(ch, "%-9s - [%5d] %s.\r\n", dirs[door],
++                world[W_EXIT(target_room, door)->to_room].number,
++                world[W_EXIT(target_room, door)->to_room].name);
++          if (IS_SET(W_EXIT(target_room, door)->exit_info, EX_ISDOOR) ||
++              IS_SET(W_EXIT(target_room, door)->exit_info, EX_SECRET)   ) {
++            /* This exit has a door - tell all about it */
++            send_to_char(ch,"                    The %s%s is %s %s%s.\r\n",
++                IS_SET(W_EXIT(target_room, door)->exit_info, EX_SECRET) ?
++                    "secret " : "",
++                (W_EXIT(target_room, door)->keyword &&
++                 str_cmp(fname(W_EXIT(target_room, door)->keyword), "undefined")) ?
++                    fname(W_EXIT(target_room, door)->keyword) : "opening",
++                IS_SET(W_EXIT(target_room, door)->exit_info, EX_CLOSED) ?
++                    "closed" : "open",
++                IS_SET(W_EXIT(target_room, door)->exit_info, EX_LOCKED) ?
++                    "and locked" : "but unlocked",
++                IS_SET(W_EXIT(target_room, door)->exit_info, EX_PICKPROOF) ?
++                    " (pickproof)" : "");
++          }
++        }
++        else { /* This is what mortal characters see */
++          if (!IS_SET(W_EXIT(target_room, door)->exit_info, EX_CLOSED)) {
++            /* And the door is open */
++            door_found++;
++            send_to_char(ch, "%-9s - %s\r\n", dirs[door],
++                IS_DARK(W_EXIT(target_room, door)->to_room) &&
++                !CAN_SEE_IN_DARK(ch) && !has_light ?
++                "Too dark to tell." :
++                world[W_EXIT(target_room, door)->to_room].name);
++          } else if (CONFIG_DISP_CLOSED_DOORS &&
++              !IS_SET(W_EXIT(target_room, door)->exit_info, EX_SECRET)) {
++              /* But we tell them the door is closed */
++              door_found++;
++              send_to_char(ch, "%-9s - The %s is closed.\r\n", dirs[door],
++                  (W_EXIT(target_room, door)->keyword) ?
++                  fname(W_EXIT(target_room,door)->keyword) : "opening" );
++            }
++        }
++      }
++    }
++    if (!door_found)
++    send_to_char(ch, " None.\r\n");
++  }
++}
+ 
+ ACMD(do_exits)
+ {
+-  int door, len = 0;
++  /* Why duplicate code? */
++  do_auto_exits(IN_ROOM(ch), ch, EXIT_FULL);
++}
+ 
+-  if (AFF_FLAGGED(ch, AFF_BLIND)) {
+-    send_to_char(ch, "You can't see a damned thing, you're blind!\r\n");
+-    return;
+-  }
++const char *exitlevels[] = {
++  "off", "basic", "n/a", "full", "\n"};
+ 
+-  send_to_char(ch, "Obvious exits:\r\n");
++ACMD(do_autoexit)
++{
++  char arg[MAX_INPUT_LENGTH];
++  int tp;
+ 
+-  for (door = 0; door < NUM_OF_DIRS; door++) {
+-    if (!EXIT(ch, door) || EXIT(ch, door)->to_room == NOWHERE)
+-      continue;
+-    if (EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED))
+-      continue;
++  if (IS_NPC(ch))
++    return;
+ 
+-    len++;
++  one_argument(argument, arg);
+ 
+-    if (GET_LEVEL(ch) >= LVL_IMMORT)
+-      send_to_char(ch, "%-9s - [%5d] %s\r\n", dirs[door], GET_ROOM_VNUM(EXIT(ch, door)->to_room),
+-		world[EXIT(ch, door)->to_room].name);
+-    else
+-      send_to_char(ch, "%-9s - %s\r\n", dirs[door], IS_DARK(EXIT(ch, door)->to_room) &&
+-		!CAN_SEE_IN_DARK(ch) ? "Too dark to tell." : world[EXIT(ch, door)->to_room].name);
+-  }
+ 
+-  if (!len)
+-    send_to_char(ch, " None.\r\n");
++  if (!*arg) {
++    send_to_char(ch, "Your current autoexit level is %s.\r\n", exitlevels[EXIT_LEV(ch)]);
++    return;
++  }
++  if (((tp = search_block(arg, exitlevels, FALSE)) == -1)) {
++    send_to_char(ch, "Usage: Autoexit { Off | Basic | Full }\r\n");
++    return;
++  }
++  switch (tp) {
++    case EXIT_OFF:
++      REMOVE_BIT_AR(PRF_FLAGS(ch), PRF_AUTOEXIT);
++      REMOVE_BIT_AR(PRF_FLAGS(ch), PRF_FULL_EXIT);
++      break;
++    case EXIT_BASIC:
++      SET_BIT_AR(PRF_FLAGS(ch), PRF_AUTOEXIT);
++      REMOVE_BIT_AR(PRF_FLAGS(ch), PRF_FULL_EXIT);
++      break;
++    case EXIT_FULL:
++      SET_BIT_AR(PRF_FLAGS(ch), PRF_AUTOEXIT);
++      SET_BIT_AR(PRF_FLAGS(ch), PRF_FULL_EXIT);
++      break;
++  }
++  send_to_char(ch, "Your %sautoexit level%s is now %s.\r\n",
++               CCRED(ch, C_SPR), CCNRM(ch, C_OFF), exitlevels[EXIT_LEV(ch)]);
+ }
+ 
+-
+-
+ void look_at_room(room_rnum target_room, struct char_data *ch, int ignore_brief)
+ {
+   if (!ch->desc)
+@@ -569,7 +656,7 @@ void look_at_room(room_rnum target_room,
+ 
+   /* autoexits */
+   if (!IS_NPC(ch) && PRF_FLAGGED(ch, PRF_AUTOEXIT))
+-    do_auto_exits(target_room, ch);
++    do_auto_exits(target_room, ch, EXIT_LEV(ch));
+ 
+   /* now list characters & objects */
+   send_to_char(ch, "%s", CCGRN(ch, C_NRM));
+diff -BbuprN -x '*.o' suntzu/src/cedit.c suntzu-ken/src/cedit.c
+--- suntzu/src/cedit.c	2003-10-17 16:39:48.000000000 -0500
++++ suntzu-ken/src/cedit.c	2003-12-27 22:37:09.000000000 -0600
+@@ -114,6 +114,7 @@ void cedit_setup(struct descriptor_data 
+   OLC_CONFIG(d)->play.dts_are_dumps       = CONFIG_DTS_ARE_DUMPS;
+   OLC_CONFIG(d)->play.load_into_inventory = CONFIG_LOAD_INVENTORY;
+   OLC_CONFIG(d)->play.track_through_doors = CONFIG_TRACK_T_DOORS;
++  OLC_CONFIG(d)->play.disp_closed_doors   = CONFIG_DISP_CLOSED_DOORS;
+   OLC_CONFIG(d)->play.immort_level_ok     = CONFIG_IMMORT_LEVEL_OK;
+   OLC_CONFIG(d)->play.stack_mobs	  = CONFIG_STACK_MOBS;
+   OLC_CONFIG(d)->play.stack_objs	  = CONFIG_STACK_OBJS;
+@@ -222,6 +223,7 @@ void cedit_save_internally(struct descri
+   CONFIG_DTS_ARE_DUMPS       = OLC_CONFIG(d)->play.dts_are_dumps;
+   CONFIG_LOAD_INVENTORY = OLC_CONFIG(d)->play.load_into_inventory;
+   CONFIG_TRACK_T_DOORS = OLC_CONFIG(d)->play.track_through_doors;
++  CONFIG_DISP_CLOSED_DOORS   = OLC_CONFIG(d)->play.disp_closed_doors;
+   CONFIG_IMMORT_LEVEL_OK     = OLC_CONFIG(d)->play.immort_level_ok;
+   CONFIG_STACK_MOBS	     = OLC_CONFIG(d)->play.stack_mobs;
+   CONFIG_STACK_OBJS	     = OLC_CONFIG(d)->play.stack_objs;
+@@ -396,6 +398,8 @@ int save_config( IDXTYPE nowhere )
+               "load_into_inventory = %d\n\n", CONFIG_LOAD_INVENTORY);
+   fprintf(fl, "* Should PC's be able to track through hidden or closed doors?\n"
+               "track_through_doors = %d\n\n", CONFIG_TRACK_T_DOORS);
++  fprintf(fl, "* Should closed doors be shown on autoexit / exit?\n"
++              "disp_closed_doors = %d\n\n", CONFIG_DISP_CLOSED_DOORS);
+   fprintf(fl, "* Should players who reach enough exp automatically level to immortal?\n"
+               "immort_level_ok = %d\n\n", CONFIG_IMMORT_LEVEL_OK);
+   fprintf(fl, "* Stack mobiles when showing contents of rooms?\n"
+@@ -637,7 +641,8 @@ void cedit_disp_game_play_options(struct
+         "%sM%s) Death Traps Junk Items      : %s%s\r\n"
+         "%sN%s) Objects Load Into Inventory : %s%s\r\n"
+         "%sO%s) Track Through Doors         : %s%s\r\n"
+-        "%sP%s) Mortals Level To Immortal   : %s%s\r\n"
++        "%sP%s) Display Closed Doors        : %s%s\r\n"
++        "%sR%s) Mortals Level To Immortal   : %s%s\r\n"
+ 	"%s1%s) Stack Mobiles in room descs : %s%s\r\n"
+ 	"%s2%s) Stack Objects in room descs : %s%s\r\n"
+         "%s3%s) OK Message Text         : %s%s"
+@@ -661,6 +666,7 @@ void cedit_disp_game_play_options(struct
+         grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.dts_are_dumps),
+         grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.load_into_inventory),
+         grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.track_through_doors),
++        grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.disp_closed_doors),
+         grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.immort_level_ok),
+ 	grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.stack_mobs),
+ 	grn, nrm, cyn, CHECK_VAR(OLC_CONFIG(d)->play.stack_objs),
+@@ -974,6 +980,11 @@ void cedit_parse(struct descriptor_data 
+         
+         case 'p':
+         case 'P':
++          TOGGLE_VAR(OLC_CONFIG(d)->play.disp_closed_doors);
++          break;
++
++        case 'r':
++        case 'R':
+           TOGGLE_VAR(OLC_CONFIG(d)->play.immort_level_ok);
+           break;
+         
+diff -BbuprN -x '*.o' suntzu/src/config.c suntzu-ken/src/config.c
+--- suntzu/src/config.c	2003-11-22 16:58:56.000000000 -0600
++++ suntzu-ken/src/config.c	2003-12-27 22:27:50.000000000 -0600
+@@ -416,3 +416,10 @@ int min_wizlist_lev = LVL_GOD;
+ 
+ obj_vnum portal_object = 2;
+ 
++/*
++ * Do you want EXITS and AUTOEXIT to automatically display closed doors?
++ * Set to NO to mimic historic behaviour - a player has to explicitly
++ * look in a certain direction to see a door there.
++ */
++int display_closed_doors = YES;
++
+diff -BbuprN -x '*.o' suntzu/src/db.c suntzu-ken/src/db.c
+--- suntzu/src/db.c	2003-11-24 17:53:16.000000000 -0600
++++ suntzu-ken/src/db.c	2003-12-27 22:33:52.000000000 -0600
+@@ -182,6 +182,7 @@ extern int no_specials;
+ extern int scheck;
+ extern int bitwarning;
+ extern int bitsavetodisk;
++extern int display_closed_doors;
+ 
+ /* external ascii pfile vars */
+ extern struct pclean_criteria_data pclean_criteria[];
+@@ -4403,6 +4404,7 @@ void load_default_config( void )
+   CONFIG_NOPERSON		= strdup(NOPERSON);
+   CONFIG_NOEFFECT		= strdup(NOEFFECT);
+   CONFIG_TRACK_T_DOORS          = track_through_doors;
++  CONFIG_DISP_CLOSED_DOORS      = display_closed_doors;
+   CONFIG_IMMORT_LEVEL_OK	= immort_level_ok;
+   CONFIG_STACK_MOBS		= show_mob_stacking;
+   CONFIG_STACK_OBJS		= show_obj_stacking;
+@@ -4503,7 +4505,9 @@ void load_config( void )
+         break;
+         
+       case 'd':
+-        if (!str_cmp(tag, "dts_are_dumps"))
++        if (!str_cmp(tag, "display_closed_doors"))
++          CONFIG_DISP_CLOSED_DOORS = num;
++        else if (!str_cmp(tag, "dts_are_dumps"))
+           CONFIG_DTS_ARE_DUMPS = num;
+         else if (!str_cmp(tag, "donation_room_1"))
+           if (num == -1)
+diff -BbuprN -x '*.o' suntzu/src/interpreter.c suntzu-ken/src/interpreter.c
+--- suntzu/src/interpreter.c	2003-11-12 13:27:54.000000000 -0600
++++ suntzu-ken/src/interpreter.c	2003-12-27 22:52:03.000000000 -0600
+@@ -84,6 +84,7 @@ ACMD(do_assedit);
+ ACMD(do_assist);
+ ACMD(do_astat);
+ ACMD(do_at);
++ACMD(do_autoexit);
+ ACMD(do_backstab);
+ ACMD(do_ban);
+ ACMD(do_bash);
+@@ -293,7 +294,7 @@ cpp_extern const struct command_info cmd
+   { "assist"   , "as"	, POS_FIGHTING, do_assist   , 1, 0 },
+   { "ask"      , "ask"	, POS_RESTING , do_spec_comm, 0, SCMD_ASK },
+   { "auction"  , "auc"	, POS_SLEEPING, do_gen_comm , 0, SCMD_AUCTION },
+-  { "autoexit" , "autoex"	, POS_DEAD    , do_gen_tog  , 0, SCMD_AUTOEXIT },
++  { "autoexit" , "autoex"       , POS_DEAD    , do_autoexit , 0, 0 },
+   { "autogold" , "autogo"	, POS_DEAD    , do_gen_tog  , 0, SCMD_AUTOGOLD },
+   { "autoloot" , "autolo"	, POS_DEAD    , do_gen_tog  , 0, SCMD_AUTOLOOT },
+ 
+diff -BbuprN -x '*.o' suntzu/src/structs.h suntzu-ken/src/structs.h
+--- suntzu/src/structs.h	2003-11-30 18:41:53.000000000 -0600
++++ suntzu-ken/src/structs.h	2003-12-27 22:44:02.000000000 -0600
+@@ -271,7 +271,7 @@
+ #define PRF_AFK         25 /* Player is AFK				*/
+ #define PRF_AUTOLOOT    26 /* Loot everything from a corpse		*/
+ #define PRF_AUTOGOLD    27 /* Loot gold from a corpse			*/
+-
++#define PRF_FULL_EXIT   28 /* Shows full autoexit details               */
+ 
+ /* Affect bits: used in char_data.char_specials.saved.affected_by */
+ /* WARNING: In the world files, NEVER set the bits marked "R" ("Reserved") */
+@@ -366,6 +366,15 @@
+ 
+ #define NUM_WEARS      23	/* This must be the # of eq positions!! */
+ 
++/* Player autoexit levels: used as an index to exitlevels           */
++#define EXIT_OFF        0       /* Autoexit off                     */
++#define EXIT_BASIC      1       /* Brief display (stock behaviour)  */
++#define EXIT_NA         2       /* Not implemented - do not use     */
++#define EXIT_FULL       3       /* Full display                     */
++
++#define _exitlevel(ch) (!IS_NPC(ch) ? (PRF_FLAGGED((ch),PRF_AUTOEXIT) ? 1 : 0 ) + \
++                       (PRF_FLAGGED((ch),PRF_FULL_EXIT) ? 2 : 0 ) : 0 )
++#define EXIT_LEV(ch) (_exitlevel(ch))
+ 
+ /* object-related defines ********************************************/
+ 
+@@ -1378,6 +1387,7 @@ struct game_data {
+   int dts_are_dumps;      /* Should items in dt's be junked?	  */
+   int load_into_inventory;/* Objects load in immortals inventory. */
+   int track_through_doors;/* Track through doors while closed?    */
++  int disp_closed_doors;  /* Display closed doors in autoexit?    */
+   int immort_level_ok;    /* Automatically level mortals to imm?  */
+   int stack_mobs;	  /* Turn mob stacking on                 */
+   int stack_objs;	  /* Turn obj stacking on                 */
+diff -BbuprN -x '*.o' suntzu/src/utils.h suntzu-ken/src/utils.h
+--- suntzu/src/utils.h	2003-10-17 16:39:48.000000000 -0500
++++ suntzu-ken/src/utils.h	2003-12-27 22:27:22.000000000 -0600
+@@ -618,6 +618,7 @@ void	update_pos(struct char_data *victim
+ #define CONFIG_DTS_ARE_DUMPS    config_info.play.dts_are_dumps
+ #define CONFIG_LOAD_INVENTORY   config_info.play.load_into_inventory
+ #define CONFIG_TRACK_T_DOORS    config_info.play.track_through_doors
++#define CONFIG_DISP_CLOSED_DOORS config_info.play.disp_closed_doors
+ #define CONFIG_IMMORT_LEVEL_OK  config_info.play.immort_level_ok
+ #define CONFIG_STACK_MOBS	config_info.play.stack_mobs
+ #define CONFIG_STACK_OBJS	config_info.play.stack_objs

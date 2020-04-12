@@ -1,0 +1,554 @@
+
+
+1. make a file called race.c
+
+2. add this:
+
+/**************************************************************************
+*  File: race.c                                           Part of tbaMUD *
+*  Usage: Source file for class-specific code.                            *
+*                                                                         *
+*  All rights reserved.  See license for complete information.            *
+*                                                                         *
+*  Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University *
+*  CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.               *
+**************************************************************************/
+
+/** Help buffer the global variable definitions */
+#define __RACE_C__
+
+/* This file attempts to concentrate most of the code which must be changed
+ * in order for new race to be added.  If you're adding a new class, you
+ * should go through this entire file from beginning to end and add the
+ * appropriate new special cases for your new race. */
+
+#include "conf.h"
+#include "sysdep.h"
+#include "structs.h"
+#include "utils.h"
+#include "db.h"
+#include "spells.h"
+#include "interpreter.h"
+#include "constants.h"
+#include "act.h"
+#include "comm.h"
+
+/*Names First*/
+const char *race_abbrevs[] = {
+        "Hu",
+        "El",
+        "Dw",
+        "\n"
+};
+
+const char *pc_race_types[] = {
+        "Human",
+        "Elf",
+        "Dwarf",
+        "\n"
+};
+/* Race Menu in Interpreter.c*/
+const char *race_menu = 
+"\r\n"
+"+------------------+\r\n"
+"|       Race       |\r\n"
+"+------------------+\r\n"
+"| A) Human         |\r\n"
+"| B) Elf           |\r\n"
+"| C) Dwarf         |\r\n"
+"+------------------|\r\n";
+
+/* The code to interpret a race letter -- used in interpreter.c when a new
+ * character is selecting a race and by 'set race' in act.wizard.c. */
+int parse_race(char arg)
+{
+  arg = LOWER(arg);
+
+  switch (arg) {
+  case 'a': return RACE_HUMAN;
+  case 'b': return RACE_ELF;
+  case 'c': return RACE_DWARF;
+  default:  return RACE_UNDEFINED;
+  }
+}
+
+
+bitvector_t find_race_bitvector(const char *arg)
+{
+  size_t rpos, ret = 0;
+
+  for (rpos = 0; rpos < strlen(arg); rpos++)
+    ret |= (1 << parse_race(arg[rpos]));
+
+  return (ret);
+}
+
+/* Invalid wear flags */
+int invalid_race(struct char_data *ch, struct obj_data *obj) {
+  if ((OBJ_FLAGGED(obj, ITEM_ANTI_HUMAN) && IS_HUMAN(ch)) ||
+      (OBJ_FLAGGED(obj, ITEM_ANTI_ELF)   && IS_ELF(ch)) ||
+      (OBJ_FLAGGED(obj, ITEM_ANTI_DWARF) && IS_DWARF(ch)))
+        return 1;
+  else
+        return 0;
+}
+
+
+3. close race.c
+
+4. open race.h and add the following:
+
+/**
+* @file race.h
+* Header file for class specific functions and variables.
+*
+* Part of the core tbaMUD source code distribution, which is a derivative
+* of, and continuation of, CircleMUD.
+*
+* All rights reserved.  See license for complete information.
+* Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University
+* CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.
+*
+*/
+#ifndef _race_H_
+#define _race_H_
+
+
+int parse_race(char arg);
+bitvector_t find_race_bitvector(const char *arg);
+int invalid_race(struct char_data *ch, struct obj_data *obj);
+
+
+/* Global variables */
+
+#ifndef __RACE_C__
+
+extern const char *race_abbrevs[];
+extern const char *pc_race_types[];
+extern const char *race_menu;
+
+#endif /* __RACE_C__ */
+
+#endif /* _RACE_H_*/
+
+4. close race.h
+
+5. Open structs.h and under your last #define NUM_CLASSES add:
+
+#define RACE_UNDEFINED  (-1) /*Race Undefined*/
+#define RACE_HUMAN      0 /* Race Human */
+#define RACE_ELF        1 /* Race Elf   */
+#define RACE_DWARF      2 /* Race Dwarf */
+/* Total Number of available PC Races*/
+#define NUM_RACES       3
+
+6. Now search Con_ and under your last Con_X add:
+
+#define CON_QRACE        32 /* Choose character race*/
+
+7. Now search Item_ and under your last item_ add:
+
+#define ITEM_ANTI_HUMAN       20   /* Not usable by Humans*/
+#define ITEM_ANTI_ELF         21   /* Not usable by Elfs */
+#define ITEM_ANTI_DWARF       22   /* Not usable by Dwarf*/
+
+Also, change your #Define NUM_ITEM_FLAGS to
+
+#define ITEM_NUM_FLAGS	23
+
+8. now search char_player_data and under ubyte height; add:
+
+  byte race;                    /* PC/NPC Race*/
+
+9. close structs.h
+
+10. open utils.h
+
+11. now search #define GET_CLASS and under it add:
+
+#define GET_RACE(ch)	((ch)->player.race)
+
+12. Now search class_abbr and under IS_WARRIOR add:
+
+/*Return the Race abbreviation for cha. */
+#define RACE_ABBR(ch) (IS_NPC(ch) ? "--" : race_abbrevs[(int)GET_RACE(ch)])
+
+13. Under #define RACE_ABBR add:
+
+/* 1 if ch is human race, 0 if not */
+#define IS_HUMAN(ch)            (!IS_NPC(ch) && \
+        (GET_RACE(ch) == RACE_HUMAN))
+/* 1 if ch is elf race, 0 if not */
+#define IS_ELF(ch)            (!IS_NPC(ch) && \
+        (GET_RACE(ch) == RACE_ELF))
+/* 1 if ch is dwarf race, 0 if not */
+#define IS_DWARF(ch)            (!IS_NPC(ch) && \
+        (GET_RACE(ch) == RACE_DWARF))
+
+14. close utils.h
+
+15. Open constants.c
+
+16. search for connected_types and just above "\n" add:
+
+  "Select Race",
+
+17. search for extra_bits and just above "\n" add:
+
+  "ANTI_HUMAN",
+  "ANTI_ELF",
+  "ANTI_DWARF",
+
+18. close constants.c
+
+19. open pfdefaults.h
+
+20. search #endif and above it add:
+
+#define PFDEF_RACE              0
+
+21. close pfdefaults.h
+
+22. open players.c
+
+23. search GET_LAST_NEWS and under it add:
+
+    GET_RACE(ch) = PFDEF_RACE;
+
+24.  search case 'R' and you should see this:
+      case 'R':
+        if (!strcmp(tag, "Room"))  GET_LOADROOM(ch)        = atoi(line);
+        break;
+
+now change it to:
+
+      case 'R':
+                if(!strcmp(tag, "Race")) GET_RACE(ch)   = atoi(line);
+        else if (!strcmp(tag, "Room"))  GET_LOADROOM(ch)        = atoi(line);
+        break;
+
+25. search save_char and find   
+if (GET_CLASS(ch)        != PFDEF_CLASS)      fprintf(fl, "Clas: %d\n", GET_CLASS(ch)); u
+nder it add:
+
+  if (GET_RACE(ch)         != PFDEF_RACE)       fprintf(fl, "Race: %d\n", GET_RACE(ch));
+
+26. close players.c
+
+27. open act.wizard.c
+
+28. find "genobj.h" under it add:
+
+#include "race.h"
+
+29. find void do_stat_character and find this bulk of code: 
+
+  sprinttype(k->player.chclass, pc_class_types, buf, sizeof(buf));
+  send_to_char(ch, "%s%s, Lev: [%s%2d%s], XP: [%s%7d%s], Align: [%4d]\r\n",
+        IS_NPC(k) ? "Mobile" : "Class: ", IS_NPC(k) ? "" : buf, CCYEL(ch, C_NRM), GET_LEVEL(k), CCNRM(ch, C_NRM),
+        CCYEL(ch, C_NRM), GET_EXP(k), CCNRM(ch, C_NRM), GET_ALIGNMENT(k));
+
+and change it to this:
+
+  sprinttype(k->player.chclass, pc_class_types, buf, sizeof(buf));
+  send_to_char(ch, "%s%s, %s%s, Lev: [%s%2d%s], XP: [%s%7d%s], Align: [%4d]\r\n", IS_NPC(k) ? "" : "Race: ",pc_race_types[(int)GET_RACE(k)],
+        IS_NPC(k) ? "Mobile" : "Class: ", IS_NPC(k) ? "" : buf, CCYEL(ch, C_NRM), GET_LEVEL(k), CCNRM(ch, C_NRM),
+        CCYEL(ch, C_NRM), GET_EXP(k), CCNRM(ch, C_NRM), GET_ALIGNMENT(k));
+
+30. find do_last and find this block of code: 
+
+    send_to_char(ch, "[%5ld] [%2d %s] %-12s : %-18s : %-20s\r\n",
+    GET_IDNUM(vict), (int) GET_LEVEL(vict),
+    class_abbrevs[(int) GET_CLASS(vict)], GET_NAME(vict),
+    GET_HOST(vict) && *GET_HOST(vict) ? GET_HOST(vict) : "(NOHOST)",
+    ctime(&vict->player.time.logon));
+    free_char(vict);
+    return;
+    } 
+
+change it too:
+
+    send_to_char(ch, "[%5ld] [%2d %s %s] %-12s : %-18s : %-20s\r\n",
+    GET_IDNUM(vict), (int) GET_LEVEL(vict),
+    class_abbrevs[(int) GET_CLASS(vict)], race_abbrevs[(int) GET_RACE(vict)], GET_NAME(vict),
+    GET_HOST(vict) && *GET_HOST(vict) ? GET_HOST(vict) : "(NOHOST)",
+    ctime(&vict->player.time.logon));
+    free_char(vict);
+    return;
+    }
+
+
+31.  find do_show and find this block of code:
+
+    send_to_char(ch, "Player: %-12s (%s) [%2d %s]\r\n", GET_NAME(vict),
+      genders[(int) GET_SEX(vict)], GET_LEVEL(vict), class_abbrevs[(int)
+      GET_CLASS(vict)]);
+    send_to_char(ch, "Au: %-8d  Bal: %-8d  Exp: %-8d  Align: %-5d  Lessons: %-3d\r\n",
+    GET_GOLD(vict), GET_BANK_GOLD(vict), GET_EXP(vict),
+    GET_ALIGNMENT(vict), GET_PRACTICES(vict));
+
+
+change it too:
+
+    send_to_char(ch, "Player: %-12s (%s) [%2d %s %s]\r\n", GET_NAME(vict),
+      genders[(int) GET_SEX(vict)], GET_LEVEL(vict), class_abbrevs[(int)
+      GET_CLASS(vict)], race_abbrevs[(int) GET_RACE(vict)]);
+    send_to_char(ch, "Au: %-8d  Bal: %-8d  Exp: %-8d  Align: %-5d  Lessons: %-3d\r\n",
+    GET_GOLD(vict), GET_BANK_GOLD(vict), GET_EXP(vict),
+    GET_ALIGNMENT(vict), GET_PRACTICES(vict));
+
+
+32.  Find do_set and under    { "questhistory",    LVL_GOD,        PC,   NUMBER }, add:
+
+   { "race",            LVL_BUILDER,    PC,     NUMBER},
+
+Now search quest history and directly under case 57's code add:
+
+    case 59: /* race */
+      if ((i = parse_race(*val_arg)) == RACE_UNDEFINED) {
+        send_to_char(ch, "That is not a race.\r\n");
+        return (0);
+      }
+      GET_RACE(vict) = i;
+      break;
+
+33. close act.wizard.c
+
+34. open act.informative.c
+
+*** NOTE: add #include "race.h" ****
+
+35. search for #define WHO_FORMAT \
+"Usage: who [minlev[-maxlev]] [-n name] [-c classlist] [-k] [-l] [-n] [-q] [-r] [-s] [-z]\r\n"
+
+and change it to:
+
+#define WHO_FORMAT \
+"Usage: who [minlev[-maxlev]] [-n name] [-c classlist] [-t racelist] [-k] [-l] [-n] [-q] [-r] [-s] [-z]\r\n"
+
+36. find do_who and right after int showclass = 0 add this:
+
+showrace = 0, 
+
+37. now find the case 'g' in do_who and under it add:
+
+      case 't':
+        half_chop(buf1, arg, buf);
+        showrace = find_race_bitvector(arg);
+        break;
+
+38. find this:       
+
+if (showclass && !(showclass & (1 << GET_CLASS(tch))))
+        continue;
+
+and under it add:
+
+      if (showrace && !(showrace & (1 << GET_RACE(tch))))
+        continue;
+
+39. now find this:       if (showclass && !(showclass & (1 << GET_CLASS(tch))))
+        continue;
+
+and under it add:
+
+      if (showrace && !(showrace & (1 << GET_RACE(tch))))
+        continue;
+
+40. scroll down till you this:
+      if (short_list) {
+        send_to_char(ch, "%s[%2d %s] %-12.12s%s%s",
+          (GET_LEVEL(tch) >= LVL_IMMORT ? CCYEL(ch, C_SPR) : ""),
+          GET_LEVEL(tch), CLASS_ABBR(tch), GET_NAME(tch),
+          CCNRM(ch, C_SPR), ((!(++num_can_see % 4)) ? "\r\n" : ""));
+
+change it too this:
+
+      if (short_list) {
+        send_to_char(ch, "%s[%2d %s %s] %-12.12s%s%s",
+          (GET_LEVEL(tch) >= LVL_IMMORT ? CCYEL(ch, C_SPR) : ""),
+          GET_LEVEL(tch), RACE_ABBR(tch), CLASS_ABBR(tch), GET_NAME(tch),
+          CCNRM(ch, C_SPR), ((!(++num_can_see % 4)) ? "\r\n" : ""));
+
+41. Couple more lines down you will see this:
+
+        num_can_see++;
+        send_to_char(ch, "%s[%2d %s] %s%s%s%s",
+            (GET_LEVEL(tch) >= LVL_IMMORT ? CCYEL(ch, C_SPR) : ""),
+            GET_LEVEL(tch), CLASS_ABBR(tch),
+            GET_NAME(tch), (*GET_TITLE(tch) ? " " : ""), GET_TITLE(tch),
+            CCNRM(ch, C_SPR));
+
+change it too:
+
+        num_can_see++;
+        send_to_char(ch, "%s[%2d %s %s] %s%s%s%s",
+            (GET_LEVEL(tch) >= LVL_IMMORT ? CCYEL(ch, C_SPR) : ""),
+            GET_LEVEL(tch), RACE_ABBR(tch), CLASS_ABBR(tch),
+            GET_NAME(tch), (*GET_TITLE(tch) ? " " : ""), GET_TITLE(tch),
+            CCNRM(ch, C_SPR));
+
+
+48. Search do_whois and find this line:   send_to_char(ch, "Class: %s\r\n", buf);
+under it add:
+
+  send_to_char(ch, "Race : %s\r\n", pc_race_types[(int)GET_RACE(victim)]);
+
+49. close act.informative.c
+
+50. open interpreter.c
+
+51. find #include "mud_event.h" and under add:
+
+#include "race.h"
+
+
+52. find this bulk of code:
+
+    write_to_output(d, "%s\r\nClass: ", class_menu);
+    STATE(d) = CON_QCLASS;
+    break;
+
+and change it too:
+
+    write_to_output(d, "%s\r\nRace: ", race_menu);
+    STATE(d) = CON_QRACE;
+    break;
+
+53. Right after the break; add this:
+
+  case CON_QRACE:
+    load_result = parse_race(*arg);
+    if (load_result == RACE_UNDEFINED) {
+      write_to_output(d, "\r\nThat's not a race.\r\nRace: ");
+      return;
+    } else
+      GET_RACE(d->character) = load_result;
+    write_to_output(d, "%s\r\nClass: ", class_menu);
+    STATE(d) = CON_QCLASS;
+    break;
+
+54. now close interpreter.c
+
+55. open shop.c
+
+56. under #include "screen.h" add:
+
+#include "race.h"
+
+57. now find trade_letters
+
+now add the following above "\n"
+
+        "Human",
+        "Elf",
+        "Dwarf",
+
+58. now search notrade and above all the notrade classes add:
+
+  if ((IS_HUMAN(ch) && NOTRADE_HUMAN(shop_nr)) ||
+       (IS_ELF(ch) && NOTRADE_ELF(shop_nr)) ||
+       (IS_DWARF(ch) && NOTRADE_DWARF(shop_nr))) {
+    snprintf(buf, sizeof(buf), "%s %s", GET_NAME(ch), MSG_NO_SELL_RACE);
+    do_tell(keeper, buf, cmd_tell, 0);
+    return (FALSE);
+  }
+  return (TRUE);
+
+59. close shop.c
+
+60. open shop.h
+
+61. Search TRADE_NOGOOD then under NOWARRIOR add:
+
+#define TRADE_NOHUMAN      (1 << 7)
+#define TRADE_NOELF        (1 << 8)
+#define TRADE_NODWARF      (1 << 9)
+
+also change  NUM_TRADERS to 10.
+
+62. Now search NOTRADE_WARRIOR and under it add:
+
+#define NOTRADE_HUMAN(i)        (IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOHUMAN))
+#define NOTRADE_ELF(i)          (IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOELF))
+#define NOTRADE_DWARF(i)        (IS_SET(SHOP_TRADE_WITH((i)), TRADE_NODWARF))
+
+63.  Find MSG_CANT_KILL_KEEPER and under it add:
+
+#define MSG_NO_SELL_RACE        "I don't sell to your race!"
+
+64. close shop.h
+
+65. open dg_variables.c
+
+66. find #include "genobj.h" and under it add:
+
+#include "race.h"
+
+67. search case 'r' and add:
+
+          if (!str_cmp(field, "race")) {
+            if (subfield && *subfield) {
+              int ra = get_race_by_name(subfield);
+              if (ra != -1) {
+                GET_RACE(c) = ra;
+                snprintf(str, slen, "1");
+              } else {
+                snprintf(str, slen, "0");
+              }
+            } else
+            sprinttype(GET_RACE(c), pc_race_types, str, slen);
+          }
+
+also change room to an else if.
+
+68. close dg_variables.c
+
+69. open utils.c and under #include "class.h" add:
+
+include "race.h"
+
+70. find get_class_by_name and under it add:
+
+int get_race_by_name(char *racename)
+{
+    int i;
+    for (i=0; i<NUM_RACES; i++)
+      if (is_abbrev(racename, pc_race_types[i])) return(i);
+
+    return (-1);
+}
+
+
+71. close utils.c
+
+72. open utils.h and find int get_class_by_name(char * classname);
+under it add:
+
+int get_race_by_name(char *racename);
+
+73. close utils.h
+
+74. then type cd util
+
+75. open plrtoascii.c
+
+76. search class and under the last thing add:
+
+   byte race;
+
+77. search class again and find this line:
+
+    if (player.chclass != PFDEF_CLASS)
+      fprintf(outfile, "Clas: %d\n", (int)player.chclass);
+
+Under it add:
+
+    if (player.race != PFDEF_RACE)
+      fprintf(outfile, "Race: %d\n", (int)player.race);
+
+78. close plrtoascii.c
+
+79. Type cd .. and make :)
+
+

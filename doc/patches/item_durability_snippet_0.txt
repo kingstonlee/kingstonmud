@@ -1,0 +1,527 @@
+/****************************************************/
+*  Item Durability Snippet version 1.1               *
+*                                                    *
+* A snippet that adds item wear and tear.  In this   *
+* version, only weapons and armor wear down, but you *
+* can certainly figure out ways to factor in other   *
+* types wearing down. Should work with tbaMUD 3.64.  *
+* Also, a new flag ITEM_NO_REPAIR has been added for *
+* those items that can't be fixed.  In short and long*
+* descs, a short blurb about the item's condition is *
+* shown.  Fixed a small (heh!) bug regarding worn    *
+* items selling for the same amount as new items.    *
+*                                                    *
+* If you use this, please put a credit in somewhere, *
+* something like Item Durability Snippet from tbaMUD *
+* Forums.                                            *
+*                                                    *
+* Enjoy.                                             *
+/****************************************************/
+1.) Open act.wizard.c and add the following:
+  case ITEM_WEAPON:
+    send_to_char(ch, "Todam: %dd%d, Avg Damage: %.1f. Message type: %s\r\n",
+	    GET_OBJ_VAL(j, 1), GET_OBJ_VAL(j, 2), ((GET_OBJ_VAL(j, 2) + 1) / 2.0) * GET_OBJ_VAL(j, 1),  attack_hit_text[GET_OBJ_VAL(j, 3)].singular);
++    send_to_char(ch, "Durability: %d [%d]\r\n", GET_OBJ_DURABILITY(j), GET_OBJ_MAX_DURAB(j)); // Show weapon durability
+    break;
+  case ITEM_ARMOR:
+    send_to_char(ch, "AC-apply: [%d]\r\n", GET_OBJ_VAL(j, 0));
++    send_to_char(ch, "Durability: %d [%d]\r\n", GET_OBJ_DURABILITY(j), GET_OBJ_MAX_DURAB(j)); // Show armor durability
+    break;
+
+2.) Open up structs.h and in the obj_flag_data struct...
+  int timer;                        /**< Timer for object             */
+  int bitvector[AF_ARRAY_MAX];      /**< Affects characters           */
++  int durability;                   /**< Current item durability */
++  int max_durab;                    /**< Max item durability */
+};
+
+3.) And further, in the obj_file_elem struct...
+  int weight;                       /**< Object weight */
+  int timer;                        /**< Current object timer setting */
+  int bitvector[AF_ARRAY_MAX];      /**< Object affects */
+  struct obj_affected_type affected[MAX_OBJ_AFFECT]; /**< Affects to mobs */
+
++/* Added Durability Code */
++  int durability;                   /** Current durability of an object */
++  int max_durab;                    /** Maximum durability of an object: 0 means unbreakable */
+
+};
+
+4.) Open up utils.h and add in...
+/** Weight of obj. */
+#define GET_OBJ_WEIGHT(obj)	((obj)->obj_flags.weight)
+/** Current timer of obj. */
+#define GET_OBJ_TIMER(obj)	((obj)->obj_flags.timer)
++/** Current durability of obj. */
++#define GET_OBJ_DURABILITY(obj)	((obj)->obj_flags.durability)
++/** Max Durability of obj. */
++#define GET_OBJ_MAX_DURAB(obj)	((obj)->obj_flags.max_durab)
+/** Real number of obj instance. */
+#define GET_OBJ_RNUM(obj)	((obj)->item_number)
+/** Virtual number of obj, or NOTHING if not a real obj. */
+
+5.) Open up oasis.h and add the following define...
+#define MAX_MOB_GOLD         100000
+#define MAX_MOB_EXP          150000
+
+/* this is one mud year.. */
+#define MAX_OBJ_TIMER       1071000
++
++/* Maximum value for max durability */
++#define MAX_DURABILITY         5000
+
+6.) Further down you'll also need to add...
+#define OEDIT_LEVEL                 	25
+#define OEDIT_PERM			            26
+#define OEDIT_DELETE                    27
+#define OEDIT_COPY                      28
++#define OEDIT_DURABILITY                29
++#define OEDIT_MAX_DURAB                 30
+
+7.) Open up oedit.c and add in the following...
+	  "%sA%s) Cost/Day    : %s%d\r\n"
+	  "%sB%s) Timer       : %s%d\r\n"
+	  "%sC%s) Values      : %s%d %d %d %d\r\n"
++      "%sF%s) Current Durability: %s%d\r\n"
+ +     "%sG%s) Maxiumum Durability: %s%d\r\n"
+	  "%sD%s) Applies menu\r\n"
+	  "%sE%s) Extra descriptions menu: %s%s%s\r\n"
+          "%sM%s) Min Level   : %s%d\r\n"
+
+8.) And just several lines down...
+	  GET_OBJ_VAL(obj, 2),
+	  GET_OBJ_VAL(obj, 3),
++	  grn, nrm, cyn, GET_OBJ_DURABILITY(obj),
++	  grn, nrm, cyn, GET_OBJ_MAX_DURAB(obj),
+	  grn, nrm, grn, nrm, cyn, obj->ex_description ? "Set." : "Not Set.", grn,
+
+9.) Again, further down, you'll need to add a few cases...
+      OLC_DESC(d) = OLC_OBJ(d)->ex_description;
+      oedit_disp_extradesc_menu(d);
+      break;
++    case 'f':
++    case 'F':
++      write_to_output(d, "Enter current durability : ");
++      OLC_MODE(d) = OEDIT_DURABILITY;
++      break;
++    case 'g':
++    case 'G':
++      write_to_output(d, "Enter maximum durability : ");
++      OLC_MODE(d) = OEDIT_MAX_DURAB;
++      break;
+    case 'm':
+    case 'M':
+      write_to_output(d, "Enter new minimum level: ");
+      OLC_MODE(d) = OEDIT_LEVEL;
+      break;
+
+10.) And further down still...
+  case OEDIT_TIMER:
+    GET_OBJ_TIMER(OLC_OBJ(d)) = LIMIT(atoi(arg), 0, MAX_OBJ_TIMER);
+    break;
+
++  case OEDIT_DURABILITY:
++    number = atoi(arg);
++    if ((number < 0 ) || (number > GET_OBJ_MAX_DURAB(OLC_OBJ(d)))) {
++        write_to_output(d, "Invalid choice.  Current durability can't be negative or higher than max.\r\n");
++        return;
++    }
++    GET_OBJ_DURABILITY(OLC_OBJ(d)) = number;
++    break;
++
++  case OEDIT_MAX_DURAB:
++    GET_OBJ_MAX_DURAB(OLC_OBJ(d)) = LIMIT(atoi(arg), 0, MAX_DURABILITY);
++    break;
++
+  case OEDIT_LEVEL:
+    GET_OBJ_LEVEL(OLC_OBJ(d)) = LIMIT(atoi(arg), 0, LVL_IMPL);
+    break;
+
+11.) Open up genobj.c and make the following changes...
+      sprintascii(pbuf3, GET_OBJ_PERM(obj)[2]);
+      sprintascii(pbuf4, GET_OBJ_PERM(obj)[3]);
+
+      fprintf(fp, "%d %s %s %s %s %s %s %s %s %s %s %s %s\n"
+-          "%d %d %d %d\n"
++          "%d %d %d %d %d %d\n"
+          "%d %d %d %d %d\n",
+
+	  GET_OBJ_TYPE(obj),
+          ebuf1, ebuf2, ebuf3, ebuf4,
+          wbuf1, wbuf2, wbuf3, wbuf4,
+          pbuf1, pbuf2, pbuf3, pbuf4,
+          GET_OBJ_VAL(obj, 0), GET_OBJ_VAL(obj, 1),
+-          GET_OBJ_VAL(obj, 2), GET_OBJ_VAL(obj, 3),
++          GET_OBJ_VAL(obj, 2), GET_OBJ_VAL(obj, 3), GET_OBJ_DURABILITY(obj), GET_OBJ_MAX_DURAB(obj),
+          GET_OBJ_WEIGHT(obj), GET_OBJ_COST(obj),
+          GET_OBJ_RENT(obj), GET_OBJ_LEVEL(obj), GET_OBJ_TIMER(obj)
+
+13.) Open up objsave.c and search for obj_save_data, and make the following change...
+ * handled by house code, listrent code, autoeq code, etc. */
+obj_save_data *objsave_parse_objects(FILE *fl)
+{
+  obj_save_data *head, *current, *tempsave;
+  char f1[128], f2[128], f3[128], f4[128], line[READ_SIZE];
+-  int t[4],i, nr;
++  int t[6],i, nr;
+  struct obj_data *temp;
+
+  CREATE(current, obj_save_data, 1);
+
+14.) Further down in the same function...
+        GET_OBJ_WEIGHT(temp) = num;
+      break;
+    case 'V':
+      if (!strcmp(tag, "Vals")) {
+-        sscanf(line, "%d %d %d %d", &t[0], &t[1], &t[2], &t[3]);
++        sscanf(line, "%d %d %d %d %d %d", &t[0], &t[1], &t[2], &t[3], &t[4], &t[5]);
+        for (i = 0; i < NUM_OBJ_VAL_POSITIONS; i++)
+          GET_OBJ_VAL(temp, i) = t[i];
++        GET_OBJ_DURABILITY(temp) = t[4];
++        GET_OBJ_MAX_DURAB(temp) = t[5];
+      }
+      break;
+
+15.) In the objsave_save_obj_record function, you'll need to make the following change...
+  if (GET_OBJ_VAL(obj, 0) != GET_OBJ_VAL(temp, 0) ||
+      GET_OBJ_VAL(obj, 1) != GET_OBJ_VAL(temp, 1) ||
+      GET_OBJ_VAL(obj, 2) != GET_OBJ_VAL(temp, 2) ||
+-      GET_OBJ_VAL(obj, 3) != GET_OBJ_VAL(temp, 3)
++      GET_OBJ_VAL(obj, 3) != GET_OBJ_VAL(temp, 3) ||
++      GET_OBJ_DURABILITY(obj) != GET_OBJ_DURABILITY(temp) ||
++      GET_OBJ_MAX_DURAB(obj) != GET_OBJ_MAX_DURAB(temp))
+    fprintf(fp,
+             "Vals: %d %d %d %d %d %d\n",
+             GET_OBJ_VAL(obj, 0),
+             GET_OBJ_VAL(obj, 1),
+             GET_OBJ_VAL(obj, 2),
+-             GET_OBJ_VAL(obj, 3)
++             GET_OBJ_VAL(obj, 3),
++             GET_OBJ_DURABILITY(obj),
++             GET_OBJ_MAX_DURAB(obj)
+             );
+  if (GET_OBJ_EXTRA(obj) != GET_OBJ_EXTRA(temp))
+
+16.) Open up db.c and make the following changes...
+    log("SYSERR: Expecting second numeric line of %s, but file ended!", buf2);
+    exit(1);
+  }
+-  if ((retval = sscanf(line, "%d %d %d %d", t, t + 1, t + 2, t + 3)) != 4) {
++  if ((retval = sscanf(line, "%d %d %d %d %d %d", t, t + 1, t + 2, t + 3, t + 4, t + 5)) != 6) {
++    if (retval == 4) {
++        t[4] = 0;
++        t[5] = 0;
++    } else if (retval == 5)
++        t[5] = 0;
++    else {
+    log("SYSERR: Format error in second numeric line (expecting 4 args, got %d), %s", retval, buf2);
+-    exit(1);
++    exit(1); }
+  }
+  GET_OBJ_VAL(obj_proto + i, 0) = t[0];
+  GET_OBJ_VAL(obj_proto + i, 1) = t[1];
+  GET_OBJ_VAL(obj_proto + i, 2) = t[2];
+  GET_OBJ_VAL(obj_proto + i, 3) = t[3];
++  GET_OBJ_DURABILITY(obj_proto + i) = t[4];
++  GET_OBJ_MAX_DURAB(obj_proto + i) = t[5];
+
+  if (!get_line(obj_f, line)) {
+    log("SYSERR: Expecting third numeric line of %s, but file ended!", buf2);
+    exit(1);
+
+17.) Open up act.item.c and add this in perform_wear.  This will check to make sure broken items can't be used.
+  if (GET_EQ(ch, where)) {
+    send_to_char(ch, "%s", already_wearing[where]);
+    return;
+  }
+
++  /*Check to see if it's broken. If it is, cannot wear/wield */
++  if ((GET_OBJ_DURABILITY(obj) == 0) && (GET_OBJ_MAX_DURAB(obj) != 0)) {
++      send_to_char(ch, "You can't use that useless piece of junk, it's broken!");
++      return;
++  }
++
+  /* See if a trigger disallows it */
+  if (!wear_otrigger(obj, ch, where) || (obj->carried_by != ch))
+    return;
+
+18.) Next, in fight.c, you'll need to make a few additions.  Here is the first (and very simple) one... first at the top of the hit function.
+
+  struct obj_data *wielded = GET_EQ(ch, WEAR_WIELD);
++  struct obj_data *targ;
+  int w_type, victim_ac, calc_thaco, dam, diceroll;
+
+19.) And then further down, just add this chunk of code.
+
+
+    } else {
+      /* If no weapon, add bare hand damage instead */
+        if (IS_NPC(ch))
+          dam += dice(ch->mob_specials.damnodice, ch->mob_specials.damsizedice);
+        else
+          dam += rand_number(0, 2);	/* Max 2 bare hand damage for players */
+    }
++
++    /* Figuring out amount of wear and tear on equipment involved
++       First, starting with weapons, if any */
++    if (wielded && GET_OBJ_TYPE(wielded) == ITEM_WEAPON && (GET_OBJ_MAX_DURAB(wielded) != 0)) {
++        diceroll = rand_number(1, 100);
++        if (diceroll <= 10) { // Base 10% chance per hit of wearing weapon down
++            act("\tRYour weapon, $p, has been slightly damaged!+\tn", FALSE, ch, wielded, 0, TO_CHAR);
++            GET_OBJ_DURABILITY(wielded) -= rand_number(1, 6);
++            if (GET_OBJ_DURABILITY(wielded) < 0)
++                GET_OBJ_DURABILITY(wielded) = 0;
++            if (GET_OBJ_DURABILITY(wielded) == 0) {
++                send_to_char(ch, "\trYou're shocked as %s breaks after that last blow!\tn\n", GET_OBJ_SHORT(wielded));
++                send_to_room(IN_ROOM(ch), "\tr%s is shocked as %s breaks after that last blow!\tn\n", GET_NAME(ch), GET_OBJ_SHORT(wielded));
++                obj_to_char(unequip_char(ch, WEAR_WIELD), ch); }
++        }
++    }
++
++/* Now for armor */
++    if ((targ = GET_EQ(ch, rand_number(0, NUM_WEARS))) != NULL) {
++      if (rand_number(1, 10) == 10 && GET_OBJ_TYPE(targ) == ITEM_ARMOR && GET_OBJ_MAX_DURAB(targ) != 0) {
++        send_to_char(ch, "\tRWith that blow, %s has been damaged!\tn\n", GET_OBJ_SHORT(targ));
++        GET_OBJ_DURABILITY(targ) = MAX(GET_OBJ_DURABILITY(targ) -rand_number(1, 6), 0);
++        if (!GET_OBJ_DURABILITY(targ)) {
++          send_to_char(victim, "\trWith that final blow, %s that you were wearing fall apart!\tn\n",GET_OBJ_SHORT(targ));
++          send_to_room(IN_ROOM(victim), "\tr%s is less protected as %s falls apart after that last blow!\tn\n", GET_NAME(victim), GET_OBJ_SHORT(targ));
++          obj_to_char(unequip_char(victim, targ->worn_on), victim);
++        }
++      }
++    }
+
+20.) Now we're hitting the last of the additions.  We can damage things, but we need to be able to fix them!  Open up spec_procs.h first and add in a line.
+
+SPECIAL(pet_shops);
+SPECIAL(bank);
++SPECIAL(repair_shop);
+
+21.) Now open up spec_procs.c and add in the following function.  Personally, I added it right before SPECIAL(pet_shop) function, but it's up to you.
+
+/* Repairing Items at Shops */
+SPECIAL(repair_shop)
+{
+  char buf[MAX_STRING_LENGTH];
+  char *repair_what;
+  struct obj_data *obj;
+  int repair_price;
+
+  if CMD_IS("repair") {
+    one_argument(argument, buf);
+    repair_what = buf;
+      if (!(obj = get_obj_in_list_vis(ch, repair_what, NULL, ch->carrying))) {
+        send_to_char(ch, "What is it that you want to repair again?\n");
+        return (TRUE);
+      } else {
+        if ((GET_OBJ_TYPE(obj) == ITEM_ARMOR) || (GET_OBJ_TYPE(obj) == ITEM_WEAPON)) {
+            if (OBJ_FLAGGED(obj, ITEM_NO_REPAIR)) {
+                send_to_char(ch, "Looks like %s is something that cannot be fixed.\n", GET_OBJ_SHORT(obj));
+                return (TRUE);
+            }
+            if (GET_OBJ_DURABILITY(obj) == GET_OBJ_MAX_DURAB(obj)) {
+                send_to_char(ch, "Looks like %s doesn't need to be fixed...\n", GET_OBJ_SHORT(obj));
+            } else {
+                repair_price = (GET_OBJ_MAX_DURAB(obj) - GET_OBJ_DURABILITY(obj)) / 5;
+                if (GET_GOLD(ch) < repair_price) {
+                    send_to_char(ch, "You can't afford to repair %s!\n", GET_OBJ_SHORT(obj));
+                    return (TRUE);
+                } else {
+                    send_to_char(ch, "It doesn't take long; %s is repaired, and it cost you %d.\n", GET_OBJ_SHORT(obj), repair_price);
+                    decrease_gold(ch, repair_price);
+                    GET_OBJ_DURABILITY(obj) = GET_OBJ_MAX_DURAB(obj);
+                }
+            }
+            return (TRUE);
+        } else {
+            send_to_char(ch, "You can't repair %s!\n", GET_OBJ_SHORT(obj));
+            return (TRUE);
+        }
+      }
+  } else {
+    if (CMD_IS("price")) {
+    one_argument(argument, buf);
+    repair_what = buf;
+      if (!(obj = get_obj_in_list_vis(ch, repair_what, NULL, ch->carrying))) {
+        send_to_char(ch, "What did you want to price the repair for again?\n");
+        return (TRUE);
+      } else {
+        if ((GET_OBJ_TYPE(obj) == ITEM_ARMOR) || (GET_OBJ_TYPE(obj) == ITEM_WEAPON)) {
+            if (OBJ_FLAGGED(obj, ITEM_NO_REPAIR)) {
+                send_to_char(ch, "Looks like %s is something that cannot be fixed.\n", GET_OBJ_SHORT(obj));
+                return (TRUE);
+            }
+            if (GET_OBJ_DURABILITY(obj) == GET_OBJ_MAX_DURAB(obj)) {
+                send_to_char(ch, "Looks like %s doesn't need to be fixed...\n", GET_OBJ_SHORT(obj));
+                return (TRUE);
+            } else {
+                repair_price = (GET_OBJ_MAX_DURAB(obj) - GET_OBJ_DURABILITY(obj)) / 5;
+                send_to_char(ch, "To fix %s, you'll need to spend %d coins.\n", GET_OBJ_SHORT(obj), repair_price);
+                return (TRUE);
+            }
+        }
+      }
+    }
+  }
+
+  return (FALSE);
+}
+
+22.) Assign that special procedure to appropriate mobs!  For the sake of example, just to show you how it's done, let's assign the armor and weapon store shopkeepers in Midgaard this procedure.  Open up spec_assign.c.  And add in the following.
+
+ASSIGNMOB(3095, cryogenicist);
+
++  ASSIGNMOB(3003, repair_shop);
++  ASSIGNMOB(3004, repair_shop);
+
+  ASSIGNMOB(120, guild);
+  ASSIGNMOB(121, guild);
+  ASSIGNMOB(122, guild);
+
+23.) Open up shop.c, as you'll need to make some changes to a pair of functions.  Without these changes, items that are worn down sell and buy the same as brand new ones!  Replace the old buy_price function with this one...
+
+static int buy_price(struct obj_data *obj, int shop_nr, struct char_data *keeper, struct char_data *buyer)
+{
+  int itemcond = (100 / GET_OBJ_MAX_DURAB(obj)) * GET_OBJ_DURABILITY(obj);
+  float percent = 1;
+
+    if ((GET_OBJ_MAX_DURAB(obj) != 0) && (GET_OBJ_MAX_DURAB(obj) > GET_OBJ_DURABILITY(obj))) {
+        if (itemcond == 0)
+            percent = 0;
+          else if (itemcond <= 10)
+            percent = 0.1;
+          else if (itemcond <= 20)
+            percent = 0.2;
+          else if (itemcond <= 30)
+            percent = 0.3;
+          else if (itemcond <= 40)
+            percent = 0.4;
+          else if (itemcond <= 50)
+            percent = 0.5;
+          else if (itemcond <= 60)
+            percent = 0.6;
+          else if (itemcond <= 70)
+            percent = 0.7;
+          else if (itemcond <= 80)
+            percent = 0.8;
+          else if (itemcond <= 90)
+            percent = 0.9;
+          else if (itemcond <= 99)
+            percent = 0.99;
+    }
+  return (int) ((GET_OBJ_COST(obj) * SHOP_BUYPROFIT(shop_nr)
+	* (1 + (GET_CHA(keeper) - GET_CHA(buyer)) / (float)70)) * percent);
+}
+
+24.) And replace the sell_price function with this one...
+
+static int sell_price(struct obj_data *obj, int shop_nr, struct char_data *keeper, struct char_data *seller)
+{
+  float sell_cost_modifier = SHOP_SELLPROFIT(shop_nr) * (1 - (GET_CHA(keeper) - GET_CHA(seller)) / (float)70);
+  float buy_cost_modifier = SHOP_BUYPROFIT(shop_nr) * (1 + (GET_CHA(keeper) - GET_CHA(seller)) / (float)70);
+  int itemcond = (100 / GET_OBJ_MAX_DURAB(obj)) * GET_OBJ_DURABILITY(obj);
+  float percent = 1;
+
+    if ((GET_OBJ_MAX_DURAB(obj) != 0) && (GET_OBJ_MAX_DURAB(obj) > GET_OBJ_DURABILITY(obj))) {
+        if (itemcond == 0)
+            percent = 0;
+          else if (itemcond <= 10)
+            percent = 0.1;
+          else if (itemcond <= 20)
+            percent = 0.2;
+          else if (itemcond <= 30)
+            percent = 0.3;
+          else if (itemcond <= 40)
+            percent = 0.4;
+          else if (itemcond <= 50)
+            percent = 0.5;
+          else if (itemcond <= 60)
+            percent = 0.6;
+          else if (itemcond <= 70)
+            percent = 0.7;
+          else if (itemcond <= 80)
+            percent = 0.8;
+          else if (itemcond <= 90)
+            percent = 0.9;
+          else if (itemcond <= 99)
+            percent = 0.99;
+    }
+
+  if (sell_cost_modifier > buy_cost_modifier)
+    sell_cost_modifier = buy_cost_modifier;
+
+  return (int) (GET_OBJ_COST(obj) * sell_cost_modifier * percent);
+}
+
+25.) Open up act.informative.c, we're going to make some additions to the show_obj_to_char function.  Why?  We want to be able to see in the object's long and short desc something that indicates how worn down an item is.  First, in the beginning of the show_obj_to_char function...
+
+ int found = 0;
+  struct char_data *temp;
++  struct {
++      byte percent;
++      const char *text;
++  } durabtext [] = {
++      { 100, " \tB(perfect)\tn"              },
++      { 99,  " \tG(almost new)\tn"           },
++      { 90,  " \tG(excellent)\tn"            },
++      { 80,  " \tg(good)\tn"                 },
++      { 70,  " \tg(slightly worn)\tn"        },
++      { 60,  " \tY(servicable)\tn"           },
++      { 50,  " \tY(well worn)\tn"            },
++      { 40,  " \ty(signs of heavy use)\tn"   },
++      { 30,  " \ty(weathered & beaten)\tn"   },
++      { 20,  " \tR(terrible)\tn"             },
++      { 10,  " \tR(awful)\tn"                },
++      { 1,   " \tr(almost useless)\tn"       },
++      { 0,   " \tr(broken)\tn"               },
++  };
++  int percent, ar_index;
+
+  if (!obj || !ch) {
+
+26.)  Further down, make the following addition at the end of the SHOW_OBJ_LONG case...
+
+    send_to_char(ch, "%s", CCGRN(ch, C_NRM));
+    send_to_char(ch, "%s", obj->description);
++    if ((GET_OBJ_MAX_DURAB(obj) != 0) && (GET_OBJ_MAX_DURAB(obj) > GET_OBJ_DURABILITY(obj)))
++        percent = (100 * GET_OBJ_DURABILITY(obj)) / GET_OBJ_MAX_DURAB(obj);
++    else
++        percent = 100;
++
++    for (ar_index = 0; durabtext[ar_index].percent >= 0; ar_index++)
++        if (percent >= durabtext[ar_index].percent)
++            break;
++    if (GET_OBJ_TYPE(obj) == ITEM_WEAPON || GET_OBJ_TYPE(obj) == ITEM_ARMOR)
++        send_to_char(ch, "%s", durabtext[ar_index].text);
+    break;
+
+27.) Now in the SHOW_OBJ_SHORT case...
+
+    send_to_char(ch, "%s", obj->short_description);
++    if ((GET_OBJ_MAX_DURAB(obj) != 0) && (GET_OBJ_MAX_DURAB(obj) > GET_OBJ_DURABILITY(obj)))
++        percent = (100 * GET_OBJ_DURABILITY(obj)) / GET_OBJ_MAX_DURAB(obj);
++    else
++        percent = 100;
++
++    for (ar_index = 0; durabtext[ar_index].percent >= 0; ar_index++)
++        if (percent >= durabtext[ar_index].percent)
++            break;
++    if (GET_OBJ_TYPE(obj) == ITEM_WEAPON || GET_OBJ_TYPE(obj) == ITEM_ARMOR)
++        send_to_char(ch, "%s", durabtext[ar_index].text);
+    break;
+
+28.) Last, but not least, you'll need to open up interpreter.c and add in an entry for "repair" and "price."  First, repair...
+
+  { "remove"   , "rem"     , POS_RESTING , do_remove   , 0, 0 },
+  { "rent"     , "rent"    , POS_STANDING, do_not_here , 1, 0 },
++  { "repair"   , "repa"    , POS_STANDING, do_not_here , 0, 0 },
+  { "report"   , "repo"    , POS_RESTING , do_report   , 0, 0 },
+
+29.) Then, price...
+
+  { "prompt"   , "pro"     , POS_DEAD    , do_display  , 0, 0 },
+  { "prefedit" , "pre"     , POS_DEAD    , do_oasis_prefedit , 0, 0 },
++  { "price"    , "pric"    , POS_STANDING, do_not_here , 0, 0 },
+  { "purge"    , "purge"   , POS_DEAD    , do_purge    , LVL_BUILDER, 0 },
+
+30.) Compile it, run it, and enjoy!

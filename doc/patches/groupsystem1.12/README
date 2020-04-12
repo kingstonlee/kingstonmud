@@ -1,0 +1,74 @@
+New Group System Patch, Version 1.12:
+  Created by Vatiken, (Joseph Arnusch)
+  joseph.arnusch@gmail.com
+  June 2nd, 2012
+
+CHANGELOG FROM 1.1 -> 1.12:
+  1) Fixed a crashbug caused by a porting issues
+
+CHANGELOG FROM 1.0 -> 1.1:
+  1) Fixed Memory Leak in free_group()
+  2) Moved from SimpleList to Iterated List for safety reason
+  3) Summoned Creatures now automatically join your group if you are the leader
+  4) Groups started by NPCs or inhabited by NPCS no longer appear on the group list
+  5) NPC and PC groups are identified when looking at the room
+
+  :: Patch created using tbaMUD 3.63 r313 ::
+
+Readme Version 1.1
+
+Files:
+  1) README:        This file
+  2) group.help:    The help file for the group system
+  3) group.patch:   The main patch for version 1.1 of the group system
+  4) group.upgrade: The is a diff file of the changes from 1.0 -> 1.1
+
+Before you begin: 
+
+             IMPORTANT     IMPORTANT     IMPORTANT     IMPORTANT
+  1) This patch is designed for tbaMUD 3.63, revision 306, if you are currently
+     operating a stock tbaMUD 3.63 installation, you will need to visit tbaMUD.com
+     and upgrade to the atleast revision 306, through the online SVN.
+
+     http://tbamud.com/websvn/                OR (If it works)
+     http://tbamud.com/websvn/comp.php?repname=tbaMUD&path=%2F&compare[]=%2F@305&compare[]=%2F@306 
+
+  2) I assume no responsibility for any damage this causes in your MUD, apply at your
+     own risk.
+
+  3) Feel free to use this in anyway you see fit.
+
+What this does:
+
+  This patch seperates the follower system used for following behind another
+player, and the group system used by a fellowship of players for the benefit
+of combat support. 
+
+Things to note:
+
+  1) This patch does away with AFF_GROUP, that affect slot may now be used else
+     where.
+  2) This patch does away with do_ungroup.
+  3) This patch makes use of the tbaMUD 3.63 list system (written by me), and
+     attempting to patch this into tbaMUD 3.62 or prior will be difficult.
+
+Installation:
+ 
+  1) Place this patch in your tbaMUD/src.
+  2) type:
+       patch -p1 < group.patch
+  
+  3) If it patches in flawlessly move to step 5.
+  
+  4) If the patch wasn't 100% successful you will have to hand patch the rest
+     in by hand. The MAJORITY of code is within act.other.c and handler.c, as
+     such I put those functions (ripped from code) in seperate files for a
+     quicker copy & paste patch job.
+
+  5) Now that the source has been successfully patched, remove UNGROUP from your
+     helpfiles and replace the helpfile for GROUP with the new one supplied.
+
+  6) Have fun.
+
+  7) Feel free to send any bugs to me either through the tbamud.com forums, or
+     by email at joseph.arnusch@gmail.com .

@@ -1,0 +1,63 @@
+New Thief Skill - Ransack
+
+Here is a simple snippet to add a new skill - called ransack.  The idea behind this skill is that someone skilled in this area will find additional gold when they search a corpse; the reasoning behind it is they know places where people are likely  to hide gold on their person to make it safe from pickpockets, and so on.
+
+Here is the steps to add it:
+
+1)  In spells.h, define the skill number:
+
+    #define  SKILL_RANSACK       xxx  /* chose a suitable number */
+
+2)  In spell_parser.c, include the initialization of the skill where other skills are set up:
+
+    skillo(SKILL_RANSACK, "ransack");
+
+3)  In class.c, specify when people can gain the skill:
+
+    spell_level(SKILL_RANSACK, CLASS_THIEF, xx);
+
+    replacing "xx" with teh level of your chosing.
+
+Now, we have to work out where to implement the actual ransacking code.  Tracking through the code, get_from_container is a good starting point.  Eventually, we find the function perform_get_from_container in act.item.c, which does the actual "getting".  After the "act" messages telling people what you got, if there was a value (only set if the object you got was money), the container is a corpse, and you pass your skill check, you get a percentage increase in the gold, based on your level.  Only you see the message telling you the extra gold you find.
+
+4) The modified perform_get_from_container function:
+
+void perform_get_from_container(struct char_data *ch, struct obj_data *obj,
+                                     struct obj_data *cont, int mode)
+{ int value = 0, ransack_gold = 0, percent;
+
+  if (mode == FIND_OBJ_INV || can_take_obj(ch, obj)) {
+    if (IS_CARRYING_N(ch) >= CAN_CARRY_N(ch))
+      act("$p: you can't hold any more items.", FALSE, ch, obj, 0, TO_CHAR);
+    else if (get_otrigger(obj, ch)) {
+      if (GET_OBJ_TYPE(obj) == ITEM_MONEY)
+        value = GET_OBJ_VAL(obj, 0);
+      obj_from_obj(obj);
+      obj_to_char(obj, ch);
+      act("You get $p from $P.", FALSE, ch, obj, cont, TO_CHAR);
+      act("$n gets $p from $P.", TRUE, ch, obj, cont, TO_ROOM);
+      get_check_money(ch, obj);
+      percent = rand_number(1,101);
+      if (value > 0 && isname(cont->name, "corpse") &&
+          percent <= GET_SKILL(ch, SKILL_RANSACK)) {
+        if (GET_LEVEL(ch) < 8) {
+          ransack_gold = (int) (value * 0.05);
+        } else if (GET_LEVEL(ch) < 14) {
+          ransack_gold = (int) (value * 0.1);
+        } else if (GET_LEVEL(ch) < 21) {
+          ransack_gold = (int) (value * 0.15);
+        } else {
+          ransack_gold = (int) (value * 0.2);
+        }
+        send_to_char(ch, "You find an additional %d coin%s in the corpse.\r\n",
+                        ransack_gold,
+                        ransack_gold > 1 ? "s" : "");
+        GET_GOLD(ch) += ransack_gold;
+      }
+      if (IS_NPC(ch)) {
+        item_check(obj, ch);
+      }
+    }
+  }
+}
+

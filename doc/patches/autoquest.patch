@@ -1,0 +1,3351 @@
+diff -BbuprN tbamud-3.55/lib/world/qst/index tbamud-3.55+quests/lib/world/qst/index
+--- tbamud-3.55/lib/world/qst/index	1970-01-01 00:00:00.000000000 +0000
++++ tbamud-3.55+quests/lib/world/qst/index	2008-01-31 12:53:46.710047000 +0000
+@@ -0,0 +1 @@
++$
+diff -BbuprN tbamud-3.55/src/Makefile.amiga tbamud-3.55+quests/src/Makefile.amiga
+--- tbamud-3.55/src/Makefile.amiga	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.amiga	2008-01-31 09:56:06.147547000 +0000
+@@ -192,3 +192,12 @@ utils.o: utils.c conf.h sysdep.h structs
+ weather.o: weather.c conf.h sysdep.h structs.h utils.h comm.h handler.h \
+   interpreter.h db.h
+ 	$(CC) -c $(CFLAGS) weather.c
++quest.o: quest.c conf.h sysdep.h structs.h utils.h interpreter.h handler.h \
++  comm.h db.h screen.h quest.h
++	$(CC) -c $(CFLAGS) quest.c
++qedit.o: qedit.c conf.h sysdep.h structs.h utils.h comm.h db.h oasis.h \
++  improved-edit.h screen.h genolc.h genzon.h interpreter.h quest.h
++	$(CC) -c $(CFLAGS) qedit.c
++genqst.o: genqst.c conf.h sysdep.h structs.h utils.h db.h quest.h \
++  genolc.h genzon.h 
++	$(CC) -c $(CFLAGS) genqst.c
+diff -BbuprN tbamud-3.55/src/Makefile.bcc tbamud-3.55+quests/src/Makefile.bcc
+--- tbamud-3.55/src/Makefile.bcc	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.bcc	2008-01-31 09:59:18.553797000 +0000
+@@ -78,7 +78,10 @@ Dep_circledexe = \
+    spec_procs.obj\
+    spec_assign.obj\
+    utils.obj\
+-   weather.obj
++   weather.obj\
++   quest.obj\
++   qedit.obj\
++   genqst.obj
+ 
+ circle.exe : $(Dep_circledexe)
+   $(TLINK32) @&&|
+@@ -119,7 +122,10 @@ spell_parser.obj+
+ spec_procs.obj+
+ spec_assign.obj+
+ utils.obj+
+-weather.obj
++weather.obj+
++quest.obj+
++qedit.obj+
++genqst.obj
+ $<,$*
+ C:\BC5\LIB\bidsfi.lib+
+ C:\BC5\LIB\import32.lib+
+@@ -306,6 +312,21 @@ weather.obj :  weather.c
+  $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ weather.c
+ |
+ 
++quest.obj :  quest.c
++  $(BCC32) -P- -c @&&|
++ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ quest.c
++|
++
++qedit.obj :  qedit.c
++  $(BCC32) -P- -c @&&|
++ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ qedit.c
++|
++
++genqst.obj :  genqst.c
++  $(BCC32) -P- -c @&&|
++ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ genqst.c
++|
++
+ # Compiler configuration file
+ BccW32.cfg : 
+    Copy &&|
+diff -BbuprN tbamud-3.55/src/Makefile.bcc55 tbamud-3.55+quests/src/Makefile.bcc55
+--- tbamud-3.55/src/Makefile.bcc55	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.bcc55	2008-01-31 10:00:37.210047000 +0000
+@@ -79,7 +79,10 @@ Dep_circledexe = \
+    spec_procs.obj\
+    spec_assign.obj\
+    utils.obj\
+-   weather.obj
++   weather.obj\
++   quest.obj\
++   qedit.obj\
++   genqst.obj
+ 
+ circle.exe : $(Dep_circledexe)
+   $(TLINK32) @&&|
+@@ -120,7 +123,10 @@ spell_parser.obj+
+ spec_procs.obj+
+ spec_assign.obj+
+ utils.obj+
+-weather.obj
++weather.obj+
++quest.obj+
++qedit.obj+
++genqst.obj
+ $<,$*
+ C:\BORLAND\BCC55\LIB\import32.lib+
+ C:\BORLAND\BCC55\LIB\cw32i.lib
+@@ -306,6 +312,21 @@ weather.obj :  weather.c
+  $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ weather.c
+ |
+ 
++quest.obj :  quest.c
++  $(BCC32) -P- -c @&&|
++ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ quest.c
++|
++
++qedit.obj :  qedit.c
++  $(BCC32) -P- -c @&&|
++ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ qedit.c
++|
++
++genqst.obj :  genqst.c
++  $(BCC32) -P- -c @&&|
++ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ genqst.c
++|
++
+ # Compiler configuration file
+ BccW32.cfg : 
+    Copy &&|
+diff -BbuprN tbamud-3.55/src/Makefile.in tbamud-3.55+quests/src/Makefile.in
+--- tbamud-3.55/src/Makefile.in	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.in	2008-01-31 09:49:42.819422000 +0000
+@@ -34,7 +34,7 @@ OBJFILES = act.comm.o act.informative.o 
+ 	mobact.o modify.o oasis.o oasis_copy.o oasis_delete.o oasis_list.o \
+ 	objsave.o oedit.o players.o random.o redit.o sedit.o shop.o \
+ 	spec_assign.o spec_procs.o spell_parser.o spells.o tedit.o utils.o \
+-	weather.o zedit.o zmalloc.o 
++	weather.o zedit.o zmalloc.o quest.o genqst.o qedit.o 
+ 
+ CXREF_FILES = act.comm.c act.informative.c act.item.c act.movement.c \
+ 	act.offensive.c act.other.c act.social.c act.wizard.c aedit.c \
+@@ -47,7 +47,7 @@ CXREF_FILES = act.comm.c act.informative
+ 	mobact.c modify.c oasis.c oasis_copy.c oasis_delete.c oasis_list.c \
+ 	objsave.c oedit.c players.c random.c redit.c sedit.c shop.c \
+ 	spec_assign.c spec_procs.c spell_parser.c spells.c tedit.c utils.c \
+-	weather.c zedit.c zmalloc.c
++	weather.c zedit.c zmalloc.c quest.c genqst.c qedit.c
+ 
+ default: all
+ 
+diff -BbuprN tbamud-3.55/src/Makefile.lcc tbamud-3.55+quests/src/Makefile.lcc
+--- tbamud-3.55/src/Makefile.lcc	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.lcc	2008-01-31 10:06:53.975672000 +0000
+@@ -16,6 +16,9 @@ DISTDIR=c:\circle
+ CFLAGS=-c -I$(LCCDIR)\include -DLCC_WIN32
+ CC=lcc
+ OBJS=\
++	genqst.obj \
++	qedit.obj \
++	quest.obj \
+ 	weather.obj \
+ 	utils.obj \
+ 	spells.obj \
+@@ -58,6 +61,52 @@ LIBS=$(LCCDIR)\lib\wsock32.lib
+ circle.exe:	$(OBJS)
+         lcclnk  -subsystem console -o $(DISTDIR)\bin\circle.exe $(OBJS) $(LIBS)
+ 
++# Build GENQST.C
++GENQST_C=\
++    $(DISTDIR)\src\sysdep.h\
++    $(DISTDIR)\src\structs.h\
++    $(DISTDIR)\src\utils.h\
++    $(DISTDIR)\src\genolc.h\
++    $(DISTDIR)\src\genzon.h\
++    $(DISTDIR)\src\quest.h\
++    $(DISTDIR)\src\db.h\
++
++genqst.obj: $(GENQST_C) $(DISTDIR)\src\genqst.c
++    $(CC)  $(CFLAGS) $(DISTDIR)\src\genqst.c
++
++# Build QEDIT.C
++QEDIT_C=\
++    $(DISTDIR)\src\sysdep.h\
++    $(DISTDIR)\src\structs.h\
++    $(DISTDIR)\src\utils.h\
++    $(DISTDIR)\src\comm.h\
++    $(DISTDIR)\src\db.h\
++    $(DISTDIR)\src\oasis.h\
++    $(DISTDIR)\src\improved-edit.h\
++    $(DISTDIR)\src\screen.h\
++    $(DISTDIR)\src\genolc.h\
++    $(DISTDIR)\src\genzon.h\
++    $(DISTDIR)\src\interpreter.h\
++    $(DISTDIR)\src\quest.h\
++
++qedit.obj: $(QEDIT_C) $(DISTDIR)\src\qedit.c
++    $(CC)  $(CFLAGS) $(DISTDIR)\src\qedit.c
++
++# Build QUEST.C
++QUEST_C=\
++    $(DISTDIR)\src\sysdep.h\
++    $(DISTDIR)\src\structs.h\
++    $(DISTDIR)\src\utils.h\
++    $(DISTDIR)\src\comm.h\
++    $(DISTDIR)\src\handler.h\
++    $(DISTDIR)\src\interpreter.h\
++    $(DISTDIR)\src\db.h\
++    $(DISTDIR)\src\screen.h\
++    $(DISTDIR)\src\quest.h\
++
++quest.obj: $(QUEST_C) $(DISTDIR)\src\quest.c
++    $(CC)  $(CFLAGS) $(DISTDIR)\src\quest.c
++
+ # Build WEATHER.C
+ WEATHER_C=\
+     $(DISTDIR)\src\sysdep.h\
+diff -BbuprN tbamud-3.55/src/Makefile.msvc tbamud-3.55+quests/src/Makefile.msvc
+--- tbamud-3.55/src/Makefile.msvc	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.msvc	2008-01-31 10:08:32.631922000 +0000
+@@ -40,7 +40,7 @@ OBJFILES = comm.obj act.comm.obj act.inf
+         castle.obj class.obj config.obj constants.obj db.obj fight.obj graph.obj handler.obj \
+         house.obj interpreter.obj limits.obj magic.obj mail.obj mobact.obj modify.obj \
+         objsave.obj shop.obj spec_assign.obj spec_procs.obj spell_parser.obj \
+-        spells.obj utils.obj weather.obj random.obj players.obj
++        spells.obj utils.obj weather.obj random.obj players.obj quest.obj qedit.obj genqst.obj
+ 
+ default: circle.exe
+         $(MAKE) circle.exe
+@@ -153,3 +153,12 @@ utils.obj: utils.c conf.h sysdep.h struc
+ weather.obj: weather.c conf.h sysdep.h structs.h utils.h comm.h handler.h \
+   interpreter.h db.h
+ 	$(CC) -c $(CFLAGS) weather.c
++quest.obj: quest.c conf.h sysdep.h structs.h utils.h interpreter.h handler.h \
++  comm.h db.h screen.h quest.h
++	$(CC) -c $(CFLAGS) quest.c
++qedit.obj: qedit.c conf.h sysdep.h structs.h utils.h comm.h db.h oasis.h \
++  improved-edit.h screen.h genolc.h genzon.h interpreter.h quest.h
++	$(CC) -c $(CFLAGS) qedit.c
++genqst.obj: genqst.c conf.h sysdep.h structs.h utils.h db.h quest.h \
++  genolc.h genzon.h 
++	$(CC) -c $(CFLAGS) genqst.c
+\ No newline at end of file
+diff -BbuprN tbamud-3.55/src/Makefile.os2 tbamud-3.55+quests/src/Makefile.os2
+--- tbamud-3.55/src/Makefile.os2	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/Makefile.os2	2008-01-31 10:09:20.850672000 +0000
+@@ -26,7 +26,7 @@ OBJFILES = comm.o act.comm.o act.informa
+         castle.o class.o config.o constants.o db.o fight.o graph.o handler.o \
+         house.o interpreter.o limits.o magic.o mail.o mobact.o modify.o \
+         objsave.o shop.o spec_assign.o spec_procs.o spell_parser.o \
+-        spells.o utils.o weather.o random.o players.o
++        spells.o utils.o weather.o random.o players.o quest.o qedit.o genqst.o
+ 
+ default: .accepted
+         $(MAKE) ../bin/circle
+@@ -194,3 +194,12 @@ utils.o: utils.c conf.h sysdep.h structs
+ weather.o: weather.c conf.h sysdep.h structs.h utils.h comm.h handler.h \
+   interpreter.h db.h
+         $(CC) -c $(CFLAGS) weather.c
++quest.obj: quest.c conf.h sysdep.h structs.h utils.h interpreter.h handler.h \
++  comm.h db.h screen.h quest.h
++	$(CC) -c $(CFLAGS) quest.c
++qedit.obj: qedit.c conf.h sysdep.h structs.h utils.h comm.h db.h oasis.h \
++  improved-edit.h screen.h genolc.h genzon.h interpreter.h quest.h
++	$(CC) -c $(CFLAGS) qedit.c
++genqst.obj: genqst.c conf.h sysdep.h structs.h utils.h db.h quest.h \
++  genolc.h genzon.h 
++	$(CC) -c $(CFLAGS) genqst.c
+\ No newline at end of file
+diff -BbuprN tbamud-3.55/src/act.informative.c tbamud-3.55+quests/src/act.informative.c
+--- tbamud-3.55/src/act.informative.c	2008-01-16 23:28:12.000000000 +0000
++++ tbamud-3.55+quests/src/act.informative.c	2008-01-31 08:42:49.006922000 +0000
+@@ -827,6 +827,16 @@ ACMD(do_score)
+     send_to_char(ch, "You need %d exp to reach your next level.\r\n",
+ 	level_exp(GET_CLASS(ch), GET_LEVEL(ch) + 1) - GET_EXP(ch));
+ 
++  send_to_char(ch, "You have earned %d quest points.\r\n", GET_QUESTPOINTS(ch));
++  send_to_char(ch, "You have completed %d quest%s, ",
++		    GET_NUM_QUESTS(ch),
++		    GET_NUM_QUESTS(ch) == 1 ? "" : "s");
++  if (GET_QUEST(ch) == NOTHING)
++    send_to_char(ch, "and you are not on a quest at the moment.\r\n");
++  else
++    send_to_char(ch, "and your current quest is %d.\r\n",
++                     GET_QUEST(ch) == NOTHING ? -1 : GET_QUEST(ch));
++
+   playing_time = *real_time_passed((time(0) - ch->player.time.logon) +
+ 				  ch->player.time.played, 0);
+   send_to_char(ch, "You have been playing for %d day%s and %d hour%s.\r\n",
+diff -BbuprN tbamud-3.55/src/act.item.c tbamud-3.55+quests/src/act.item.c
+--- tbamud-3.55/src/act.item.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/act.item.c	2008-01-31 08:45:40.663172000 +0000
+@@ -20,6 +20,7 @@
+ #include "constants.h"
+ #include "dg_scripts.h"
+ #include "oasis.h"
++#include "quest.h"
+ 
+ /* local functions */
+ int can_take_obj(struct char_data *ch, struct obj_data *obj);
+@@ -619,6 +620,8 @@ void perform_give(struct char_data *ch, 
+   act("You give $p to $N.", FALSE, ch, obj, vict, TO_CHAR);
+   act("$n gives you $p.", FALSE, ch, obj, vict, TO_VICT);
+   act("$n gives $p to $N.", TRUE, ch, obj, vict, TO_NOTVICT);
++
++  autoquest_trigger_check( ch, vict, obj, AQ_OBJ_RETURN);
+ }
+ 
+ /* utility function for give */
+diff -BbuprN tbamud-3.55/src/act.other.c tbamud-3.55+quests/src/act.other.c
+--- tbamud-3.55/src/act.other.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/act.other.c	2008-01-31 08:46:54.663172000 +0000
+@@ -23,6 +23,7 @@
+ #include "house.h"
+ #include "constants.h"
+ #include "dg_scripts.h"
++#include "quest.h"
+ 
+ /* extern variables */
+ extern struct spell_info_type spell_info[];
+@@ -74,6 +75,8 @@ ACMD(do_quit)
+   } else {
+     act("$n has left the game.", TRUE, ch, 0, 0, TO_ROOM);
+     mudlog(NRM, MAX(LVL_IMMORT, GET_INVIS_LEV(ch)), TRUE, "%s has quit the game.", GET_NAME(ch));
++    if (GET_QUEST_TIME(ch) != -1)
++      quest_timeout(ch);
+     send_to_char(ch, "Goodbye, friend.. Come back soon!\r\n");
+ 
+     /* We used to check here for duping attempts, but we may as well do it right
+diff -BbuprN tbamud-3.55/src/act.wizard.c tbamud-3.55+quests/src/act.wizard.c
+--- tbamud-3.55/src/act.wizard.c	2008-01-16 23:28:42.000000000 +0000
++++ tbamud-3.55+quests/src/act.wizard.c	2008-01-31 12:14:04.850672000 +0000
+@@ -23,6 +23,7 @@
+ #include "oasis.h"
+ #include "dg_scripts.h"
+ #include "shop.h"
++#include "quest.h"
+ 
+ /* external vars */
+ extern FILE *player_fl;
+@@ -893,6 +894,12 @@ void do_stat_character(struct char_data 
+ 
+     sprintbitarray(PRF_FLAGS(k), preference_bits, PR_ARRAY_MAX, buf);
+     send_to_char(ch, "PRF: %s%s%s\r\n", CCGRN(ch, C_NRM), buf, CCNRM(ch, C_NRM));
++
++    send_to_char(ch, "Quest Points: [%9d] Quests Completed: [%5d]\r\n",
++		    GET_QUESTPOINTS(ch), GET_NUM_QUESTS(ch));
++    if (GET_QUEST(ch) != NOTHING)
++      send_to_char(ch, "Current Quest: [%5d] Time Left: [%5d]\r\n",
++		   GET_QUEST(ch), GET_QUEST_TIME(ch));
+   }
+ 
+   if (IS_MOB(k))
+@@ -2581,7 +2588,7 @@ ACMD(do_show)
+ 	"  %5d objects          %5d prototypes\r\n"
+ 	"  %5d rooms            %5d zones\r\n"
+         "  %5d triggers         %5d shops\r\n"
+-      	"  %5d large bufs\r\n"
++      	"  %5d large bufs       %5d autoquests\r\n"
+ 	"  %5d buf switches     %5d overflows\r\n",
+ 	i, con,
+ 	top_of_p_table + 1,
+@@ -2589,7 +2596,7 @@ ACMD(do_show)
+ 	k, top_of_objt + 1,
+ 	top_of_world + 1, top_of_zone_table + 1,
+ 	top_of_trigt + 1, top_shop + 1,
+-	buf_largecount,
++	buf_largecount, total_quests,
+ 	buf_switches, buf_overflows
+ 	);
+     break;
+@@ -2756,12 +2763,13 @@ ACMD(do_show)
+    { "weight",		LVL_BUILDER,	BOTH,	NUMBER },
+    { "wis", 		LVL_BUILDER, 	BOTH, 	NUMBER },
+    { "questpoints",     LVL_GOD,        PC,     NUMBER },
++   { "questhistory",    LVL_GOD,        PC,   NUMBER },
+    { "\n", 0, BOTH, MISC }
+   };
+ 
+ int perform_set(struct char_data *ch, struct char_data *vict, int mode, char *val_arg)
+ {
+-  int i, on = 0, off = 0, value = 0;
++  int i, on = 0, off = 0, value = 0, qvnum;
+   room_rnum rnum;
+   room_vnum rvnum;
+ 
+@@ -3141,6 +3149,23 @@ int perform_set(struct char_data *ch, st
+     case 54: /* questpoints */
+       GET_QUESTPOINTS(vict) = RANGE(0, 100000000);
+       break;
++    case 55: /* questhistory */
++      qvnum = atoi(val_arg);
++      if (real_quest(qvnum) == NOTHING) {
++        send_to_char(ch, "That quest doesn't exist.\r\n");
++        return FALSE;
++      } else {
++        if (is_complete(vict, qvnum)) {
++          remove_completed_quest(vict, qvnum);
++          send_to_char(ch, "Quest %d removed from history for player %s.\r\n",
++			qvnum, GET_NAME(vict));
++        } else {
++          add_completed_quest(vict, qvnum);
++          send_to_char(ch, "Quest %d added to history for player %s.\r\n",
++			qvnum, GET_NAME(vict));
++        }
++        break;
++      }
+     default:
+       send_to_char(ch, "Can't set that!\r\n");
+       return (0);
+diff -BbuprN tbamud-3.55/src/comm.c tbamud-3.55+quests/src/comm.c
+--- tbamud-3.55/src/comm.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/comm.c	2008-01-31 08:59:29.756922000 +0000
+@@ -61,6 +61,7 @@
+ #include "genolc.h"
+ #include "dg_scripts.h"
+ #include "dg_event.h"
++#include "quest.h"
+ 
+ #ifdef HAVE_ARPA_TELNET_H
+ #include <arpa/telnet.h>
+@@ -969,11 +970,12 @@ void heartbeat(int heart_pulse)
+   if (!(heart_pulse % PULSE_VIOLENCE))
+     perform_violence();
+ 
+-  if (!(heart_pulse % (SECS_PER_MUD_HOUR * PASSES_PER_SEC))) {
++  if (!(heart_pulse % (SECS_PER_MUD_HOUR * PASSES_PER_SEC))) {  /* Tick ! */
+     weather_and_time(1);
+     check_time_triggers();
+     affect_update();
+     point_update();
++    check_timed_quests();
+   }
+ 
+   if (CONFIG_AUTO_SAVE && !(heart_pulse % PULSE_AUTOSAVE)) {	/* 1 minute */
+diff -BbuprN tbamud-3.55/src/constants.c tbamud-3.55+quests/src/constants.c
+--- tbamud-3.55/src/constants.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/constants.c	2008-01-31 09:00:51.975672000 +0000
+@@ -362,6 +362,7 @@ const char *extra_bits[] = {
+   "ANTI_THIEF",
+   "ANTI_WARRIOR",
+   "NO_SELL",
++  "QUEST_ITEM",
+   "\n"
+ };
+ 
+diff -BbuprN tbamud-3.55/src/db.c tbamud-3.55+quests/src/db.c
+--- tbamud-3.55/src/db.c	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/db.c	2008-01-31 12:16:56.694422000 +0000
+@@ -25,6 +25,7 @@
+ #include "oasis.h"
+ #include "dg_scripts.h"
+ #include "dg_event.h"
++#include "quest.h"
+ 
+ /*  declarations of most of the 'global' variables */
+ struct config_data config_info; /* Game configuration list.	 */
+@@ -56,6 +57,9 @@ int dg_owner_purged;            /* For c
+ struct shop_data *shop_index;   /* index table for shops         */
+ int top_shop = -1;              /* top of shop table             */
+ 
++struct aq_data *aquest_table;   /* Autoquests table              */
++qst_rnum total_quests = 0;      /* top of autoquest table        */
++
+ int no_mail = 0;		/* mail disabled?		 */
+ int mini_mud = 0;		/* mini-mud mode?		 */
+ int no_rent_check = 0;		/* skip rent check on boot?	 */
+@@ -472,6 +476,9 @@ void boot_world(void)
+   if (!no_specials) {
+     log("Loading shops.");
+     index_boot(DB_BOOT_SHP);
++
++    log("Loading quests.");
++    index_boot(DB_BOOT_QST);
+   }
+ }
+ 
+@@ -582,6 +589,9 @@ void destroy_db(void)
+   /* Shops */
+   destroy_shops();
+ 
++  /* Quests */
++  destroy_quests();
++
+   /* Zones */
+ #define THIS_CMD zone_table[cnt].cmd[itr]
+ 
+@@ -706,6 +716,8 @@ void boot_db(void)
+     assign_objects();
+     log("   Rooms.");
+     assign_rooms();
++    log("   Questmasters.");
++    assign_the_quests();
+   }
+ 
+   log("Assigning spell and skill levels.");
+@@ -914,6 +926,9 @@ void index_boot(int mode)
+   case DB_BOOT_TRG:
+     prefix = TRG_PREFIX;
+     break;
++  case DB_BOOT_QST:
++    prefix = QST_PREFIX;
++    break;
+   default:
+     log("SYSERR: Unknown subcommand %d to index_boot!", mode);
+     exit(1);
+@@ -954,7 +969,7 @@ void index_boot(int mode)
+ 
+   /* Exit if 0 records, unless this is shops */
+   if (!rec_count) {
+-    if (mode == DB_BOOT_SHP)
++    if (mode == DB_BOOT_SHP || mode == DB_BOOT_QST)
+       return;
+     log("SYSERR: boot error - 0 records counted in %s/%s.", prefix,
+ 	index_filename);
+@@ -995,6 +1010,11 @@ void index_boot(int mode)
+     size[0] = sizeof(struct help_index_element) * rec_count;
+     log("   %d entries, %d bytes.", rec_count, size[0]);
+     break;
++  case DB_BOOT_QST:
++    CREATE(aquest_table, struct aq_data, rec_count);
++    size[0] = sizeof(struct aq_data) * rec_count;
++    log("   %d entries, %d bytes.", rec_count, size[0]);
++    break;
+   }
+ 
+   rewind(db_index);
+@@ -1010,6 +1030,7 @@ void index_boot(int mode)
+     case DB_BOOT_OBJ:
+     case DB_BOOT_MOB:
+     case DB_BOOT_TRG:
++    case DB_BOOT_QST:
+       discrete_load(db_file, mode, buf2);
+       break;
+     case DB_BOOT_ZON:
+@@ -1040,7 +1061,7 @@ void discrete_load(FILE *fl, int mode, c
+   int nr = -1, last;
+   char line[READ_SIZE];
+ 
+-  const char *modes[] = {"world", "mob", "obj", "ZON", "SHP", "HLP", "trg"};
++  const char *modes[] = {"world", "mob", "obj", "ZON", "SHP", "HLP", "trg", "qst"};
+   /* modes positions correspond to DB_BOOT_xxx in db.h */
+ 
+   for (;;) {
+@@ -1083,6 +1104,9 @@ void discrete_load(FILE *fl, int mode, c
+ 	case DB_BOOT_OBJ:
+ 	  strlcpy(line, parse_object(fl, nr), sizeof(line));
+ 	  break;
++	case DB_BOOT_QST:
++	  parse_quest(fl, nr);
++	  break;
+ 	}
+     } else {
+       log("SYSERR: Format error in %s file %s near %s #%d", modes[mode],
+@@ -2747,6 +2771,8 @@ void free_char(struct char_data *ch)
+       free(ch->player_specials->poofin);
+     if (ch->player_specials->poofout)
+       free(ch->player_specials->poofout);
++    if (ch->player_specials->saved.completed_quests)
++      free(ch->player_specials->saved.completed_quests);
+     if (GET_HOST(ch))
+       free(GET_HOST(ch));
+     if (IS_NPC(ch))
+@@ -2996,6 +3022,10 @@ void init_char(struct char_data *ch)
+   ch->player.long_descr = NULL;
+   ch->player.description = NULL;
+ 
++  GET_NUM_QUESTS(ch) = 0;
++  ch->player_specials->saved.completed_quests = NULL;
++  GET_QUEST(ch) = -1;
++
+   ch->player.time.birth = time(0);
+   ch->player.time.logon = time(0);
+   ch->player.time.played = 0;
+diff -BbuprN tbamud-3.55/src/db.h tbamud-3.55+quests/src/db.h
+--- tbamud-3.55/src/db.h	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/db.h	2008-01-31 09:10:29.241297000 +0000
+@@ -16,6 +16,7 @@
+ #define DB_BOOT_SHP	4
+ #define DB_BOOT_HLP	5
+ #define DB_BOOT_TRG	6
++#define DB_BOOT_QST 7
+ 
+ #if defined(CIRCLE_MACINTOSH)
+ #define LIB_WORLD	":world:"
+@@ -76,6 +77,7 @@
+ #define SHP_PREFIX	LIB_WORLD"shp"SLASH	/* shop definitions	*/
+ #define TRG_PREFIX	LIB_WORLD"trg"SLASH	/* trigger files	*/
+ #define HLP_PREFIX      LIB_TEXT"help"SLASH     /* Help files           */
++#define QST_PREFIX      LIB_WORLD"qst"SLASH     /* quest files          */
+ 
+ #define CREDITS_FILE	LIB_TEXT"credits" /* for the 'credits' command	*/
+ #define NEWS_FILE	LIB_TEXT"news"	/* for the 'news' command	*/
+diff -BbuprN tbamud-3.55/src/dg_variables.c tbamud-3.55+quests/src/dg_variables.c
+--- tbamud-3.55/src/dg_variables.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/dg_variables.c	2008-01-31 09:14:08.460047000 +0000
+@@ -853,7 +853,7 @@ void find_replacement(void *go, struct s
+           }
+           break;
+         case 'q':
+-          if (!str_cmp(field, "questpoints")) {
++          if (!str_cmp(field, "questpoints") || !str_cmp(field, "qp") || !str_cmp(field, "qpnts")) {
+             if (subfield && *subfield) {
+               int addition = atoi(subfield);
+               GET_QUESTPOINTS(c) += addition;
+diff -BbuprN tbamud-3.55/src/fight.c tbamud-3.55+quests/src/fight.c
+--- tbamud-3.55/src/fight.c	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/fight.c	2008-01-31 09:15:53.710047000 +0000
+@@ -20,6 +20,7 @@
+ #include "screen.h"
+ #include "constants.h"
+ #include "dg_scripts.h"
++#include "quest.h"
+ 
+ /* Structures */
+ struct char_data *combat_list = NULL;	/* head of l-list of fighting chars */
+@@ -363,10 +364,18 @@ void raw_kill(struct char_data * ch, str
+   } else
+     death_cry(ch);
+ 
++  if (killer)
++    autoquest_trigger_check(killer, ch, NULL, AQ_MOB_KILL);
++
+   update_pos(ch);
+ 
+   make_corpse(ch);
+   extract_char(ch);
++
++  if (killer) {
++    autoquest_trigger_check(killer, NULL, NULL, AQ_MOB_SAVE);
++    autoquest_trigger_check(killer, NULL, NULL, AQ_ROOM_CLEAR);
++  }
+ }
+ 
+ void die(struct char_data * ch, struct char_data * killer)
+diff -BbuprN tbamud-3.55/src/genolc.c tbamud-3.55+quests/src/genolc.c
+--- tbamud-3.55/src/genolc.c	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/genolc.c	2008-01-31 09:17:34.069422000 +0000
+@@ -25,6 +25,7 @@
+ #include "dg_olc.h"
+ #include "constants.h"
+ #include "interpreter.h"
++#include "quest.h"
+ 
+ int save_config( IDXTYPE nowhere );        /* Exported from cedit.c */
+ 
+@@ -43,6 +44,7 @@ struct {
+   { SL_WLD, save_rooms, "room" },
+   { SL_ZON, save_zone, "zone" },
+   { SL_CFG, save_config, "config" },
++  { SL_QST, save_quests, "quest" },
+   { SL_ACT, NULL, "social" },
+   { SL_HLP, NULL, "help" },
+   { -1, NULL, NULL },
+diff -BbuprN tbamud-3.55/src/genolc.h tbamud-3.55+quests/src/genolc.h
+--- tbamud-3.55/src/genolc.h	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/genolc.h	2008-01-31 09:17:49.678797000 +0000
+@@ -36,7 +36,8 @@ extern struct save_list_data *save_list;
+ #define SL_WLD	3
+ #define SL_ZON	4
+ #define SL_CFG	5
+-#define SL_MAX  5	
++#define SL_QST  6
++#define SL_MAX  6
+ #define SL_ACT SL_MAX + 1 /* must be above MAX */ 
+ #define SL_HLP SL_MAX + 2
+ 
+diff -BbuprN tbamud-3.55/src/genqst.c tbamud-3.55+quests/src/genqst.c
+--- tbamud-3.55/src/genqst.c	1970-01-01 00:00:00.000000000 +0000
++++ tbamud-3.55+quests/src/genqst.c	2008-01-31 12:32:14.210047000 +0000
+@@ -0,0 +1,267 @@
++/* ***********************************************************************
++*    File:   genqst.c                                 Part of CircleMUD  *
++* Version:   2.0 (November 2005) Written for CircleMud CWG / Suntzu      *
++* Purpose:   To provide special quest-related code.                      *
++* Copyright: Kenneth Ray                                                 *
++* Original Version Details:                                              *
++* Copyright 1996 by Harvey Gilpin					 *
++* Copyright 1997-2001 by George Greer (greerga@circlemud.org)		 *
++************************************************************************ */
++
++#include "conf.h"
++#include "sysdep.h"
++#include "structs.h"
++#include "utils.h"
++#include "db.h"
++#include "quest.h"
++#include "genolc.h"
++#include "genzon.h"
++
++void create_world_index(int znum, const char *type);
++
++extern zone_rnum top_of_zone_table;
++
++/*-------------------------------------------------------------------*/
++
++int copy_quest(struct aq_data *to, struct aq_data *from, int free_old_strings)
++{
++  int i;
++  if (free_old_strings)
++    free_quest_strings(to);
++  to->vnum       = from->vnum;
++  to->flags      = from->flags;
++  to->type       = from->type;
++  to->qm         = from->qm;
++  to->target     = from->target;
++  to->prereq     = from->prereq;
++  to->prev_quest = from->prev_quest;
++  to->next_quest = from->next_quest;
++  for (i = 0; i < 7; i++){
++    to->value[i] = from->value[i];
++  }
++  to->gold_reward = from->gold_reward;
++  to->exp_reward  = from->exp_reward;
++  to->obj_reward  = from->obj_reward;
++  to->func        = from->func;
++  return copy_quest_strings(to, from);
++}
++
++int copy_quest_strings(struct aq_data *to, struct aq_data *from)
++{
++  if (from == NULL || to == NULL) {
++    log("SYSERR: GenQST: copy_quest_strings: Null values passed.");
++    return FALSE;
++  }
++  to->name = str_udup(from->name);
++  to->desc = str_udup(from->desc);
++  to->info = str_udup(from->info);
++  to->done = str_udup(from->done);
++  to->quit = str_udup(from->quit);
++  return TRUE;
++}
++
++void free_quest_strings(struct aq_data *quest)
++{
++  if (quest->name)
++    free(quest->name);
++  if (quest->desc)
++    free(quest->desc);
++  if (quest->info)
++    free(quest->info);
++  if (quest->done)
++    free(quest->done);
++  if (quest->quit)
++    free(quest->quit);
++}
++
++void free_quest(struct aq_data *quest)
++{
++  free_quest_strings(quest);
++  free(quest);
++}
++
++/*-------------------------------------------------------------------*/
++
++int add_quest(struct aq_data *nqst)
++{
++  qst_rnum rnum;
++  zone_rnum rznum = real_zone_by_thing(nqst->vnum);
++
++  /* The quest already exists, just update it.  */
++  if ((rnum = real_quest(nqst->vnum)) != NOWHERE) {
++    copy_quest(&aquest_table[rnum], nqst, TRUE);
++  } else {
++    /* increase the number of quest table entries */
++    total_quests++;
++    RECREATE(aquest_table, struct aq_data, total_quests );
++    /* Initialise top quest strings to null */
++    QST_NAME(total_quests - 1) = NULL;
++    QST_DESC(total_quests - 1) = NULL;
++    QST_INFO(total_quests - 1) = NULL;
++    QST_DONE(total_quests - 1) = NULL;
++    QST_QUIT(total_quests - 1) = NULL;
++    /* Now process enties from the top down to see where the new one goes */
++    for (rnum = total_quests - 1; rnum > 0; rnum--) {
++      if (nqst->vnum > QST_NUM(rnum - 1))
++        break; //found the place
++      aquest_table[rnum] = aquest_table[rnum - 1]; //shift quest up one
++    }
++    copy_quest(&aquest_table[rnum], nqst, FALSE);
++  }
++  /* Make sure we assign spec procs to the questmaster */
++  if (mob_index[QST_MASTER(rnum)].func &&
++      mob_index[QST_MASTER(rnum)].func != questmaster)
++    QST_FUNC(rnum) = mob_index[QST_MASTER(rnum)].func;
++  mob_index[QST_MASTER(rnum)].func = questmaster;
++
++  /* And make sure we save the updated quest information to disk */
++  if (rznum != NOWHERE)
++    add_to_save_list(zone_table[rznum].number, SL_QST);
++  else
++    mudlog(BRF, LVL_BUILDER, TRUE,
++           "SYSERR: GenOLC: Cannot determine quest zone.");
++
++  return rnum;
++}
++
++/*-------------------------------------------------------------------*/
++
++int delete_quest(qst_rnum rnum)
++{
++  qst_rnum i;
++  zone_rnum rznum = real_zone_by_thing(QST_NUM(rnum));
++  mob_rnum qm = QST_MASTER(rnum);
++  SPECIAL (*tempfunc);
++  int  quests_remaining = 0;
++
++  if (rnum >= total_quests)
++    return FALSE;
++  log("GenOLC: delete_quest: Deleting quest #%d (%s).",
++       QST_NUM(rnum), QST_NAME(rnum));
++  /* make a note of the quest master's secondary spec proc */
++  tempfunc = QST_FUNC(rnum);
++
++
++  free_quest_strings(&aquest_table[rnum]);
++  for (i = rnum; i < total_quests - 1; i++) {
++    aquest_table[i] = aquest_table[i + 1];
++  }
++  total_quests--;
++  RECREATE(aquest_table, struct aq_data, total_quests);
++
++  if (rznum != NOWHERE)
++     add_to_save_list(zone_table[rznum].number, SL_QST);
++  else
++    mudlog(BRF, LVL_BUILDER, TRUE,
++           "SYSERR: GenOLC: Cannot determine quest zone.");
++  /* does the questmaster mob have any quests left? */
++  if (qm != NOBODY) {
++    for (i = 0; i < total_quests; i++) {
++      if (QST_MASTER(i) == qm)
++        quests_remaining++;
++    }
++    if (quests_remaining == 0)
++      mob_index[qm].func = tempfunc; // point back to original spec proc
++  }
++  return TRUE;
++}
++
++/*-------------------------------------------------------------------*/
++
++int save_quests(zone_rnum zone_num)
++{
++  FILE *sf;
++  char filename[128], oldname[128], quest_flags[MAX_STRING_LENGTH];
++  char quest_desc[MAX_STRING_LENGTH], quest_info[MAX_STRING_LENGTH];
++  char quest_done[MAX_STRING_LENGTH], quest_quit[MAX_STRING_LENGTH];
++  int i, num_quests = 0;
++
++#if CIRCLE_UNSIGNED_INDEX
++  if (zone_num == NOWHERE || zone_num > top_of_zone_table) {
++#else
++  if (zone_num < 0 || zone_num > top_of_zone_table) {
++#endif
++    log("SYSERR: GenOLC: save_quests: Invalid zone number %d passed! (0-%d)",
++         zone_num, top_of_zone_table);
++    return FALSE;
++  }
++
++  log("GenOLC: save_quests: Saving quests in zone #%d (%d-%d).",
++        zone_table[zone_num].number,
++	genolc_zone_bottom(zone_num), zone_table[zone_num].top);
++
++  snprintf(filename, sizeof(filename), "%s/%d.new",
++	QST_PREFIX, zone_table[zone_num].number);
++  if (!(sf = fopen(filename, "w"))) {
++    perror("SYSERR: save_quests");
++    return FALSE;
++  }
++  for (i = genolc_zone_bottom(zone_num); i <= zone_table[zone_num].top; i++) {
++    qst_rnum rnum;
++    if ((rnum = real_quest(i)) != NOTHING) {
++      /* Copy the text strings and strip off trailing newlines. */
++      strncpy(quest_desc, QST_DESC(rnum) ? QST_DESC(rnum) : "undefined",
++              sizeof(quest_desc)-1 );
++      strncpy(quest_info, QST_INFO(rnum) ? QST_INFO(rnum) : "undefined",
++              sizeof(quest_info)-1 );
++      strncpy(quest_done, QST_DONE(rnum) ? QST_DONE(rnum) : "undefined",
++              sizeof(quest_done)-1 );
++      strncpy(quest_quit, QST_QUIT(rnum) ? QST_QUIT(rnum) : "undefined",
++              sizeof(quest_quit)-1 );
++      strip_cr(quest_desc);
++      strip_cr(quest_info);
++      strip_cr(quest_done);
++      strip_cr(quest_quit);
++      /* Save the quest details to the file.  */
++      sprintascii(quest_flags, QST_FLAGS(rnum));
++      fprintf(sf,
++	"#%d\n"
++        "%s%c\n"
++        "%s%c\n"
++        "%s%c\n"
++        "%s%c\n"
++        "%s%c\n"
++        "%d %d %s %d %d %d %d\n"
++        "%d %d %d %d %d %d %d\n"
++        "%d %d %d\n"
++        "S\n",
++        QST_NUM(rnum),
++        QST_NAME(rnum) ? QST_NAME(rnum) : "Untitled", STRING_TERMINATOR,
++        quest_desc, STRING_TERMINATOR,
++	quest_info, STRING_TERMINATOR,
++	quest_done, STRING_TERMINATOR,
++	quest_quit, STRING_TERMINATOR,
++        QST_TYPE(rnum),
++	QST_MASTER(rnum) == NOBODY ? -1 : mob_index[QST_MASTER(rnum)].vnum,
++	quest_flags,
++	QST_TARGET(rnum) == NOTHING ? -1 : QST_TARGET(rnum),
++	QST_PREV(rnum)   == NOTHING ? -1 : QST_PREV(rnum),
++	QST_NEXT(rnum)   == NOTHING ? -1 : QST_NEXT(rnum),
++	QST_PREREQ(rnum) == NOTHING ? -1 : QST_PREREQ(rnum),
++        QST_POINTS(rnum), QST_PENALTY(rnum), QST_MINLEVEL(rnum),
++        QST_MAXLEVEL(rnum), QST_TIME(rnum),
++	QST_RETURNMOB(rnum) == NOBODY ? -1 : QST_RETURNMOB(rnum),
++	QST_QUANTITY(rnum), QST_GOLD(rnum), QST_EXP(rnum), QST_OBJ(rnum)
++      );
++      num_quests++;
++    }
++  }
++  /* Write the final line and close it.  */
++  fprintf(sf, "$~\n");
++  fclose(sf);
++
++  /* Old file we're replacing. */
++  snprintf(oldname, sizeof(oldname), "%s/%d.qst",
++           QST_PREFIX, zone_table[zone_num].number);
++  remove(oldname);
++  rename(filename, oldname);
++
++  /* Do we need to update the index file? */
++  if (num_quests > 0)
++    create_world_index(zone_table[zone_num].number, "qst");
++
++  if (in_save_list(zone_table[zone_num].number, SL_QST))
++    remove_from_save_list(zone_table[zone_num].number, SL_QST);
++  return TRUE;
++}
++
+diff -BbuprN tbamud-3.55/src/genshp.c tbamud-3.55+quests/src/genshp.c
+--- tbamud-3.55/src/genshp.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/genshp.c	2008-01-31 12:19:27.256922000 +0000
+@@ -24,6 +24,9 @@ void copy_shop_type_list(struct shop_buy
+ void free_shop_strings(struct shop_data *shop);
+ void free_shop_type_list(struct shop_buy_data **list);
+ 
++/* External Functions */
++void create_world_index(int znum, const char *type);
++
+ void copy_shop(struct shop_data *tshop, struct shop_data *fshop, int free_old_strings)
+ {
+   /* Copy basic information over. */
+@@ -343,7 +346,7 @@ int add_shop(struct shop_data *nshp)
+ 
+ int save_shops(zone_rnum zone_num)
+ {
+-  int i, j, rshop;
++  int i, j, rshop, num_shops = 0;
+   FILE *shop_file;
+   char fname[128], oldname[128];
+   struct shop_data *shop;
+@@ -424,6 +427,7 @@ int save_shops(zone_rnum zone_num)
+       /* Save open/closing times. */
+       fprintf(shop_file, "%d\n%d\n%d\n%d\n", S_OPEN1(shop), S_CLOSE1(shop),
+ 		S_OPEN2(shop), S_CLOSE2(shop));
++      num_shops++;
+     }
+   }
+   fprintf(shop_file, "$~\n");
+@@ -432,6 +436,9 @@ int save_shops(zone_rnum zone_num)
+   remove(oldname);
+   rename(fname, oldname);
+ 
++  if (num_shops > 0)
++    create_world_index(zone_table[zone_num].number, "shp");
++
+   if (in_save_list(zone_table[zone_num].number, SL_SHP))
+     remove_from_save_list(zone_table[zone_num].number, SL_SHP);
+   return TRUE;
+diff -BbuprN tbamud-3.55/src/genzon.c tbamud-3.55+quests/src/genzon.c
+--- tbamud-3.55/src/genzon.c	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/genzon.c	2008-01-31 09:36:08.069422000 +0000
+@@ -134,6 +134,16 @@ zone_rnum create_new_zone(zone_vnum vzon
+   fprintf(fp, "$~\n");
+   fclose(fp);
+ 
++   /* Create the quests file */
++  snprintf(buf, sizeof(buf), "%s/%d.qst", QST_PREFIX, vzone_num);
++  if (!(fp = fopen(buf, "w"))) {
++    mudlog(BRF, LVL_IMPL, TRUE, "SYSERR: OLC: Can't write new quest file");
++    *error = "Could not write quest file.\r\n";
++    return NOWHERE;
++  }
++  fprintf(fp, "$~\n");
++  fclose(fp);
++
+   /* Update index files. */
+   create_world_index(vzone_num, "zon");
+   create_world_index(vzone_num, "wld");
+@@ -141,6 +151,7 @@ zone_rnum create_new_zone(zone_vnum vzon
+   create_world_index(vzone_num, "obj");
+   create_world_index(vzone_num, "shp");
+   create_world_index(vzone_num, "trg");
++  create_world_index(vzone_num, "qst");
+ 
+   /* Make a new zone in memory. This was the source of all the zedit new 
+    * crashes. It was happily overwriting the stack.  This new loop by Andrew 
+@@ -212,6 +223,9 @@ void create_world_index(int znum, const 
+   case 't':
+     prefix = TRG_PREFIX;
+     break;
++  case 'q':
++    prefix = QST_PREFIX;
++    break;
+   default:
+     /* Caller messed up. */
+     return;
+@@ -242,6 +256,12 @@ void create_world_index(int znum, const 
+       if (num > znum) {
+ 	found = TRUE;
+ 	fprintf(newfile, "%s\n", buf1);
++      } else if (num == znum) {
++        /* index file already had an entry for this zone. */
++        fclose(oldfile);
++        fclose(newfile);
++        remove(new_name);
++        return;
+       }
+     }
+     fprintf(newfile, "%s\n", buf);
+diff -BbuprN tbamud-3.55/src/handler.c tbamud-3.55+quests/src/handler.c
+--- tbamud-3.55/src/handler.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/handler.c	2008-01-31 09:38:02.944422000 +0000
+@@ -18,6 +18,7 @@
+ #include "interpreter.h"
+ #include "spells.h"
+ #include "dg_scripts.h"
++#include "quest.h"
+ 
+ /* local vars */
+ int extractions_pending = 0;
+@@ -412,6 +413,9 @@ void char_to_room(struct char_data *ch, 
+     world[room].people = ch;
+     IN_ROOM(ch) = room;
+ 
++    autoquest_trigger_check(ch, 0, 0, AQ_ROOM_FIND);
++    autoquest_trigger_check(ch, 0, 0, AQ_MOB_FIND);
++
+     if (GET_EQ(ch, WEAR_LIGHT))
+       if (GET_OBJ_TYPE(GET_EQ(ch, WEAR_LIGHT)) == ITEM_LIGHT)
+ 	if (GET_OBJ_VAL(GET_EQ(ch, WEAR_LIGHT), 2))	/* Light ON */
+@@ -436,6 +440,8 @@ void obj_to_char(struct obj_data *object
+     IS_CARRYING_W(ch) += GET_OBJ_WEIGHT(object);
+     IS_CARRYING_N(ch)++;
+ 
++    autoquest_trigger_check(ch, NULL, object, AQ_OBJ_FIND);
++
+     /* set flag for crash-save system, but not on mobs! */
+     if (!IS_NPC(ch))
+       SET_BIT_AR(PLR_FLAGS(ch), PLR_CRASH);
+diff -BbuprN tbamud-3.55/src/interpreter.c tbamud-3.55+quests/src/interpreter.c
+--- tbamud-3.55/src/interpreter.c	2008-01-16 23:27:40.000000000 +0000
++++ tbamud-3.55+quests/src/interpreter.c	2008-01-31 09:45:06.788172000 +0000
+@@ -26,6 +26,7 @@
+ #include "improved-edit.h"
+ #include "dg_scripts.h"
+ #include "constants.h"
++#include "quest.h"
+ 
+ /* external variables */
+ extern room_rnum r_mortal_start_room;
+@@ -164,6 +165,7 @@ ACMD(do_practice);
+ ACMD(do_purge);
+ ACMD(do_put);
+ ACMD(do_qcomm);
++ACMD(do_quest);
+ ACMD(do_quit);
+ ACMD(do_reboot);
+ ACMD(do_remove);
+@@ -397,9 +399,11 @@ cpp_extern const struct command_info cmd
+   { "prompt"   , "pro"     , POS_DEAD    , do_display  , 0, 0 },
+   { "purge"    , "purge"   , POS_DEAD    , do_purge    , LVL_BUILDER, 0 },
+ 
++  { "qedit"    , "qedit"   , POS_DEAD    , do_oasis_qedit, LVL_BUILDER, 0 },
++  { "qlist"    , "qlist"   , POS_DEAD    , do_oasis_list, LVL_BUILDER, SCMD_OASIS_QLIST },
+   { "quaff"    , "qua"     , POS_RESTING , do_use      , 0, SCMD_QUAFF },
+   { "qecho"    , "qec"     , POS_DEAD    , do_qcomm    , LVL_GOD, SCMD_QECHO },
+-  { "quest"    , "que"     , POS_DEAD    , do_gen_tog  , 0, SCMD_QUEST },
++  { "quest"    , "que"	   , POS_DEAD    , do_quest    , 0, 0 },
+   { "qui"      , "qui"     , POS_DEAD    , do_quit     , 0, 0 },
+   { "quit"     , "quit"    , POS_DEAD    , do_quit     , 0, SCMD_QUIT },
+   { "qsay"     , "qsay"    , POS_RESTING , do_qcomm    , 0, SCMD_QSAY },
+@@ -1309,6 +1313,7 @@ void nanny(struct descriptor_data *d, ch
+     { CON_TRIGEDIT, trigedit_parse },
+     { CON_AEDIT, aedit_parse },
+     { CON_HEDIT,    hedit_parse },
++    { CON_QEDIT, qedit_parse },
+     { -1, NULL }
+   };
+ 
+diff -BbuprN tbamud-3.55/src/interpreter.h tbamud-3.55+quests/src/interpreter.h
+--- tbamud-3.55/src/interpreter.h	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/interpreter.h	2008-01-31 09:45:31.600672000 +0000
+@@ -219,6 +219,7 @@ struct alias_data {
+ #define SCMD_OASIS_SLIST       3
+ #define SCMD_OASIS_ZLIST       4
+ #define SCMD_OASIS_TLIST       5
++#define SCMD_OASIS_QLIST       6
+ 
+ /* do_last */
+ #define SCMD_LIST_ALL 1
+diff -BbuprN tbamud-3.55/src/modify.c tbamud-3.55+quests/src/modify.c
+--- tbamud-3.55/src/modify.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/modify.c	2008-01-31 10:12:06.147547000 +0000
+@@ -21,6 +21,7 @@
+ #include "boards.h"
+ #include "improved-edit.h"
+ #include "oasis.h"
++#include "quest.h"
+ 
+ void show_string(struct descriptor_data *d, char *input);
+ 
+@@ -151,6 +152,7 @@ void string_add(struct descriptor_data *
+         case CON_PLR_DESC:
+         case CON_TRIGEDIT:
+         case CON_HEDIT:
++        case CON_QEDIT:
+ 	  free(*d->str);
+           *d->str = d->backstr;
+           d->backstr = NULL;
+@@ -190,6 +192,7 @@ void string_add(struct descriptor_data *
+       { CON_PLR_DESC , exdesc_string_cleanup },
+       { CON_PLAYING, playing_string_cleanup },
+       { CON_HEDIT, hedit_string_cleanup },
++      { CON_QEDIT  , qedit_string_cleanup },
+       { -1, NULL }
+     };
+ 
+diff -BbuprN tbamud-3.55/src/oasis.c tbamud-3.55+quests/src/oasis.c
+--- tbamud-3.55/src/oasis.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/oasis.c	2008-01-31 10:14:25.725672000 +0000
+@@ -22,6 +22,7 @@
+ #include "oasis.h"
+ #include "screen.h"
+ #include "dg_olc.h"
++#include "quest.h"
+ 
+ /* External Functions */
+ int is_name(const char *str, const char *namelist);
+@@ -40,6 +41,7 @@ struct olc_scmd_info_t {
+   { "trigger",  CON_TRIGEDIT },
+   { "action",   CON_AEDIT },
+   { "help",     CON_HEDIT },
++  { "quest",     CON_QEDIT },
+   { "\n",	-1	  }
+ };
+ 
+@@ -125,6 +127,20 @@ void cleanup_olc(struct descriptor_data 
+   if (OLC_SHOP(d))
+       free_shop(OLC_SHOP(d));
+ 
++  /* Check for a quest. */
++  if (OLC_QUEST(d)) {
++    switch (cleanup_type) {
++      case CLEANUP_ALL:
++        free_quest(OLC_QUEST(d));
++        break;
++      case CLEANUP_STRUCTS:
++        free(OLC_QUEST(d));
++        break;
++      default:
++        break;
++    }
++  }
++
+   /*. Check for aedit stuff -- M. Scott */
+   if (OLC_ACTION(d))  {
+     switch(cleanup_type)  {
+diff -BbuprN tbamud-3.55/src/oasis.h tbamud-3.55+quests/src/oasis.h
+--- tbamud-3.55/src/oasis.h	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/oasis.h	2008-01-31 10:18:25.444422000 +0000
+@@ -25,7 +25,7 @@
+ #define NUM_ATTACK_TYPES	15
+ 
+ #define NUM_ITEM_TYPES		24
+-#define NUM_ITEM_FLAGS		17
++#define NUM_ITEM_FLAGS		18
+ #define NUM_ITEM_WEARS 		15
+ #define NUM_APPLIES		25
+ #define NUM_LIQ_TYPES 		16
+@@ -101,6 +101,7 @@ struct oasis_olc_data {
+   struct zone_data *zone;        /* used for 'zedit'         */
+   struct shop_data *shop;        /* used for 'sedit'         */
+   struct config_data *config;    /* used for 'cedit'         */
++  struct aq_data *quest;         /* used for 'qedit'         */
+   struct extra_descr_data *desc; /* used in '[r|o|m]edit'    */
+   struct social_messg *action;   /* Aedit uses this one      */
+   struct trig_data *trig;
+@@ -130,6 +131,7 @@ extern const char *nrm, *grn, *cyn, *yel
+ #define OLC_DESC(d) 	(OLC(d)->desc)		/* Extra description.	*/
+ #define OLC_CONFIG(d)	(OLC(d)->config)	/* Config structure.	*/
+ #define OLC_TRIG(d)     (OLC(d)->trig)          /* Trigger structure.   */
++#define OLC_QUEST(d)    (OLC(d)->quest)         /* Quest structure      */
+ 
+ #define OLC_ACTION(d)   (OLC(d)->action)        /* Action structure     */
+ #define OLC_HELP(d)     (OLC(d)->help)          /* Hedit structure      */
+@@ -416,6 +418,8 @@ ACMD(do_oasis_hedit);
+ void tedit_string_cleanup(struct descriptor_data *d, int terminator);
+ ACMD(do_tedit);
+ 
++ACMD(do_oasis_qedit);
++
+ /* oasis_delete.c */
+ int free_strings(void *data, int type);
+ 
+diff -BbuprN tbamud-3.55/src/oasis_list.c tbamud-3.55+quests/src/oasis_list.c
+--- tbamud-3.55/src/oasis_list.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/oasis_list.c	2008-01-31 12:25:49.335047000 +0000
+@@ -21,6 +21,7 @@
+ #include "screen.h"
+ #include "constants.h"
+ #include "dg_scripts.h"
++#include "quest.h"
+ 
+ /* local functions */
+ void list_triggers(struct char_data *ch, zone_rnum rnum, trig_vnum vmin, trig_vnum vmax);
+@@ -67,6 +68,7 @@ ACMD(do_oasis_list)
+     case SCMD_OASIS_RLIST: list_rooms(ch, rzone, vmin, vmax); break;
+     case SCMD_OASIS_TLIST: list_triggers(ch, rzone, vmin, vmax); break;
+     case SCMD_OASIS_SLIST: list_shops(ch, rzone, vmin, vmax); break;
++    case SCMD_OASIS_QLIST: list_quests(ch, rzone, vmin, vmax); break;
+     case SCMD_OASIS_ZLIST:
+       if (!*smin)
+         list_zones(ch, NOWHERE, 0, zone_table[top_of_zone_table].number);
+@@ -349,7 +351,7 @@ void list_zones(struct char_data *ch, zo
+ void print_zone(struct char_data *ch, zone_vnum vnum)
+ {
+   zone_rnum rnum;
+-  int size_rooms, size_objects, size_mobiles, i;
++  int size_rooms, size_objects, size_mobiles, size_quests, i;
+   room_vnum top, bottom;
+   int largest_table;
+ 
+@@ -370,6 +372,7 @@ void print_zone(struct char_data *ch, zo
+   size_rooms   = 0;
+   size_objects = 0;
+   size_mobiles = 0;
++  size_quests  = 0;
+   top          = zone_table[rnum].top;
+   bottom       = zone_table[rnum].bot;
+ 
+@@ -386,6 +389,7 @@ void print_zone(struct char_data *ch, zo
+       if (mob_index[i].vnum >= bottom && mob_index[i].vnum <= top)
+         size_mobiles++;
+   }
++  size_quests = count_quests(bottom, top);
+ 
+   /* Display all of the zone information at once. */
+   send_to_char(ch,
+@@ -400,7 +404,8 @@ void print_zone(struct char_data *ch, zo
+     "%sSize\r\n"
+     "%s   Rooms       = %s%d\r\n"
+     "%s   Objects     = %s%d\r\n"
+-    "%s   Mobiles     = %s%d%s\r\n",
++    "%s   Mobiles     = %s%d\r\n"
++    "%s   Quests      = %s%d%s\r\n",
+     QGRN, QCYN, zone_table[rnum].number,
+     QGRN, QCYN, zone_table[rnum].name,
+     QGRN, QCYN, zone_table[rnum].builders,
+@@ -413,7 +418,8 @@ void print_zone(struct char_data *ch, zo
+     QGRN,
+     QGRN, QCYN, size_rooms,
+     QGRN, QCYN, size_objects,
+-    QGRN, QCYN, size_mobiles, QNRM);
++    QGRN, QCYN, size_mobiles,
++    QGRN, QCYN, size_quests, QNRM);
+ }
+ 
+ /* List code by Ronald Evers. */
+diff -BbuprN tbamud-3.55/src/pfdefaults.h tbamud-3.55+quests/src/pfdefaults.h
+--- tbamud-3.55/src/pfdefaults.h	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/pfdefaults.h	2008-01-31 10:23:37.491297000 +0000
+@@ -51,6 +51,9 @@
+ #define PFDEF_OLC               NOWHERE 
+ #define PFDEF_PAGELENGTH        22
+ #define PFDEF_QUESTPOINTS       0
++#define PFDEF_QUESTCOUNT        0
++#define PFDEF_COMPQUESTS        0
++#define PFDEF_CURRQUEST         NOTHING
+ 
+ #endif
+ 
+diff -BbuprN tbamud-3.55/src/players.c tbamud-3.55+quests/src/players.c
+--- tbamud-3.55/src/players.c	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/players.c	2008-01-31 12:23:52.022547000 +0000
+@@ -18,6 +18,7 @@
+ #include "dg_scripts.h"
+ #include "comm.h"
+ #include "interpreter.h"
++#include "quest.h"
+ 
+ #define LOAD_HIT	0
+ #define LOAD_MANA	1
+@@ -30,6 +31,7 @@ int sprintascii(char *out, bitvector_t b
+ void tag_argument(char *argument, char *tag);
+ void load_affects(FILE *fl, struct char_data *ch);
+ void load_skills(FILE *fl, struct char_data *ch);
++void load_quests(FILE *fl, struct char_data *ch);
+ void load_HMVS(struct char_data *ch, const char *line, int mode);
+ void write_aliases_ascii(FILE *file, struct char_data *ch);
+ void read_aliases_ascii(FILE *file, struct char_data *ch, int count);
+@@ -264,6 +266,9 @@ int load_char(const char *name, struct c
+     SITTING(ch) = NULL;
+     NEXT_SITTING(ch) = NULL;
+     GET_QUESTPOINTS(ch) = PFDEF_QUESTPOINTS;
++    GET_QUEST_COUNTER(ch) = PFDEF_QUESTCOUNT;
++    GET_QUEST(ch) = PFDEF_CURRQUEST;
++    GET_NUM_QUESTS(ch) = PFDEF_COMPQUESTS;
+ 
+     for (i = 0; i < AF_ARRAY_MAX; i++)
+       AFF_FLAGS(ch)[i] = PFDEF_AFFFLAGS;
+@@ -387,6 +392,10 @@ int load_char(const char *name, struct c
+ 
+       case 'Q':
+ 	     if (!strcmp(tag, "Qstp"))  GET_QUESTPOINTS(ch)     = atoi(line);
++    else if (!strcmp(tag, "Qpnt")) GET_QUESTPOINTS(ch) = atoi(line); /* Backward compatibility */
++    else if (!strcmp(tag, "Qcur")) GET_QUEST(ch) = atoi(line);
++	else if (!strcmp(tag, "Qcnt")) GET_QUEST_COUNTER(ch) = atoi(line);
++	else if (!strcmp(tag, "Qest")) load_quests(fl, ch);
+         break;
+ 
+       case 'R':
+@@ -599,6 +608,14 @@ void save_char(struct char_data * ch)
+   if (GET_OLC_ZONE(ch)     != PFDEF_OLC)        fprintf(fl, "Olc : %d\n", GET_OLC_ZONE(ch));
+   if (GET_PAGE_LENGTH(ch)  != PFDEF_PAGELENGTH) fprintf(fl, "Page: %d\n", GET_PAGE_LENGTH(ch));
+   if (GET_QUESTPOINTS(ch)  != PFDEF_QUESTPOINTS) fprintf(fl, "Qstp: %d\n", GET_QUESTPOINTS(ch));
++  if (GET_QUEST_COUNTER(ch)!= PFDEF_QUESTCOUNT)  fprintf(fl, "Qcnt: %d\n", GET_QUEST_COUNTER(ch));
++  if (GET_NUM_QUESTS(ch)   != PFDEF_COMPQUESTS) {
++    fprintf(fl, "Qest:\n");
++    for (i = 0; i < GET_NUM_QUESTS(ch); i++)
++      fprintf(fl, "%d\n", ch->player_specials->saved.completed_quests[i]);
++    fprintf(fl, "%d\n", NOTHING);
++  }
++  if (GET_QUEST(ch)        != PFDEF_CURRQUEST)  fprintf(fl, "Qcur: %d\n", GET_QUEST(ch));
+ 
+   /* Save skills */
+   if (GET_LEVEL(ch) < LVL_IMMORT) {
+@@ -790,6 +807,19 @@ void load_skills(FILE *fl, struct char_d
+   } while (num != 0);
+ }
+ 
++void load_quests(FILE *fl, struct char_data *ch)
++{
++  int num = NOTHING;
++  char line[MAX_INPUT_LENGTH + 1];
++
++  do {
++    get_line(fl, line);
++    sscanf(line, "%d", &num);
++    if (num != NOTHING)
++      add_completed_quest(ch, num);
++  } while (num != NOTHING);
++}
++
+ void load_HMVS(struct char_data *ch, const char *line, int mode)
+ {
+   int num = 0, num2 = 0;
+diff -BbuprN tbamud-3.55/src/qedit.c tbamud-3.55+quests/src/qedit.c
+--- tbamud-3.55/src/qedit.c	1970-01-01 00:00:00.000000000 +0000
++++ tbamud-3.55+quests/src/qedit.c	2008-01-31 12:43:09.647547000 +0000
+@@ -0,0 +1,746 @@
++/* ***********************************************************************
++*    File:   qedit.c                                  Part of CircleMUD  *
++* Version:   2.0 (November 2005) Written for CircleMud CWG / Suntzu      *
++* Purpose:   To provide special quest-related code.                      *
++* Copyright: Kenneth Ray                                                 *
++*                                                                        *
++* Made for Oasis OLC                                                     *
++* Copyright 1996 Harvey Gilpin.                                          *
++*********************************************************************** */
++
++#include "conf.h"
++#include "sysdep.h"
++
++#include "structs.h"
++#include "utils.h"
++
++#include "comm.h"
++#include "db.h"
++#include "oasis.h"
++#include "improved-edit.h"
++#include "screen.h"
++#include "genolc.h"
++#include "genzon.h"
++#include "interpreter.h"
++#include "quest.h"
++/*-------------------------------------------------------------------*/
++/* external variables */
++
++extern zone_rnum real_zone_by_thing(room_vnum vznum);
++
++/*-------------------------------------------------------------------*/
++/*. Function prototypes . */
++
++void qedit_setup_new(struct descriptor_data *d);
++void qedit_setup_existing(struct descriptor_data *d, qst_rnum rnum);
++void qedit_parse(struct descriptor_data *d, char *arg);
++void qedit_disp_menu(struct descriptor_data *d);
++void qedit_save_internally(struct descriptor_data *d);
++void qedit_save_to_disk(int num);
++
++/*-------------------------------------------------------------------*/
++
++void qedit_save_internally(struct descriptor_data *d)
++{
++  add_quest(OLC_QUEST(d));
++}
++
++void qedit_save_to_disk(int num)
++{
++  save_quests(num);
++}
++
++/*-------------------------------------------------------------------*\
++  utility functions
++ \*-------------------------------------------------------------------*/
++
++ACMD(do_oasis_qedit)
++{
++  int save = 0;
++  qst_rnum real_num;
++  qst_vnum number = NOWHERE;
++  struct descriptor_data *d;
++  char *buf3;
++  char buf1[MAX_INPUT_LENGTH];
++  char buf2[MAX_INPUT_LENGTH];
++
++  /****************************************************************************/
++  /** Parse any arguments.                                                   **/
++  /****************************************************************************/
++  buf3 = two_arguments(argument, buf1, buf2);
++
++  if (!*buf1) {
++    send_to_char(ch, "Specify a quest VNUM to edit.\r\n");
++    return;
++  } else if (!isdigit(*buf1)) {
++    if (str_cmp("save", buf1) != 0) {
++      send_to_char(ch, "Yikes!  Stop that, someone will get hurt!\r\n");
++      return;
++    }
++
++    save = TRUE;
++
++    if (is_number(buf2))
++      number = atoi(buf2);
++    else if (GET_OLC_ZONE(ch) > 0) {
++      zone_rnum zlok;
++
++      if ((zlok = real_zone(GET_OLC_ZONE(ch))) == NOWHERE)
++        number = NOWHERE;
++      else
++        number = genolc_zone_bottom(zlok);
++    }
++
++    if (number == NOWHERE) {
++      send_to_char(ch, "Save which zone?\r\n");
++      return;
++    }
++  }
++
++  /****************************************************************************/
++  /** If a numeric argument was given, get it.                               **/
++  /****************************************************************************/
++  if (number == NOWHERE)
++    number = atoi(buf1);
++
++  /****************************************************************************/
++  /** Check that the guild isn't already being edited.                       **/
++  /****************************************************************************/
++  for (d = descriptor_list; d; d = d->next) {
++    if (STATE(d) == CON_QEDIT) {
++      if (d->olc && OLC_NUM(d) == number) {
++        send_to_char(ch, "That quest is currently being edited by %s.\r\n",
++          PERS(d->character, ch));
++        return;
++      }
++    }
++  }
++
++  /****************************************************************************/
++  /** Point d to the builder's descriptor.                                   **/
++  /****************************************************************************/
++  d = ch->desc;
++
++  /****************************************************************************/
++  /** Give the descriptor an OLC structure.                                  **/
++  /****************************************************************************/
++  if (d->olc) {
++    mudlog(BRF, LVL_IMMORT, TRUE,
++      "SYSERR: do_oasis_quest: Player already had olc structure.");
++    free(d->olc);
++  }
++
++  CREATE(d->olc, struct oasis_olc_data, 1);
++
++  /****************************************************************************/
++  /** Find the zone.                                                         **/
++  /****************************************************************************/
++  if ((OLC_ZNUM(d) = real_zone_by_thing(number)) == NOWHERE) {
++    send_to_char(ch, "Sorry, there is no zone for that number!\r\n");
++    free(d->olc);
++    d->olc = NULL;
++    return;
++  }
++
++  /****************************************************************************/
++  /** Everyone but IMPLs can only edit zones they have been assigned.        **/
++  /****************************************************************************/
++  if (!can_edit_zone(ch, OLC_ZNUM(d))) {
++    send_to_char(ch, "You do not have permission to edit this zone.\r\n");
++
++    /**************************************************************************/
++    /** Free the OLC structure.                                              **/
++    /**************************************************************************/
++    free(d->olc);
++    d->olc = NULL;
++    return;
++  }
++
++  if (save) {
++    send_to_char(ch, "Saving all quests in zone %d.\r\n",
++      zone_table[OLC_ZNUM(d)].number);
++    mudlog(CMP, MAX(LVL_BUILDER, GET_INVIS_LEV(ch)), TRUE,
++      "OLC: %s saves quest info for zone %d.",
++      GET_NAME(ch), zone_table[OLC_ZNUM(d)].number);
++
++    /**************************************************************************/
++    /** Save the quest to the quest file.                                    **/
++    /**************************************************************************/
++    qedit_save_to_disk(OLC_ZNUM(d));
++
++    /**************************************************************************/
++    /** Free the OLC structure.                                              **/
++    /**************************************************************************/
++    free(d->olc);
++    d->olc = NULL;
++    return;
++  }
++
++  OLC_NUM(d) = number;
++
++  if ((real_num = real_quest(number)) != NOTHING)
++    qedit_setup_existing(d, real_num);
++  else
++    qedit_setup_new(d);
++
++  STATE(d) = CON_QEDIT;
++
++  act("$n starts using OLC.", TRUE, d->character, 0, 0, TO_ROOM);
++  SET_BIT_AR(PLR_FLAGS(ch), PLR_WRITING);
++
++  mudlog(BRF, LVL_IMMORT, TRUE,
++         "OLC: %s starts editing zone %d allowed zone %d",
++         GET_NAME(ch), zone_table[OLC_ZNUM(d)].number, GET_OLC_ZONE(ch));
++}
++
++void qedit_setup_new(struct descriptor_data *d)
++{
++  struct aq_data *quest;
++
++  /* Allociate some quest shaped space                          */
++  CREATE(quest, struct aq_data, 1);
++  /* Set default values                                         */
++  quest->vnum       = OLC_NUM(d);     /* Quest vnum             */
++  quest->qm         = NOBODY;         /* Questmaster rnum       */
++  quest->flags      = 0;              /* Quest bitflags         */
++  quest->type       = AQ_UNDEFINED;   /* Quest type             */
++  quest->target     = NOTHING;        /* Quest target           */
++  quest->prereq     = NOTHING;        /* Prerequisite object    */
++  quest->value[0]   = 0;              /* Points for completing  */
++  quest->value[1]   = 0;              /* Points for abandoning  */
++  quest->value[2]   = 0;              /* Minimum level          */
++  quest->value[3]   = LVL_IMPL;       /* Maximim level          */
++  quest->value[4]   = -1;             /* Time limit             */
++  quest->value[5]   = NOBODY;         /* Mob to return object   */
++  quest->value[6]   = 1;              /* Quantity of targets    */
++  quest->prev_quest = NOTHING;        /* Previous quest         */
++  quest->next_quest = NOTHING;        /* Next quest             */
++  quest->gold_reward= 0;              /* Prize in gold coins    */
++  quest->exp_reward = 0;              /* Prize in exp points    */
++  quest->obj_reward = NOTHING;        /* vnum of reward object  */
++  quest->name       = strdup("Undefined Quest");
++  quest->desc       = strdup("Quest definition is incomplete.");
++  quest->info       = strdup("There is no information on this quest.\r\n");
++  quest->done       = strdup("You have completed the quest.\r\n");
++  quest->quit       = strdup("You have abandoned the quest.\r\n");
++  quest->func       = NULL;           /* Secondary qm spec proc */
++  /* Set the descriptor OLC structure to point to this quest    */
++  OLC_QUEST(d) = quest;
++  /* Show the main quest edit menu                              */
++  qedit_disp_menu(d);
++}
++
++/*-------------------------------------------------------------------*/
++
++void qedit_setup_existing(struct descriptor_data *d, qst_rnum r_num)
++{
++  /*. Alloc some quest shaped space . */
++  CREATE(OLC_QUEST(d), struct aq_data, 1);
++  copy_quest(OLC_QUEST(d), aquest_table + r_num, FALSE);
++  qedit_disp_menu(d);
++}
++
++/*-------------------------------------------------------------------*/
++
++/**************************************************************************
++ Menu functions
++**************************************************************************/
++
++/*-------------------------------------------------------------------*/
++/*. Display main menu . */
++
++void qedit_disp_menu(struct descriptor_data *d)
++{
++  struct aq_data *quest;
++  char quest_flags[MAX_STRING_LENGTH], buf2[MAX_STRING_LENGTH];
++  char targetname[MAX_STRING_LENGTH];
++  mob_vnum return_mob;
++
++  quest = OLC_QUEST(d);
++
++  clear_screen(d);
++  sprintbit(quest->flags, aq_flags, quest_flags, sizeof(quest_flags));
++  if (quest->type == AQ_OBJ_RETURN) {
++    if ((return_mob = real_mobile(quest->value[5])) != NOBODY)
++      snprintf(buf2, sizeof(buf2), "to %s [%d]",
++	       mob_proto[return_mob].player.short_descr,
++	       quest->value[5]);
++    else
++      snprintf(buf2, sizeof(buf2), "to an unknown mob [%d].",
++               quest->value[5]);
++  }
++  switch (quest->type) {
++    case AQ_OBJ_FIND:
++    case AQ_OBJ_RETURN:
++      snprintf(targetname, sizeof(targetname), "%s",
++               real_object(quest->target) == NOTHING ?
++               "An unknown object" :
++               obj_proto[real_object(quest->target)].short_description);
++      break;
++    case AQ_ROOM_FIND:
++    case AQ_ROOM_CLEAR:
++      snprintf(targetname, sizeof(targetname), "%s",
++               real_room(quest->target) == NOWHERE ?
++               "An unknown room" :
++               world[real_room(quest->target)].name);
++      break;
++    case AQ_MOB_FIND:
++    case AQ_MOB_KILL:
++    case AQ_MOB_SAVE:
++      snprintf(targetname, sizeof(targetname), "%s",
++               real_mobile(quest->target) == NOBODY ?
++               "An unknown mobile" :
++               GET_NAME(&mob_proto[real_mobile(quest->target)]));
++      break;
++    default:
++      snprintf(targetname, sizeof(targetname), "Unknown");
++      break;
++  }
++  write_to_output(d,
++    "-- Quest Number    : @n[@c%6d@n]\r\n"
++    "@g 1@n) Quest Name     : @y%s\r\n"
++    "@g 2@n) Description    : @y%s\r\n"
++    "@g 3@n) Accept Message\r\n@y%s"
++    "@g 4@n) Completion Message\r\n@y%s"
++    "@g 5@n) Quit Message\r\n@y%s"
++    "@g 6@n) Quest Flags    : @c%s\r\n"
++    "@g 7@n) Quest Type     : @c%s %s\r\n"
++    "@g 8@n) Quest Master   : [@c%6d@n] @y%s\r\n"
++    "@g 9@n) Quest Target   : [@c%6d@n] @y%s\r\n"
++    "@g A@n) Quantity       : [@c%6d@n]\r\n"
++    "@n    Quest Point Rewards\r\n"
++    "@g B@n) Completed      : [@c%6d@n] @g C@n) Abandoned   : [@c%6d@n]\r\n"
++    "@n    Other Rewards Rewards\r\n"
++    "@g G@n) Gold Coins     : [@c%6d@n] @g T@n) Exp Points  : [@c%6d@n] @g O@n) Object : [@c%6d@n]\r\n"
++    "@n    Level Limits to Accept Quest\r\n"
++    "@g D@n) Lower Level    : [@c%6d@n] @g E@n) Upper Level : [@c%6d@n]\r\n"
++    "@g F@n) Prerequisite   : [@c%6d@n] @y%s\r\n"
++    "@g L@n) Time Limit     : [@c%6d@n]\r\n"
++    "@g N@n) Next Quest     : [@c%6d@n] @y%s\r\n"
++    "@g P@n) Previous Quest : [@c%6d@n] @y%s\r\n"
++    "@g X@n) Delete Quest\r\n"
++    "@g Q@n) Quit\r\n"
++    "Enter Choice : ",
++    quest->vnum,
++    quest->name,
++    quest->desc,
++    quest->info && (str_cmp(quest->info, "undefined"))
++     ? quest->info : "Nothing\r\n",
++    quest->done && (str_cmp(quest->done, "undefined"))
++     ? quest->done : "Nothing\r\n",
++    quest->quit && (str_cmp(quest->quit, "undefined"))
++     ? quest->quit : "Nothing\r\n",
++    quest_flags,
++    quest_types[quest->type],
++    quest->type == AQ_OBJ_RETURN ? buf2 : "",
++    quest->qm == NOBODY ? -1 :     mob_index[quest->qm].vnum,
++    quest->qm == NOBODY ? "none" : mob_proto[quest->qm].player.short_descr,
++    quest->target == NOBODY ? -1 : quest->target, targetname,
++    quest->value[6],
++    quest->value[0], quest->value[1],
++    quest->gold_reward, quest->exp_reward, quest->obj_reward == NOTHING ? -1 : quest->obj_reward,
++    quest->value[2], quest->value[3],
++    quest->prereq     == NOTHING ? -1 : quest->prereq,
++    quest->prereq     == NOTHING ? "" :
++      real_object(quest->prereq) == NOTHING ? "an unknown object" :
++                  obj_proto[real_object(quest->prereq)].short_description,
++    quest->value[4],
++    quest->next_quest == NOTHING ? -1 : quest->next_quest,
++    quest->next_quest == NOTHING ? "" : QST_DESC(real_quest(quest->next_quest)),
++    quest->prev_quest == NOTHING ? -1 : quest->prev_quest,
++    quest->prev_quest == NOTHING ? "" : QST_DESC(real_quest(quest->prev_quest))
++  );
++  OLC_MODE(d) = QEDIT_MAIN_MENU;
++}
++/* For sector type.  */
++void qedit_disp_type_menu(struct descriptor_data *d)
++{
++  int counter, columns = 0;
++
++  clear_screen(d);
++  for (counter = 0; counter < NUM_AQ_TYPES; counter++) {
++    write_to_output(d, "@g%2d@n) %-20.20s %s", counter,
++                quest_types[counter], !(++columns % 2) ? "\r\n" : "");
++  }
++  write_to_output(d, "\r\nEnter Quest type : ");
++  OLC_MODE(d) = QEDIT_TYPES;
++}
++/* For quest flags.  */
++void qedit_disp_flag_menu(struct descriptor_data *d)
++{
++  char bits[MAX_STRING_LENGTH];
++  int counter, columns = 0;
++
++  get_char_colors(d->character);
++  clear_screen(d);
++  for (counter = 0; counter < NUM_AQ_FLAGS; counter++) {
++    write_to_output(d, "%s%2d%s) %-20.20s %s", grn, counter + 1, nrm,
++                aq_flags[counter], !(++columns % 2) ? "\r\n" : "");
++  }
++  sprintbit(OLC_QUEST(d)->flags, aq_flags, bits, sizeof(bits));
++  write_to_output(d, "\r\nQuest flags: @c%s@n\r\n"
++          "Enter quest flags, 0 to quit : ", bits);
++  OLC_MODE(d) = QEDIT_FLAGS;
++}
++/**************************************************************************
++  The GARGANTUAN event handler
++**************************************************************************/
++
++void qedit_parse(struct descriptor_data *d, char *arg)
++{
++  int number = atoi(arg);
++  char *oldtext = NULL;
++
++  switch (OLC_MODE(d)) {
++    /*-------------------------------------------------------------------*/
++    case QEDIT_CONFIRM_SAVESTRING:
++      switch (*arg) {
++        case 'y':
++        case 'Y':
++          send_to_char(d->character, "Saving Quest to memory.\r\n");
++          qedit_save_internally(d);
++          mudlog(CMP, MAX(LVL_BUILDER, GET_INVIS_LEV(d->character)), TRUE,
++	    "OLC: %s edits quest %d", GET_NAME(d->character), OLC_NUM(d));
++          if (CONFIG_OLC_SAVE) {
++            qedit_save_to_disk(real_zone_by_thing(OLC_NUM(d)));
++            write_to_output(d, "Quest %d saved to disk.\r\n", OLC_NUM(d));
++          } else
++            write_to_output(d, "Quest %d saved to memory.\r\n", OLC_NUM(d));
++          cleanup_olc(d, CLEANUP_STRUCTS);
++	  return;
++        case 'n':
++        case 'N':
++          cleanup_olc(d, CLEANUP_ALL);
++          return;
++        default:
++          write_to_output(d,
++            "Invalid choice!\r\nDo you wish to save the quest? : ");
++          return;
++      }
++      break;
++    /*-------------------------------------------------------------------*/
++    case QEDIT_CONFIRM_DELETE:
++      switch (*arg) {
++        case 'y':
++        case 'Y':
++          if (delete_quest(real_quest(OLC_NUM(d))))
++            write_to_output(d, "Quest deleted.\r\n");
++	  else
++            write_to_output(d, "Couldn't delete the quest!\r\n");
++          if (CONFIG_OLC_SAVE) {
++            qedit_save_to_disk(real_zone_by_thing(OLC_NUM(d)));
++            write_to_output(d, "Quest file saved to disk.\r\n");
++          } else
++            write_to_output(d, "Quest file saved to memory.\r\n");
++          cleanup_olc(d, CLEANUP_ALL);
++	  return;
++        case 'n':
++        case 'N':
++          qedit_disp_menu(d);
++          return;
++        default:
++          write_to_output(d,
++            "Invalid choice!\r\nDo you wish to delete the quest? : ");
++          return;
++      }
++      break;
++
++    /*-------------------------------------------------------------------*/
++    case QEDIT_MAIN_MENU:
++      switch (*arg) {
++        case 'q':
++	case 'Q':
++	  if (OLC_VAL(d)) {		/*. Anything been changed? . */
++            write_to_output(d,
++              "Do you wish to save the changes to the Quest? (y/n) : ");
++            OLC_MODE(d) = QEDIT_CONFIRM_SAVESTRING;
++          } else
++            cleanup_olc(d, CLEANUP_ALL);
++          return;
++	case 'x':
++	case 'X':
++          OLC_MODE(d) = QEDIT_CONFIRM_DELETE;
++	  write_to_output(d, "Do you wish to delete the Quest? (y/n) : ");
++	  break;
++	case '1':
++	  OLC_MODE(d) = QEDIT_NAME;
++	  write_to_output(d, "Enter the quest name : ");
++	  break;
++        case '2':
++	  OLC_MODE(d) = QEDIT_DESC;
++	  write_to_output(d, "Enter the quest description :-\r\n] ");
++	  break;
++        case '3':
++          OLC_MODE(d) = QEDIT_INFO;
++          clear_screen(d);
++          send_editor_help(d);
++          write_to_output(d, "Enter quest acceptance message:\r\n\r\n");
++
++          if (OLC_QUEST(d)->info) {
++            write_to_output(d, "%s", OLC_QUEST(d)->info);
++            oldtext = strdup(OLC_QUEST(d)->info);
++          }
++          string_write(d, &OLC_QUEST(d)->info, MAX_QUEST_MSG, 0, oldtext);
++          OLC_VAL(d) = 1;
++          break;
++        case '4':
++          OLC_MODE(d) = QEDIT_COMPLETE;
++          clear_screen(d);
++          send_editor_help(d);
++          write_to_output(d, "Enter quest completion message:\r\n\r\n");
++
++          if (OLC_QUEST(d)->done) {
++            write_to_output(d, "%s", OLC_QUEST(d)->done);
++            oldtext = strdup(OLC_QUEST(d)->done);
++          }
++          string_write(d, &OLC_QUEST(d)->done, MAX_QUEST_MSG, 0, oldtext);
++          OLC_VAL(d) = 1;
++          break;
++        case '5':
++          OLC_MODE(d) = QEDIT_ABANDON;
++          clear_screen(d);
++          send_editor_help(d);
++          write_to_output(d, "Enter quest quit message:\r\n\r\n");
++
++          if (OLC_QUEST(d)->quit) {
++            write_to_output(d, "%s", OLC_QUEST(d)->quit);
++            oldtext = strdup(OLC_QUEST(d)->quit);
++          }
++          string_write(d, &OLC_QUEST(d)->quit, MAX_QUEST_MSG, 0, oldtext);
++          OLC_VAL(d) = 1;
++          break;
++        case '6':
++          OLC_MODE(d) = QEDIT_FLAGS;
++          qedit_disp_flag_menu(d);
++          break;
++        case '7':
++          OLC_MODE(d) = QEDIT_TYPES;
++          qedit_disp_type_menu(d);
++          break;
++        case '8':
++          OLC_MODE(d) = QEDIT_QUESTMASTER;
++          write_to_output(d, "Enter vnum of quest master : ");
++          break;
++        case '9':
++          OLC_MODE(d) = QEDIT_TARGET;
++          write_to_output(d, "Enter target vnum : ");
++          break;
++	case 'a':
++	case 'A':
++	  OLC_MODE(d) = QEDIT_QUANTITY;
++	  write_to_output(d, "Enter quantity of target : ");
++	  break;
++        case 'b':
++        case 'B':
++	  OLC_MODE(d) = QEDIT_POINTSCOMP;
++          write_to_output(d, "Enter points for completing the quest : " );
++          break;
++	case 'c':
++        case 'C':
++	  OLC_MODE(d) = QEDIT_POINTSQUIT;
++          write_to_output(d, "Enter points for quitting the quest : " );
++          break;
++	case 'd':
++        case 'D':
++	  OLC_MODE(d) = QEDIT_LEVELMIN;
++          write_to_output(d, "Enter minimum level to accept the quest : " );
++          break;
++	case 'e':
++        case 'E':
++	  OLC_MODE(d) = QEDIT_LEVELMAX;
++          write_to_output(d, "Enter maximum level to accept the quest : " );
++          break;
++	case 'f':
++	case 'F':
++	  OLC_MODE(d) = QEDIT_PREREQ;
++	  write_to_output(d, "Enter a prerequisite object vnum (-1 for none) : ");
++	  break;
++	case 'g':
++	case 'G':
++	  OLC_MODE(d) = QEDIT_GOLD;
++	  write_to_output(d, "Enter the number of gold coins (0 for none) : ");
++	  break;
++	case 't':
++	case 'T':
++	  OLC_MODE(d) = QEDIT_EXP;
++	  write_to_output(d, "Enter a number of experience points (0 for none) : ");
++	  break;
++	case 'o':
++	case 'O':
++	  OLC_MODE(d) = QEDIT_OBJ;
++	  write_to_output(d, "Enter the prize object vnum (-1 for none) : ");
++	  break;
++	case 'l':
++        case 'L':
++	  OLC_MODE(d) = QEDIT_TIMELIMIT;
++          write_to_output(d, "Enter time limit to complete (-1 for none) : " );
++          break;
++	case 'n':
++	case 'N':
++          OLC_MODE(d) = QEDIT_NEXTQUEST;
++          write_to_output(d, "Enter vnum of next quest (-1 for none) : ");
++          break;
++ 	case 'p':
++	case 'P':
++          OLC_MODE(d) = QEDIT_PREVQUEST;
++          write_to_output(d, "Enter vnum of previous quest (-1 for none) : ");
++          break;
++        default:
++	  write_to_output(d, "Invalid chioce!");
++	  qedit_disp_menu(d);
++	  break;
++      }
++      return;
++    /*-------------------------------------------------------------------*/
++    case QEDIT_NAME:
++      if (!genolc_checkstring(d, arg))
++        break;
++      if (OLC_QUEST(d)->name)
++        free(OLC_QUEST(d)->name);
++      arg[MAX_QUEST_NAME - 1] = '\0';
++      OLC_QUEST(d)->name = str_udup(arg);
++      break;
++    case QEDIT_DESC:
++      if (!genolc_checkstring(d, arg))
++        break;
++      if (OLC_QUEST(d)->desc)
++        free(OLC_QUEST(d)->desc);
++      arg[MAX_QUEST_DESC - 1] = '\0';
++      OLC_QUEST(d)->desc = str_udup(arg);
++      break;
++    case QEDIT_QUESTMASTER:
++      if (number != -1)
++        if ((number = real_mobile(number)) == NOBODY) {
++          write_to_output(d, "That mobile does not exist, try again : ");
++          return;
++        }
++      OLC_QUEST(d)->qm = number;
++      break;
++    case QEDIT_TYPES:
++      if (number < 0 || number >= NUM_AQ_TYPES) {
++        write_to_output(d, "Invalid choice!\r\n");
++        qedit_disp_type_menu(d);
++        return;
++      }
++      OLC_QUEST(d)->type = number;
++      if (number == AQ_OBJ_RETURN) {
++        OLC_MODE(d) = QEDIT_RETURNMOB;
++        write_to_output(d, "Enter mob vnum to return object to : ");
++        return;
++      }
++      break;
++    case QEDIT_FLAGS:
++      if (number < 0 || number > NUM_AQ_FLAGS) {
++        write_to_output(d, "That is not a valid choice!\r\n");
++        qedit_disp_flag_menu(d);
++      } else if (number == 0)
++        break;
++      else {
++        TOGGLE_BIT(OLC_QUEST(d)->flags, number );
++        qedit_disp_flag_menu(d);
++      }
++      return;
++    case QEDIT_QUANTITY:
++      OLC_QUEST(d)->value[6] = LIMIT(number, 1, 50);
++      break;
++    case QEDIT_POINTSCOMP:
++      OLC_QUEST(d)->value[0] = LIMIT(number, 0, 999999);
++      break;
++    case QEDIT_POINTSQUIT:
++      OLC_QUEST(d)->value[1] = LIMIT(number, 0, 999999);
++      break;
++    case QEDIT_PREREQ:
++      if ((number = atoi(arg)) != -1)
++        if (real_object(number) == NOTHING) {
++          write_to_output(d, "That object does not exist, try again : ");
++          return;
++        }
++      OLC_QUEST(d)->prereq = number;
++      break;
++    case QEDIT_LEVELMIN:
++      if (number < 0 || number > LVL_IMPL) {
++        write_to_output(d, "Level must be between 0 and %d!\r\n", LVL_IMPL);
++	write_to_output(d, "Enter minimum level to accept the quest : " );
++        return;
++      }	else if (number > OLC_QUEST(d)->value[3]) {
++	write_to_output(d, "Minimum level can't be above maximum level!\r\n");
++	write_to_output(d, "Enter minimum level to accept the quest : " );
++        return;
++      } else {
++        OLC_QUEST(d)->value[2] = number;
++        break;
++      }
++    case QEDIT_LEVELMAX:
++      if (number < 0 || number > LVL_IMPL) {
++        write_to_output(d, "Level must be between 0 and %d!\r\n", LVL_IMPL);
++	write_to_output(d, "Enter maximum level to accept the quest : " );
++        return;
++      } else if (number < OLC_QUEST(d)->value[2]) {
++	write_to_output(d, "Maximum level can't be below minimum level!\r\n");
++	write_to_output(d, "Enter maximum level to accept the quest : " );
++        return;
++      } else {
++        OLC_QUEST(d)->value[3] = number;
++        break;
++      }
++    case QEDIT_TIMELIMIT:
++      OLC_QUEST(d)->value[4] = LIMIT(number, -1, 100);
++      break;
++    case QEDIT_RETURNMOB:
++      if ((number = atoi(arg)) != -1)
++        if (real_mobile(number) == NOBODY) {
++          write_to_output(d, "That mobile does not exist, try again : ");
++          return;
++        }
++      OLC_QUEST(d)->value[5] = number;
++      break;
++    case QEDIT_TARGET:
++      OLC_QUEST(d)->target = number;
++      break;
++    case QEDIT_NEXTQUEST:
++      OLC_QUEST(d)->next_quest = (number == -1 ? NOTHING : atoi(arg));
++      break;
++    case QEDIT_PREVQUEST:
++      OLC_QUEST(d)->prev_quest = (number == -1 ? NOTHING : atoi(arg));
++      break;
++    case QEDIT_GOLD:
++      OLC_QUEST(d)->gold_reward = LIMIT(number, 0, 99999);
++      break;
++    case QEDIT_EXP:
++      OLC_QUEST(d)->exp_reward = LIMIT(number, 0, 99999);
++      break;
++    case QEDIT_OBJ:
++      if ((number = atoi(arg)) != -1)
++        if (real_object(number) == NOTHING) {
++          write_to_output(d, "That object does not exist, try again : ");
++          return;
++        }
++      OLC_QUEST(d)->obj_reward = number;
++      break;
++    default:
++      /*. We should never get here . */
++      cleanup_olc(d, CLEANUP_ALL);
++      mudlog(BRF, LVL_BUILDER, TRUE, "SYSERR: OLC: qedit_parse(): "
++				 "Reached default case!");
++      write_to_output(d, "Oops...\r\n");
++      break;
++  }
++  /*-------------------------------------------------------------------*/
++  /*. END OF CASE
++  If we get here, we have probably changed something, and now want to
++  return to main menu.  Use OLC_VAL as a 'has changed' flag . */
++
++  OLC_VAL(d) = 1;
++  qedit_disp_menu(d);
++}
++
++void qedit_string_cleanup(struct descriptor_data *d, int terminator)
++{
++  switch (OLC_MODE(d)) {
++  case QEDIT_INFO:
++  case QEDIT_COMPLETE:
++  case QEDIT_ABANDON:
++    qedit_disp_menu(d);
++    break;
++  }
++}
+diff -BbuprN tbamud-3.55/src/quest.c tbamud-3.55+quests/src/quest.c
+--- tbamud-3.55/src/quest.c	1970-01-01 00:00:00.000000000 +0000
++++ tbamud-3.55+quests/src/quest.c	2008-01-31 12:30:49.022547000 +0000
+@@ -0,0 +1,796 @@
++/* ***********************************************************************
++*    File:   quest.c                                  Part of CircleMUD  *
++* Version:   2.1 (December 2005) Written for CircleMud CWG / Suntzu      *
++* Purpose:   To provide special quest-related code.                      *
++* Copyright: Kenneth Ray                                                 *
++* Original Version Details:                                              *
++* Morgaelin - quest.c                                                    *
++* Copyright (C) 1997 MS                                                  *
++*********************************************************************** */
++#include "conf.h"
++#include "sysdep.h"
++
++#include "structs.h"
++#include "utils.h"
++#include "interpreter.h"
++#include "handler.h"
++#include "db.h"
++#include "comm.h"
++#include "screen.h"
++#include "quest.h"
++
++/* External Functions */
++ACMD(do_tell);
++extern struct index_data *mob_index;
++extern struct index_data *obj_index;
++extern struct room_data *world;
++extern long asciiflag_conv(char *flag);
++/* Local Variables */
++int cmd_tell;
++const char *quest_types[] = {
++  "Object",
++  "Room",
++  "Find mob",
++  "Kill mob",
++  "Save mob",
++  "Return object",
++  "Clear room",
++  "\n"
++};
++const char *aq_flags[] = {
++  "REPEATABLE",
++  "\n"
++};
++const char *quest_cmd[] = {
++  "list", "history", "join", "leave", "progress", "status", "\n"};
++const char *quest_mort_usage =
++  "Usage: quest list | history | progress | join <nn> | leave";
++const char *quest_imm_usage =
++  "Usage: quest list | history | progress | join <nn> | leave | status <vnum>";
++
++/*--------------------------------------------------------------------------*/
++/* Utility Functions                                                        */
++/*--------------------------------------------------------------------------*/
++
++qst_rnum real_quest(qst_vnum vnum)
++{
++  int rnum;
++
++  for (rnum = 0; rnum < total_quests; rnum++)
++    if (QST_NUM(rnum) == vnum)
++      return(rnum);
++  return(NOTHING);
++}
++
++int is_complete(struct char_data *ch, qst_vnum vnum)
++{
++  int i;
++
++  for (i = 0; i < GET_NUM_QUESTS(ch); i++)
++    if (ch->player_specials->saved.completed_quests[i] == vnum)
++      return TRUE;
++  return FALSE;
++}
++
++qst_vnum find_quest_by_qmnum(struct char_data *ch, mob_rnum qm, int num)
++{
++  qst_rnum rnum;
++  int found=0;
++  for (rnum = 0; rnum < total_quests; rnum++) {
++    if (qm == QST_MASTER(rnum))
++      if (++found == num)
++        return (QST_NUM(rnum));
++  }
++  return NOTHING;
++}
++
++/*--------------------------------------------------------------------------*/
++/* Quest Loading and Unloading Functions                                    */
++/*--------------------------------------------------------------------------*/
++
++void destroy_quests(void)
++{
++  qst_rnum rnum = 0;
++
++  if (!aquest_table)
++    return;
++
++  for (rnum = 0; rnum < total_quests; rnum++){
++    free_quest_strings(&aquest_table[rnum]);
++  }
++  free(aquest_table);
++  aquest_table = NULL;
++  total_quests = 0;
++
++  return;
++}
++
++int count_quests(qst_vnum low, qst_vnum high)
++{
++  int i, j;
++
++  for (i = j = 0; QST_NUM(i) <= high; i++)
++    if (QST_NUM(i) >= low)
++      j++;
++
++  return j;
++}
++
++void parse_quest(FILE *quest_f, int nr)
++{
++  static char line[256];
++  static int i = 0, j;
++  int retval = 0, t[7];
++  char f1[128], buf2[MAX_STRING_LENGTH];
++  aquest_table[i].vnum = nr;
++  aquest_table[i].qm = NOBODY;
++  aquest_table[i].name = NULL;
++  aquest_table[i].desc = NULL;
++  aquest_table[i].info = NULL;
++  aquest_table[i].done = NULL;
++  aquest_table[i].quit = NULL;
++  aquest_table[i].flags = 0;
++  aquest_table[i].type = -1;
++  aquest_table[i].target = -1;
++  aquest_table[i].prereq = NOTHING;
++  for (j = 0; j < 7; j++)
++    aquest_table[i].value[j] = 0;
++  aquest_table[i].prev_quest = NOTHING;
++  aquest_table[i].next_quest = NOTHING;
++  aquest_table[i].func = NULL;
++
++  aquest_table[i].gold_reward = 0;
++  aquest_table[i].exp_reward  = 0;
++  aquest_table[i].obj_reward  = NOTHING;
++
++  /* begin to parse the data */
++  aquest_table[i].name = fread_string(quest_f, buf2);
++  aquest_table[i].desc = fread_string(quest_f, buf2);
++  aquest_table[i].info = fread_string(quest_f, buf2);
++  aquest_table[i].done = fread_string(quest_f, buf2);
++  aquest_table[i].quit = fread_string(quest_f, buf2);
++  if (!get_line(quest_f, line) ||
++      (retval = sscanf(line, " %d %d %s %d %d %d %d",
++             t, t+1, f1, t+2, t+3, t + 4, t + 5)) != 7) {
++    log("Format error in numeric line (expected 7, got %d), %s\n",
++        retval, line);
++    exit(1);
++  }
++  aquest_table[i].type       = t[0];
++  aquest_table[i].qm         = real_mobile(t[1]);
++  aquest_table[i].flags      = asciiflag_conv(f1);
++  aquest_table[i].target     = (t[2] == -1) ? NOTHING : t[2];
++  aquest_table[i].prev_quest = (t[3] == -1) ? NOTHING : t[3];
++  aquest_table[i].next_quest = (t[4] == -1) ? NOTHING : t[4];
++  aquest_table[i].prereq     = (t[5] == -1) ? NOTHING : t[5];
++  if (!get_line(quest_f, line) ||
++      (retval = sscanf(line, " %d %d %d %d %d %d %d",
++		       t, t+1, t+2, t+3, t+4, t + 5, t + 6)) != 7) {
++    log("Format error in numeric line (expected 7, got %d), %s\n",
++        retval, line);
++    exit(1);
++  }
++  for (j = 0; j < 7; j++)
++    aquest_table[i].value[j] = t[j];
++
++  if (!get_line(quest_f, line) ||
++      (retval = sscanf(line, " %d %d %d",
++             t, t+1, t+2)) != 3) {
++    log("Format error in numeric (rewards) line (expected 3, got %d), %s\n",
++        retval, line);
++    exit(1);
++  }
++
++  aquest_table[i].gold_reward = t[0];
++  aquest_table[i].exp_reward  = t[1];
++  aquest_table[i].obj_reward  = (t[2] == -1) ? NOTHING : t[2];
++
++  for (;;) {
++    if (!get_line(quest_f, line)) {
++      log("Format error in %s\n", line);
++      exit(1);
++    }
++    switch(*line) {
++    case 'S':
++      total_quests = ++i;
++      return;
++      break;
++    }
++  }
++} /* parse_quest */
++
++void assign_the_quests(void)
++{
++  qst_rnum rnum;
++
++  cmd_tell = find_command("tell");
++
++  for (rnum = 0; rnum < total_quests; rnum ++) {
++    if (QST_MASTER(rnum) == NOBODY) {
++      log("SYSERR: Quest #%d has no questmaster specified.", QST_NUM(rnum));
++      continue;
++    }
++    if (mob_index[QST_MASTER(rnum)].func &&
++	mob_index[QST_MASTER(rnum)].func != questmaster)
++      QST_FUNC(rnum) = mob_index[QST_MASTER(rnum)].func;
++    mob_index[QST_MASTER(rnum)].func = questmaster;
++  }
++}
++
++/*--------------------------------------------------------------------------*/
++/* Quest Completion Functions                                               */
++/*--------------------------------------------------------------------------*/
++void set_quest(struct char_data *ch, qst_rnum rnum)
++{
++  GET_QUEST(ch) = QST_NUM(rnum);
++  GET_QUEST_TIME(ch) = QST_TIME(rnum);
++  GET_QUEST_COUNTER(ch) = QST_QUANTITY(rnum);
++  SET_BIT_AR(PRF_FLAGS(ch), PRF_QUEST);
++  return;
++}
++
++void clear_quest(struct char_data *ch)
++{
++  GET_QUEST(ch) = NOTHING;
++  GET_QUEST_TIME(ch) = -1;
++  GET_QUEST_COUNTER(ch) = 0;
++  REMOVE_BIT_AR(PRF_FLAGS(ch), PRF_QUEST);
++  return;
++}
++
++void add_completed_quest(struct char_data *ch, qst_vnum vnum)
++{
++  qst_vnum *temp;
++  int i;
++
++  CREATE(temp, qst_vnum, GET_NUM_QUESTS(ch) +1);
++  for (i=0; i < GET_NUM_QUESTS(ch); i++)
++    temp[i] = ch->player_specials->saved.completed_quests[i];
++
++  temp[GET_NUM_QUESTS(ch)] = vnum;
++  GET_NUM_QUESTS(ch)++;
++
++  if (ch->player_specials->saved.completed_quests)
++    free(ch->player_specials->saved.completed_quests);
++  ch->player_specials->saved.completed_quests = temp;
++}
++
++void remove_completed_quest(struct char_data *ch, qst_vnum vnum)
++{
++  qst_vnum *temp;
++  int i, j = 0;
++
++  CREATE(temp, qst_vnum, GET_NUM_QUESTS(ch));
++  for (i = 0; i < GET_NUM_QUESTS(ch); i++)
++    if (ch->player_specials->saved.completed_quests[i] != vnum)
++      temp[j++] = ch->player_specials->saved.completed_quests[i];
++
++  GET_NUM_QUESTS(ch)--;
++
++  if (ch->player_specials->saved.completed_quests)
++    free(ch->player_specials->saved.completed_quests);
++  ch->player_specials->saved.completed_quests = temp;
++}
++
++void generic_complete_quest(struct char_data *ch)
++{
++  qst_rnum rnum;
++  qst_vnum vnum = GET_QUEST(ch);
++  struct obj_data *new_obj;
++
++  if (--GET_QUEST_COUNTER(ch) <= 0) {
++    rnum = real_quest(vnum);
++    GET_QUESTPOINTS(ch) += QST_POINTS(rnum);
++    send_to_char(ch,
++          "%s\r\nYou have been awarded %d quest points for your service.\r\n",
++          QST_DONE(rnum), QST_POINTS(rnum));
++    if (QST_GOLD(rnum)) {
++      GET_GOLD(ch) += QST_GOLD(rnum);
++      send_to_char(ch,
++            "You have been awarded %d gold coins for your service.\r\n",
++            QST_GOLD(rnum));
++    }
++    if (QST_EXP(rnum)) {
++      gain_exp(ch, QST_GOLD(rnum));
++      send_to_char(ch,
++            "You have been awarded %d experience points for your service.\r\n",
++            QST_EXP(rnum));
++    }
++    if (QST_OBJ(rnum)) {
++      if (real_object(QST_OBJ(rnum))) {
++		if ((new_obj = create_obj()) != NULL) {
++          new_obj = read_object((QST_OBJ(rnum)),VIRTUAL);
++          obj_to_char(new_obj, ch);
++          send_to_char(ch,
++                "You have been presented with %s%s for your service.\r\n",
++                GET_OBJ_SHORT(new_obj), CCNRM(ch, C_NRM));
++        }
++      }
++    }
++    if (!IS_SET(QST_FLAGS(rnum), AQ_REPEATABLE))
++      add_completed_quest(ch, vnum);
++    clear_quest(ch);
++    if ((real_quest(QST_NEXT(rnum)) != NOTHING) &&
++        (QST_NEXT(rnum) != vnum) &&
++        !is_complete(ch, QST_NEXT(rnum))) {
++      rnum = real_quest(QST_NEXT(rnum));
++      set_quest(ch, rnum);
++      send_to_char(ch,
++          "The next stage of your quest awaits:\r\n%s",
++          QST_INFO(rnum));
++    }
++  }
++  save_char(ch);
++}
++
++void autoquest_trigger_check(struct char_data *ch, struct char_data *vict,
++		             struct obj_data *object, int type)
++{
++  struct char_data *i;
++  qst_rnum rnum;
++  int found = TRUE;
++
++  if (IS_NPC(ch))
++    return;
++  if (GET_QUEST(ch) == NOTHING)  /* No current quest, skip this */
++    return;
++  if (GET_QUEST_TYPE(ch) != type)
++    return;
++  if ((rnum = real_quest(GET_QUEST(ch))) == NOTHING)
++    return;
++  switch (type) {
++    case AQ_OBJ_FIND:
++      if (QST_TARGET(rnum) == GET_OBJ_VNUM(object))
++        generic_complete_quest(ch);
++      break;
++    case AQ_ROOM_FIND:
++      if (QST_TARGET(rnum) == world[IN_ROOM(ch)].number)
++        generic_complete_quest(ch);
++      break;
++    case AQ_MOB_FIND:
++      for (i=world[IN_ROOM(ch)].people; i; i = i->next_in_room)
++        if (IS_NPC(i))
++          if (QST_TARGET(rnum) == GET_MOB_VNUM(i))
++            generic_complete_quest(ch);
++      break;
++    case AQ_MOB_KILL:
++      if (!IS_NPC(ch) && IS_NPC(vict) && (ch != vict))
++          if (QST_TARGET(rnum) == GET_MOB_VNUM(vict))
++            generic_complete_quest(ch);
++      break;
++    case AQ_MOB_SAVE:
++       if (ch == vict)
++        found = FALSE;
++      for (i = world[IN_ROOM(ch)].people; i && found; i = i->next_in_room)
++          if (i && IS_NPC(i) && !MOB_FLAGGED(i, MOB_NOTDEADYET))
++            if ((GET_MOB_VNUM(i) != QST_TARGET(rnum)) &&
++                !AFF_FLAGGED(i, AFF_CHARM))
++              found = FALSE;
++      if (found)
++        generic_complete_quest(ch);
++      break;
++    case AQ_OBJ_RETURN:
++      if (IS_NPC(vict) && (GET_MOB_VNUM(vict) == QST_RETURNMOB(rnum)))
++        if (object && (GET_OBJ_VNUM(object) == QST_TARGET(rnum)))
++          generic_complete_quest(ch);
++      break;
++    case AQ_ROOM_CLEAR:
++      if (QST_TARGET(rnum) == world[IN_ROOM(ch)].number) {
++        for (i = world[IN_ROOM(ch)].people; i && found; i = i->next_in_room)
++          if (i && IS_NPC(i) && !MOB_FLAGGED(i, MOB_NOTDEADYET))
++            found = FALSE;
++        if (found)
++	  generic_complete_quest(ch);
++      }
++      break;
++    default:
++      log("SYSERR: Invalid quest type passed to autoquest_trigger_check");
++      break;
++  }
++}
++
++void quest_timeout(struct char_data *ch)
++{
++  if ((GET_QUEST(ch) != NOTHING) && (GET_QUEST_TIME(ch) != -1)) {
++    clear_quest(ch);
++    send_to_char(ch, "You have run out of time to complete the quest.\r\n");
++  }
++}
++
++void check_timed_quests(void)
++{
++  struct char_data *ch;
++
++  for (ch = character_list; ch; ch = ch->next)
++    if ((GET_QUEST(ch) != NOTHING) && (GET_QUEST_TIME(ch) != -1))
++      if (--GET_QUEST_TIME(ch) == 0)
++        quest_timeout(ch);
++}
++
++/*--------------------------------------------------------------------------*/
++/* Quest Command Helper Functions                                           */
++/*--------------------------------------------------------------------------*/
++
++void list_quests(struct char_data *ch, zone_rnum zone, qst_vnum vmin, qst_vnum vmax)
++{
++  qst_rnum rnum;
++  qst_vnum bottom, top;
++  int counter = 0;
++
++  if (zone != NOWHERE) {
++    bottom = zone_table[zone].bot;
++    top    = zone_table[zone].top;
++  } else {
++    bottom = vmin;
++    top    = vmax;
++  }
++  /* Print the header for the quest listing. */
++  send_to_char (ch,
++  "Index VNum    Description                                  Questmaster\r\n"
++  "----- ------- -------------------------------------------- -----------\r\n");
++  for (rnum = 0; rnum < total_quests ; rnum++)
++    if (QST_NUM(rnum) >= bottom && QST_NUM(rnum) <= top)
++      send_to_char(ch, "@g%4d@n) [@g%-5d@n] @c%-44.44s@n @y[%5d]@n\r\n",
++                   ++counter,
++                   QST_NUM(rnum), QST_NAME(rnum),
++                   mob_index[QST_MASTER(rnum)].vnum);
++  if (!counter)
++    send_to_char(ch, "None found.\r\n");
++}
++
++void quest_hist(struct char_data *ch)
++{
++  int i = 0, counter = 0;
++  qst_rnum rnum = NOTHING;
++
++  send_to_char(ch, "Quests that you have completed:\r\n"
++    "Index Description                                          Questmaster\r\n"
++    "----- ---------------------------------------------------- -----------\r\n");
++  for (i = 0; i < GET_NUM_QUESTS(ch); i++) {
++    if ((rnum = real_quest(ch->player_specials->saved.completed_quests[i])) != NOTHING)
++      send_to_char(ch, "@g%4d@n) @c%-52.52s@n @y%s@n\r\n",
++	++counter, QST_DESC(rnum), GET_NAME(&mob_proto[QST_MASTER(rnum)]));
++    else
++      send_to_char(ch,
++        "@g%4d@n) @cUnknown Quest (it no longer exists)@n\r\n", ++counter);
++  }
++  if (!counter)
++    send_to_char(ch, "You haven't completed any quests yet.\r\n");
++}
++
++void quest_join(struct char_data *ch, struct char_data *qm, char argument[MAX_INPUT_LENGTH])
++{
++  qst_vnum vnum;
++  qst_rnum rnum;
++  char buf[MAX_INPUT_LENGTH];
++
++  if (!*argument)
++    snprintf(buf, sizeof(buf),
++             "%s What quest did you wish to join?", GET_NAME(ch));
++  else if (GET_QUEST(ch) != NOTHING)
++    snprintf(buf, sizeof(buf),
++             "%s But you are already part of a quest!", GET_NAME(ch));
++  else if((vnum = find_quest_by_qmnum(ch, qm->nr, atoi(argument))) == NOTHING)
++    snprintf(buf, sizeof(buf),
++             "%s I don't know of such a quest!", GET_NAME(ch));
++  else if ((rnum = real_quest(vnum)) == NOTHING)
++    snprintf(buf, sizeof(buf),
++             "%s I don't know of such a quest!", GET_NAME(ch));
++  else if (GET_LEVEL(ch) < QST_MINLEVEL(rnum))
++    snprintf(buf, sizeof(buf),
++             "%s You are not experienced enough for that quest!", GET_NAME(ch));
++  else if (GET_LEVEL(ch) > QST_MAXLEVEL(rnum))
++    snprintf(buf, sizeof(buf),
++             "%s You are too experienced for that quest!", GET_NAME(ch));
++  else if (is_complete(ch, vnum))
++    snprintf(buf, sizeof(buf),
++             "%s You have already completed that quest!", GET_NAME(ch));
++  else if ((QST_PREV(rnum) != NOTHING) && !is_complete(ch, vnum))
++    snprintf(buf, sizeof(buf),
++             "%s That quest is not available to you yet!", GET_NAME(ch));
++  else if ((QST_PREREQ(rnum) != NOTHING) &&
++           (real_object(QST_PREREQ(rnum)) != NOTHING) &&
++           (get_obj_in_list_num(real_object(QST_PREREQ(rnum)),
++				ch->carrying) == NULL))
++    snprintf(buf, sizeof(buf),
++             "%s You need to have %s first!", GET_NAME(ch),
++	     obj_proto[real_object(QST_PREREQ(rnum))].short_description);
++  else {
++    act("You join the quest.",    TRUE, ch, NULL, NULL, TO_CHAR);
++    act("$n has joined a quest.", TRUE, ch, NULL, NULL, TO_ROOM);
++    snprintf(buf, sizeof(buf),
++             "%s Listen carefully to the instructions.", GET_NAME(ch));
++    do_tell(qm, buf, cmd_tell, 0);
++    set_quest(ch, rnum);
++    send_to_char(ch, QST_INFO(rnum));
++    if (QST_TIME(rnum) != -1)
++      snprintf(buf, sizeof(buf),
++        "%s You have a time limit of %d turn%s to complete the quest.",
++        GET_NAME(ch), QST_TIME(rnum), QST_TIME(rnum) == 1 ? "" : "s");
++    else
++      snprintf(buf, sizeof(buf),
++        "%s You can take however long you want to complete the quest.",
++	GET_NAME(ch));
++  }
++  do_tell(qm, buf, cmd_tell, 0);
++  save_char(ch);
++}
++
++void quest_list(struct char_data *ch, struct char_data *qm, char argument[MAX_INPUT_LENGTH])
++{
++  qst_vnum vnum;
++  qst_rnum rnum;
++
++  if ((vnum = find_quest_by_qmnum(ch, qm->nr, atoi(argument))) == NOTHING)
++    send_to_char(ch, "That is not a valid quest!\r\n");
++  else if ((rnum = real_quest(vnum)) == NOTHING)
++    send_to_char(ch, "That is not a valid quest!\r\n");
++  else if (QST_INFO(rnum)) {
++    send_to_char(ch,"Complete Details on Quest %d @c%s@n:\r\n%s",
++                      vnum,
++		      QST_DESC(rnum),
++		      QST_INFO(rnum));
++    if (QST_PREV(rnum) != NOTHING)
++      send_to_char(ch, "You have to have completed quest %s first.\r\n",
++          QST_NAME(real_quest(QST_PREV(rnum))));
++    if (QST_TIME(rnum) != -1)
++      send_to_char(ch,
++         "There is a time limit of %d turn%s to complete the quest.\r\n",
++          QST_TIME(rnum),
++          QST_TIME(rnum) == 1 ? "" : "s");
++  } else
++    send_to_char(ch, "There is no further information on that quest.\r\n");
++}
++
++void quest_quit(struct char_data *ch)
++{
++  qst_rnum rnum;
++
++  if (GET_QUEST(ch) == NOTHING)
++    send_to_char(ch, "But you currently aren't on a quest!\r\n");
++  else if ((rnum = real_quest(GET_QUEST(ch))) == NOTHING) {
++    clear_quest(ch);
++    send_to_char(ch, "You are now no longer part of the quest.\r\n");
++    save_char(ch);
++  } else {
++    clear_quest(ch);
++    if (QST_QUIT(rnum) && (str_cmp(QST_QUIT(rnum), "undefined") != 0))
++      send_to_char(ch, "%s", QST_QUIT(rnum));
++    else
++      send_to_char(ch, "You are now no longer part of the quest.\r\n");
++    if (QST_PENALTY(rnum)) {
++      GET_QUESTPOINTS(ch) -= QST_PENALTY(rnum);
++      send_to_char(ch,
++        "You have lost %d quest points for your cowardice.\r\n",
++        QST_PENALTY(rnum));
++    }
++    save_char(ch);
++  }
++}
++
++void quest_progress(struct char_data *ch)
++{
++  qst_rnum rnum;
++
++  if (GET_QUEST(ch) == NOTHING)
++    send_to_char(ch, "But you currently aren't on a quest!\r\n");
++  else if ((rnum = real_quest(GET_QUEST(ch))) == NOTHING) {
++    clear_quest(ch);
++    send_to_char(ch, "Your quest seems to no longer exist.\r\n");
++  } else {
++    send_to_char(ch, "You are on the following quest:\r\n%s\r\n%s",
++		     QST_DESC(rnum), QST_INFO(rnum));
++    if (QST_QUANTITY(rnum) > 1)
++      send_to_char(ch,
++          "You still have to achieve %d out of %d goals for the quest.\r\n",
++	  GET_QUEST_COUNTER(ch), QST_QUANTITY(rnum));
++    if (GET_QUEST_TIME(ch) > 0)
++      send_to_char(ch,
++          "You have %d turn%s remaining to complete the quest.\r\n",
++	  GET_QUEST_TIME(ch),
++	  GET_QUEST_TIME(ch) == 1 ? "" : "s");
++  }
++}
++
++void quest_show(struct char_data *ch, mob_rnum qm)
++{
++  qst_rnum rnum;
++  int counter = 0;
++
++  send_to_char(ch,
++  "The following quests are available:\r\n"
++  "Index Description                                          ( Vnum) Done?\r\n"
++  "----- ---------------------------------------------------- ------- -----\r\n");
++  for (rnum = 0; rnum < total_quests; rnum++)
++    if (qm == QST_MASTER(rnum))
++      send_to_char(ch, "@g%4d@n) @c%-52.52s@n @y(%5d)@n @y(%s)@n\r\n",
++        ++counter, QST_DESC(rnum), QST_NUM(rnum),
++        (is_complete(ch, QST_NUM(rnum)) ? "Yes" : "No "));
++  if (!counter)
++    send_to_char(ch, "There are no quests available here at the moment.\r\n");
++}
++
++void quest_stat(struct char_data *ch, char argument[MAX_STRING_LENGTH])
++{
++  qst_rnum rnum;
++  char buf[MAX_STRING_LENGTH];
++  char targetname[MAX_STRING_LENGTH];
++
++  if (GET_LEVEL(ch) < LVL_IMMORT)
++    send_to_char(ch, "Huh!?!\r\n");
++  else if (!*argument)
++    send_to_char(ch, "%s\r\n", quest_imm_usage);
++  else if ((rnum = real_quest(atoi(argument))) == NOTHING )
++    send_to_char(ch, "That quest does not exist.\r\n");
++  else {
++    sprintbit(QST_FLAGS(rnum), aq_flags, buf, sizeof(buf));
++    switch (QST_TYPE(rnum)) {
++      case AQ_OBJ_FIND:
++      case AQ_OBJ_RETURN:
++        snprintf(targetname, sizeof(targetname), "%s",
++                 real_object(QST_TARGET(rnum)) == NOTHING ?
++                 "An unknown object" :
++		 obj_proto[real_object(QST_TARGET(rnum))].short_description);
++	break;
++      case AQ_ROOM_FIND:
++      case AQ_ROOM_CLEAR:
++        snprintf(targetname, sizeof(targetname), "%s",
++	         real_room(QST_TARGET(rnum)) == NOWHERE ?
++                 "An unknown room" :
++		 world[real_room(QST_TARGET(rnum))].name);
++        break;
++      case AQ_MOB_FIND:
++      case AQ_MOB_KILL:
++      case AQ_MOB_SAVE:
++	snprintf(targetname, sizeof(targetname), "%s",
++                 real_mobile(QST_TARGET(rnum)) == NOBODY ?
++		 "An unknown mobile" :
++		 GET_NAME(&mob_proto[real_mobile(QST_TARGET(rnum))]));
++	break;
++      default:
++	snprintf(targetname, sizeof(targetname), "Unknown");
++	break;
++    }
++    send_to_char(ch,
++        "VNum  : [@y%5d@n], RNum: [@y%5d@n] -- Questmaster: [@y%5d@n] @y%s@n\r\n"
++        "Name  : @y%s@n\r\n"
++	"Desc  : @y%s@n\r\n"
++	"Accept Message:\r\n@c%s@n"
++	"Completion Message:\r\n@c%s@n"
++	"Quit Message:\r\n@c%s@n"
++	"Type  : @y%s@n\r\n"
++        "Target: @y%d@n @y%s@n, Quantity: @y%d@n\r\n"
++	"Value : @y%d@n, Penalty: @y%d@n, Min Level: @y%2d@n, Max Level: @y%2d@n\r\n"
++	"Flags : @c%s@n\r\n",
++    	QST_NUM(rnum), rnum,
++	QST_MASTER(rnum) == NOBODY ? -1 : mob_index[QST_MASTER(rnum)].vnum,
++	QST_MASTER(rnum) == NOBODY ? "" : GET_NAME(&mob_proto[QST_MASTER(rnum)]),
++        QST_NAME(rnum), QST_DESC(rnum),
++        QST_INFO(rnum), QST_DONE(rnum),
++	(QST_QUIT(rnum) &&
++	 (str_cmp(QST_QUIT(rnum), "undefined") != 0)
++       	 ? QST_QUIT(rnum) : "Nothing\r\n"),
++    	quest_types[QST_TYPE(rnum)],
++	QST_TARGET(rnum) == NOBODY ? -1 : QST_TARGET(rnum),
++	targetname,
++	QST_QUANTITY(rnum),
++    	QST_POINTS(rnum), QST_PENALTY(rnum), QST_MINLEVEL(rnum),
++	QST_MAXLEVEL(rnum), buf);
++    if (QST_PREREQ(rnum) != NOTHING)
++      send_to_char(ch, "Preq  : [@y%5d@n] @y%s@n\r\n",
++        QST_PREREQ(rnum) == NOTHING ? -1 : QST_PREREQ(rnum),
++        QST_PREREQ(rnum) == NOTHING ? "" :
++	  real_object(QST_PREREQ(rnum)) == NOTHING ? "an unknown object" :
++	      obj_proto[real_object(QST_PREREQ(rnum))].short_description);
++    if (QST_TYPE(rnum) == AQ_OBJ_RETURN)
++      send_to_char(ch, "Mob   : [@y%5d@n] @y%s@n\r\n",
++        QST_RETURNMOB(rnum),
++	real_mobile(QST_RETURNMOB(rnum)) == NOBODY ? "an unknown mob" :
++           mob_proto[real_mobile(QST_RETURNMOB(rnum))].player.short_descr);
++    if (QST_TIME(rnum) != -1)
++      send_to_char(ch, "Limit : There is a time limit of %d turn%s to complete.\r\n",
++	  QST_TIME(rnum),
++	  QST_TIME(rnum) == 1 ? "" : "s");
++    else
++      send_to_char(ch, "Limit : There is no time limit on this quest.\r\n");
++    send_to_char(ch, "Prior :");
++    if (QST_PREV(rnum) == NOTHING)
++      send_to_char(ch, " @yNone.@n\r\n");
++    else
++      send_to_char(ch, " [@y%5d@n] @c%s@n\r\n",
++        QST_PREV(rnum), QST_DESC(real_quest(QST_PREV(rnum))));
++    send_to_char(ch, "Next  :");
++    if (QST_NEXT(rnum) == NOTHING)
++      send_to_char(ch, " @yNone.@n\r\n");
++    else
++      send_to_char(ch, " [@y%5d@n] @c%s@n\r\n",
++        QST_NEXT(rnum), QST_DESC(real_quest(QST_NEXT(rnum))));
++  }
++}
++
++/*--------------------------------------------------------------------------*/
++/* Quest Command Processing Function and Questmaster Special                */
++/*--------------------------------------------------------------------------*/
++
++ACMD(do_quest)
++{
++  char arg1[MAX_INPUT_LENGTH], arg2[MAX_INPUT_LENGTH];
++  int  tp;
++
++  two_arguments(argument, arg1, arg2);
++  if (!*arg1)
++    send_to_char(ch, "%s\r\n", GET_LEVEL(ch) < LVL_IMMORT ?
++                     quest_mort_usage : quest_imm_usage);
++  else if (((tp = search_block(arg1, quest_cmd, FALSE)) == -1))
++    send_to_char(ch, "%s\r\n", GET_LEVEL(ch) < LVL_IMMORT ?
++                     quest_mort_usage : quest_imm_usage);
++  else {
++    switch (tp) {
++      case SCMD_QUEST_LIST:
++      case SCMD_QUEST_JOIN:
++        /* list, join should hve been handled by questmaster spec proc */
++        send_to_char(ch, "Sorry, but you cannot do that here!\r\n");
++        break;
++      case SCMD_QUEST_HISTORY:
++        quest_hist(ch);
++        break;
++      case SCMD_QUEST_LEAVE:
++        quest_quit(ch);
++        break;
++      case SCMD_QUEST_PROGRESS:
++	quest_progress(ch);
++	break;
++      case SCMD_QUEST_STATUS:
++        if (GET_LEVEL(ch) < LVL_IMMORT)
++          send_to_char(ch, "%s\r\n", quest_mort_usage);
++        else
++          quest_stat(ch, arg2);
++        break;
++      default: /* Whe should never get here, but... */
++        send_to_char(ch, "%s\r\n", GET_LEVEL(ch) < LVL_IMMORT ?
++                     quest_mort_usage : quest_imm_usage);
++	break;
++    } /* switch on subcmd number */
++  }
++}
++
++SPECIAL(questmaster)
++{
++  qst_rnum rnum;
++  char arg1[MAX_INPUT_LENGTH], arg2[MAX_INPUT_LENGTH];
++  int  tp;
++  struct char_data *qm = (struct char_data *)me;
++
++  /* check that qm mob has quests assigned */
++  for (rnum = 0; (rnum < total_quests &&
++                  QST_MASTER(rnum) != GET_MOB_RNUM(qm)) ; rnum ++);
++  if (rnum >= total_quests)
++    return FALSE; /* No quests for this mob */
++  else if (QST_FUNC(rnum) && (QST_FUNC(rnum) (ch, me, cmd, argument)))
++    return TRUE;  /* The secondary spec proc handled this command */
++  else if (CMD_IS("quest")) {
++    two_arguments(argument, arg1, arg2);
++    if (!*arg1)
++      return FALSE;
++    else if (((tp = search_block(arg1, quest_cmd, FALSE)) == -1))
++      return FALSE;
++    else {
++      switch (tp) {
++      case SCMD_QUEST_LIST:
++        if (!*arg2)
++          quest_show(ch, GET_MOB_RNUM(qm));
++        else
++	  quest_list(ch, qm, arg2);
++        break;
++      case SCMD_QUEST_JOIN:
++        quest_join(ch, qm, arg2);
++        break;
++      default:
++	return FALSE; /* fall through to the do_quest command processor */
++      } /* switch on subcmd number */
++      return TRUE;
++    }
++  } else {
++    return FALSE; /* not a questmaster command */
++  }
++}
+diff -BbuprN tbamud-3.55/src/quest.h tbamud-3.55+quests/src/quest.h
+--- tbamud-3.55/src/quest.h	1970-01-01 00:00:00.000000000 +0000
++++ tbamud-3.55+quests/src/quest.h	2008-01-31 11:56:26.881922000 +0000
+@@ -0,0 +1,142 @@
++/* ***********************************************************************
++*    File:   quest.h                                  Part of CircleMUD  *
++* Version:   2.1 (December 2005) Written for CircleMud CWG / Suntzu      *
++* Purpose:   To provide special quest-related code.                      *
++* Copyright: Kenneth Ray                                                 *
++* Original Version Details:                                              *
++* Morgaelin - quest.h						         *
++* Copyright (C) 1997 MS                                                  *
++*********************************************************************** */
++
++/* Aquest related defines ********************************************* */
++#define AQ_UNDEFINED       -1   /* (R) Quest unavailable                */
++#define AQ_OBJ_FIND         0   /* Player must retreive object          */
++#define AQ_ROOM_FIND        1   /* Player must reach room               */
++#define AQ_MOB_FIND         2   /* Player must find mob                 */
++#define AQ_MOB_KILL         3   /* Player must kill mob                 */
++#define AQ_MOB_SAVE         4   /* Player must save mob                 */
++#define AQ_OBJ_RETURN       5   /* Player gives object to mob in val5   */
++#define AQ_ROOM_CLEAR       6   /* Player must clear room of all mobs   */
++#define NUM_AQ_TYPES        7   /* Used in qedit functions              */
++
++#define MAX_QUEST_NAME     40   /* Length of quest name                 */
++#define MAX_QUEST_DESC     75   /* Length of quest description          */
++#define MAX_QUEST_MSG    2048   /* Length of quest message strings      */
++
++#define SCMD_QUEST_LIST     0   /* List quests available at questmaster */
++#define SCMD_QUEST_HISTORY  1   /* Show history of completed quests     */
++#define SCMD_QUEST_JOIN     2   /* Join a quest at a questmaster        */
++#define SCMD_QUEST_LEAVE    3   /* Leave a quest                        */
++#define SCMD_QUEST_PROGRESS 4   /* Show progress of current quest       */
++#define SCMD_QUEST_STATUS   5   /* Show complete details of a quest     */
++/* AQ Flags (much room for expansion) ********************************* */
++#define AQ_REPEATABLE (1 << 0)  /* Quest can be repeated                */
++#define NUM_AQ_FLAGS        1
++/* Main quest struct ************************************************** */
++struct aq_data {
++  qst_vnum vnum;                /* Virtual nr of the quest              */
++  char     *name;               /* For qlist and the sort               */
++  char     *desc;               /* Description of the quest             */
++  char     *info;               /* Message displayed when accepted      */
++  char     *done;               /* Message displayed when completed     */
++  char     *quit;               /* Message displayed when quit quest    */
++  long     flags;               /* Flags (repeatable, etc               */
++  int      type;                /* Quest type                           */
++  mob_rnum qm;                  /* questmaster offering quest           */
++  int      target;              /* Target value                         */
++  obj_vnum prereq;              /* Object required to undertake quest   */
++  int      value[7];            /* Quest values                         */
++  int      gold_reward;         /* Number of gold coins given as reward */
++  int      exp_reward;          /* Experience points given as a reward  */
++  obj_vnum obj_reward;          /* vnum of object given as a reward     */
++  qst_vnum prev_quest;          /* Link to prev quest, NOTHING is open  */
++  qst_vnum next_quest;          /* Link to next quest, NOTHING is end   */
++  SPECIAL  (*func);             /* secondary spec_proc for the QM       */
++};
++#define QST_NUM(i)             (aquest_table[i].vnum)
++#define QST_NAME(i)            (aquest_table[i].name)
++#define QST_DESC(i)            (aquest_table[i].desc)
++#define QST_INFO(i)            (aquest_table[i].info)
++#define QST_DONE(i)            (aquest_table[i].done)
++#define QST_QUIT(i)            (aquest_table[i].quit)
++#define QST_TYPE(i)            (aquest_table[i].type)
++#define QST_FLAGS(i)           (aquest_table[i].flags)
++#define QST_MASTER(i)          (aquest_table[i].qm)
++#define QST_TARGET(i)          (aquest_table[i].target)
++#define QST_PREREQ(i)          (aquest_table[i].prereq)
++#define QST_POINTS(i)          (aquest_table[i].value[0])
++#define QST_PENALTY(i)         (aquest_table[i].value[1])
++#define QST_MINLEVEL(i)        (aquest_table[i].value[2])
++#define QST_MAXLEVEL(i)        (aquest_table[i].value[3])
++#define QST_TIME(i)            (aquest_table[i].value[4])
++#define QST_RETURNMOB(i)       (aquest_table[i].value[5])
++#define QST_QUANTITY(i)        (aquest_table[i].value[6])
++#define QST_GOLD(i)            (aquest_table[i].gold_reward)
++#define QST_EXP(i)             (aquest_table[i].exp_reward)
++#define QST_OBJ(i)             (aquest_table[i].obj_reward)
++
++#define QST_FUNC(i)            (aquest_table[i].func)
++#define QST_PREV(i)            (aquest_table[i].prev_quest)
++#define QST_NEXT(i)            (aquest_table[i].next_quest)
++/* Quest Functions **************************************************** */
++/* Implemented in quest.c */
++void destroy_quests(void);
++void assign_the_quests(void);
++void parse_quest(FILE *quest_f, int nr);
++int  count_quests(qst_vnum low, qst_vnum high);
++void list_quests(struct char_data *ch, zone_rnum zone, qst_vnum vmin, qst_vnum vmax);
++void set_quest(struct char_data *ch, qst_rnum rnum);
++void clear_quest(struct char_data *ch);
++void generic_complete_quest(struct char_data *ch);
++void autoquest_trigger_check(struct char_data *ch, struct char_data *vict, struct obj_data *object, int type);
++qst_rnum real_quest(qst_vnum vnum);
++int is_complete(struct char_data *ch, qst_vnum vnum);
++qst_vnum find_quest_by_qmnum(struct char_data *ch, mob_rnum qm, int num);
++void add_completed_quest(struct char_data *ch, qst_vnum vnum);
++void remove_completed_quest(struct char_data *ch, qst_vnum vnum);
++void quest_timeout(struct char_data *ch);
++void check_timed_quests(void);
++SPECIAL(questmaster);
++/* Implemented in qedit.c  */
++void qedit_parse(struct descriptor_data *d, char *arg);
++void qedit_string_cleanup(struct descriptor_data *d, int terminator);
++/* Implemented in genqst.c */
++int copy_quest_strings(struct aq_data *from, struct aq_data *to);
++int copy_quest(struct aq_data *from, struct aq_data *to, int free_old_strings);
++void free_quest_strings(struct aq_data *quest);
++void free_quest(struct aq_data *quest);
++int add_quest(struct aq_data *nqst);
++int delete_quest(qst_rnum rnum);
++int save_quests(zone_rnum zone_num);
++/* AQ Global Variables ************************************************ */
++extern struct aq_data *aquest_table; /* all quest definitions (db.c)    */
++extern qst_rnum total_quests;        /* number of quests      (db.c)    */
++extern const char *aq_flags[];       /* names for quest flags (quest.c) */
++extern const char *quest_types[];    /* named for quest types (quest.c) */
++/* Qedit Connectedness ************************************************ */
++#define QEDIT_MAIN_MENU                 0
++#define QEDIT_CONFIRM_SAVESTRING        1
++#define QEDIT_NAME                      2
++#define QEDIT_DESC                      3
++#define QEDIT_INFO                      4
++#define QEDIT_COMPLETE                  5
++#define QEDIT_ABANDON                   6
++#define QEDIT_QUESTMASTER               7
++#define QEDIT_TYPES                     8
++#define QEDIT_FLAGS                     9
++#define QEDIT_TARGET                   10
++#define QEDIT_QUANTITY                 11
++#define QEDIT_POINTSCOMP               12
++#define QEDIT_POINTSQUIT               13
++#define QEDIT_LEVELMIN                 14
++#define QEDIT_LEVELMAX                 15
++#define QEDIT_PREREQ                   16
++#define QEDIT_TIMELIMIT                17
++#define QEDIT_RETURNMOB                18
++#define QEDIT_NEXTQUEST                19
++#define QEDIT_PREVQUEST                20
++#define QEDIT_CONFIRM_DELETE           21
++#define QEDIT_GOLD                     22
++#define QEDIT_EXP                      23
++#define QEDIT_OBJ                      24
++/* ******************************************************************** */
+diff -BbuprN tbamud-3.55/src/shop.c tbamud-3.55+quests/src/shop.c
+--- tbamud-3.55/src/shop.c	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/shop.c	2008-01-31 12:27:30.772547000 +0000
+@@ -503,6 +503,16 @@ void shopping_buy(char *arg, struct char
+   if (!(obj = get_purchase_obj(ch, arg, keeper, shop_nr, TRUE)))
+     return;
+ 
++  if (OBJ_FLAGGED(obj, ITEM_QUEST)) {
++    if (GET_OBJ_COST(obj) > GET_QUESTPOINTS(ch) && !IS_GOD(ch)) {
++      char actbuf[MAX_INPUT_LENGTH];
++      snprintf(actbuf, sizeof(actbuf),
++	       "%s You haven't earned enough quest points for such an item.",
++	       GET_NAME(ch));
++      do_tell(keeper, actbuf, cmd_tell, 0);
++      return;
++    }
++  } else { /*has the player got enough gold? */
+   if (buy_price(obj, shop_nr, keeper, ch) > GET_GOLD(ch) && !IS_GOD(ch)) {
+     char actbuf[MAX_INPUT_LENGTH];
+ 
+@@ -520,6 +530,7 @@ void shopping_buy(char *arg, struct char
+       return;
+     }
+   }
++  }
+   if (IS_CARRYING_N(ch) + 1 > CAN_CARRY_N(ch)) {
+     send_to_char(ch, "%s: You can't carry any more items.\r\n", fname(obj->name));
+     return;
+@@ -528,6 +539,32 @@ void shopping_buy(char *arg, struct char
+     send_to_char(ch, "%s: You can't carry that much weight.\r\n", fname(obj->name));
+     return;
+   }
++  if (OBJ_FLAGGED(obj, ITEM_QUEST)) {
++    while (obj &&
++           (GET_QUESTPOINTS(ch) >= GET_OBJ_COST(obj) || IS_GOD(ch))
++	   && IS_CARRYING_N(ch) < CAN_CARRY_N(ch)
++	   && bought < buynum
++	   && IS_CARRYING_W(ch) + GET_OBJ_WEIGHT(obj) <= CAN_CARRY_W(ch)) {
++      bought++;
++      /* Test if producing shop ! */
++      if (shop_producing(obj, shop_nr)) {
++        obj = read_object(GET_OBJ_RNUM(obj), REAL);
++      } else {
++        obj_from_char(obj);
++        SHOP_SORT(shop_nr)--;
++      }
++      obj_to_char(obj, ch);
++
++      goldamt += GET_OBJ_COST(obj);
++      if (!IS_GOD(ch))
++        GET_QUESTPOINTS(ch) -= GET_OBJ_COST(obj);
++
++      last_obj = obj;
++      obj = get_purchase_obj(ch, arg, keeper, shop_nr, FALSE);
++      if (!same_obj(obj, last_obj))
++        break;
++    }
++  } else {
+   while (obj && (GET_GOLD(ch) >= buy_price(obj, shop_nr, keeper, ch) || IS_GOD(ch))
+ 	 && IS_CARRYING_N(ch) < CAN_CARRY_N(ch) && bought < buynum
+ 	 && IS_CARRYING_W(ch) + GET_OBJ_WEIGHT(obj) <= CAN_CARRY_W(ch)) {
+@@ -553,14 +590,19 @@ void shopping_buy(char *arg, struct char
+     if (!same_obj(obj, last_obj))
+       break;
+   }
+-
++  }
+   if (bought < buynum) {
+     char buf[MAX_INPUT_LENGTH];
+ 
+     if (!obj || !same_obj(last_obj, obj))
+       snprintf(buf, sizeof(buf), "%s I only have %d to sell you.", GET_NAME(ch), bought);
+-    else if (GET_GOLD(ch) < buy_price(obj, shop_nr, keeper, ch))
++    else if (!OBJ_FLAGGED(obj, ITEM_QUEST) &&
++             GET_GOLD(ch) < buy_price(obj, shop_nr, keeper, ch))
+       snprintf(buf, sizeof(buf), "%s You can only afford %d.", GET_NAME(ch), bought);
++    else if (OBJ_FLAGGED(obj, ITEM_QUEST) &&
++             GET_QUESTPOINTS(ch) < GET_OBJ_COST(obj))
++      snprintf(buf, sizeof(buf), "%s You only had sufficient quest points for %d.",
++	       GET_NAME(ch), bought);
+     else if (IS_CARRYING_N(ch) >= CAN_CARRY_N(ch))
+       snprintf(buf, sizeof(buf), "%s You can only hold %d.", GET_NAME(ch), bought);
+     else if (IS_CARRYING_W(ch) + GET_OBJ_WEIGHT(obj) > CAN_CARRY_W(ch))
+@@ -569,15 +611,25 @@ void shopping_buy(char *arg, struct char
+       snprintf(buf, sizeof(buf), "%s Something screwy only gave you %d.", GET_NAME(ch), bought);
+     do_tell(keeper, buf, cmd_tell, 0);
+   }
+-  if (!IS_GOD(ch))
++  if (!IS_GOD(ch) && !OBJ_FLAGGED(obj, ITEM_QUEST)) {
+     GET_GOLD(keeper) += goldamt;
++    if (SHOP_USES_BANK(shop_nr))
++      if (GET_GOLD(keeper) > MAX_OUTSIDE_BANK) {
++        SHOP_BANK(shop_nr) += (GET_GOLD(keeper) - MAX_OUTSIDE_BANK);
++        GET_GOLD(keeper) = MAX_OUTSIDE_BANK;
++      }
++  }
+ 
+   strlcpy(tempstr, times_message(ch->carrying, 0, bought), sizeof(tempstr));
+ 
+   snprintf(tempbuf, sizeof(tempbuf), "$n buys %s.", tempstr);
+   act(tempbuf, FALSE, ch, obj, 0, TO_ROOM);
+ 
++  if (OBJ_FLAGGED(obj, ITEM_QUEST))
++    snprintf(tempbuf, sizeof(tempbuf), "%s That has cost you %d quest points.", GET_NAME(ch), goldamt);
++  else
+   snprintf(tempbuf, sizeof(tempbuf), shop_index[shop_nr].message_buy, GET_NAME(ch), goldamt);
++
+   do_tell(keeper, tempbuf, cmd_tell, 0);
+ 
+   send_to_char(ch, "You now have %s.\r\n", tempstr);
+@@ -581,12 +633,6 @@ void shopping_buy(char *arg, struct char
+   do_tell(keeper, tempbuf, cmd_tell, 0);
+ 
+   send_to_char(ch, "You now have %s.\r\n", tempstr);
+-
+-  if (SHOP_USES_BANK(shop_nr))
+-    if (GET_GOLD(keeper) > MAX_OUTSIDE_BANK) {
+-      SHOP_BANK(shop_nr) += (GET_GOLD(keeper) - MAX_OUTSIDE_BANK);
+-      GET_GOLD(keeper) = MAX_OUTSIDE_BANK;
+-    }
+ }
+ 
+ struct obj_data *get_selling_obj(struct char_data *ch, char *name, struct char_data *keeper, int shop_nr, int msg)
+@@ -817,7 +863,7 @@ char *list_object(struct obj_data *obj, 
+   }
+   CAP(itemname);
+ 
+-  snprintf(result, sizeof(result), " %2d)  %9s   %-*s %6d\r\n", aindex, quantity, count_color_chars(itemname)+48, itemname, buy_price(obj, shop_nr, keeper, ch));
++  snprintf(result, sizeof(result), " %2d)  %9s   %-*s %6d%s\r\n", aindex, quantity, count_color_chars(itemname)+48, itemname, buy_price(obj, shop_nr, keeper, ch), OBJ_FLAGGED(obj, ITEM_QUEST) ? " qp" : "");
+ 
+   return (result);
+ }
+@@ -826,9 +872,10 @@ void shopping_list(char *arg, struct cha
+ {
+   char buf[MAX_STRING_LENGTH], name[MAX_INPUT_LENGTH];
+   struct obj_data *obj, *last_obj = NULL;
+-  int cnt = 0, lindex = 0, found = FALSE;
++  int cnt = 0, lindex = 0, found = FALSE, has_quest = FALSE;
+   size_t len;
+   /* cnt is the number of that particular object available */
++  /* has_quest indicates if the shopkeeper sells quest items */
+ 
+   if (!is_ok(keeper, ch, shop_nr))
+     return;
+@@ -839,7 +886,7 @@ void shopping_list(char *arg, struct cha
+   one_argument(arg, name);
+ 
+   len = strlcpy(buf,   " ##   Available   Item                                               Cost\r\n"
+-		"-------------------------------------------------------------------------\r\n", sizeof(buf));
++		"----------------------------------------------------------------------------\r\n", sizeof(buf));
+   if (keeper->carrying)
+     for (obj = keeper->carrying; obj; obj = obj->next_content)
+       if (CAN_SEE_OBJ(ch, obj) && GET_OBJ_COST(obj) > 0) {
+@@ -856,6 +903,8 @@ void shopping_list(char *arg, struct cha
+             if (len + 1 >= sizeof(buf))
+               break;
+             found = TRUE;
++            if (OBJ_FLAGGED(last_obj, ITEM_QUEST))
++              has_quest = TRUE;
+           }
+ 	  cnt = 1;
+ 	  last_obj = obj;
+@@ -871,6 +920,8 @@ void shopping_list(char *arg, struct cha
+       if (len < sizeof(buf))
+         strncat(buf, list_object(last_obj, cnt, lindex, shop_nr, keeper, ch), sizeof(buf) - len - 1);	/* strncat: OK */
+     page_string(ch->desc, buf, TRUE);
++    if (has_quest)
++      send_to_char(ch, "Items flagged \"qp\" require quest points to purchase.\r\n");
+   }
+ }
+ 
+@@ -1279,8 +1330,8 @@ void list_all_shops(struct char_data *ch
+ void list_detailed_shop(struct char_data *ch, int shop_nr)
+ {
+   struct char_data *k;
+-  int sindex, column;
+-  char *ptrsave;
++  int sindex, column, flag = 1, found = 0;
++//char *ptrsave;
+ 
+   send_to_char(ch, "Vnum:       [%5d], Rnum: [%5d]\r\n", SHOP_NUM(shop_nr), shop_nr + 1);
+ 
+@@ -1327,7 +1378,33 @@ void list_detailed_shop(struct char_data
+   } else
+     send_to_char(ch, "<NONE>\r\n");
+ 
+-  send_to_char(ch, "Customers:  %s\r\n", (ptrsave = customer_string(shop_nr, TRUE)) ? ptrsave : "None");
++//  send_to_char(ch, "Customers:  %s\r\n", (ptrsave = customer_string(shop_nr, TRUE)) ? ptrsave : "None");
++  send_to_char(ch, "Customers:  ");
++  column = 12;  /* ^^^ strlen ^^^ */
++  for (sindex = 0; *trade_letters[sindex] != '\n'; sindex++) {
++    char buf1[128];
++    int linelen;
++
++    if (!IS_SET(flag, SHOP_TRADE_WITH(shop_nr))){
++      if (sindex) {
++        send_to_char(ch, ", ");
++        column += 2;
++      }
++      linelen = snprintf(buf1, sizeof(buf1), "%s", trade_letters[sindex]);
++      /* Implementing word-wrapping: assumes screen-size == 80 */
++      if (linelen + column >= 78 && column >= 20) {
++        send_to_char(ch, "\r\n            ");
++        column = 12;
++      }
++
++      if (!send_to_char(ch, "%s", buf1))
++        return;
++      column += linelen;
++      found = TRUE;
++    }
++    flag <<= 1; /* next flag */
++  }
++  send_to_char(ch, "%s\r\n", found ? "" : "Nobody!");
+ 
+   send_to_char(ch, "Produces:   ");
+   column = 12;	/* ^^^ strlen ^^^ */
+diff -BbuprN tbamud-3.55/src/structs.h tbamud-3.55+quests/src/structs.h
+--- tbamud-3.55/src/structs.h	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/structs.h	2008-01-31 11:13:03.741297000 +0000
+@@ -265,6 +265,7 @@
+ #define CON_AEDIT        25     /* OLC mode - social (action) edit      */
+ #define CON_TRIGEDIT     26	/* OLC mode - trigger edit              */
+ #define CON_HEDIT        27
++#define CON_QEDIT        28     /* OLC mode - quest edit                */
+ 
+ /* Character equipment positions: used as index for char_data.equipment[] */
+ /* NOTE: Don't confuse these constants with the ITEM_ bitvectors
+@@ -351,6 +352,7 @@
+ #define ITEM_ANTI_THIEF	      14   /* Not usable by thieves */
+ #define ITEM_ANTI_WARRIOR     15   /* Not usable by warriors */
+ #define ITEM_NOSELL           16   /* Shopkeepers won't touch it */
++#define ITEM_QUEST            17 /* Item is a quest item         */
+ 
+ /* Modifier constants used with obj affects ('A' fields) */
+ #define APPLY_NONE              0	/* No effect			*/
+@@ -500,6 +502,7 @@
+ #define MAX_LAST_ENTRIES        6000  /* arbitrary */
+ #define MAX_HELP_KEYWORDS       256
+ #define MAX_HELP_ENTRY          MAX_STRING_LENGTH
++#define MAX_COMPLETED_QUESTS    1024
+ 
+ /* define the largest set of commands for a trigger */
+ #define MAX_CMD_LENGTH 16384         /* 16k should be plenty and then some */
+@@ -524,6 +527,7 @@ typedef IDXTYPE mob_vnum;
+ typedef IDXTYPE zone_vnum;
+ typedef IDXTYPE shop_vnum;
+ typedef IDXTYPE trig_vnum;
++typedef IDXTYPE qst_vnum;
+ 
+ /* Various real (array-reference) number types. */
+ typedef IDXTYPE room_rnum;
+@@ -532,6 +536,7 @@ typedef IDXTYPE mob_rnum;
+ typedef IDXTYPE zone_rnum;
+ typedef IDXTYPE shop_rnum;
+ typedef IDXTYPE trig_rnum;
++typedef IDXTYPE qst_rnum;
+ 
+ /* Bitvector type for 32 bit unsigned long bitvectors. 'unsigned long long' 
+  * will give you at least 64 bits if you have GCC. You'll have to search 
+@@ -775,6 +780,11 @@ struct player_special_data_saved {
+    int spells_to_learn;         /* How many spells you can learn */
+    int olc_zone;                /* A players olc access */
+    int questpoints;             /* A players questpoints earned */
++   qst_vnum *completed_quests;           /* Quests completed              */
++   int    num_completed_quests;          /* Number completed              */
++   int    current_quest;                 /* vnum of current quest         */
++   int    quest_time;                    /* time left on current quest    */
++   int    quest_counter;                 /* Count of targets left to get  */
+ };
+ 
+ /* Specials needed only by PCs, not NPCs.  Space for this structure is
+diff -BbuprN tbamud-3.55/src/utils.h tbamud-3.55+quests/src/utils.h
+--- tbamud-3.55/src/utils.h	2008-01-16 23:21:14.000000000 +0000
++++ tbamud-3.55+quests/src/utils.h	2008-01-31 11:16:50.631922000 +0000
+@@ -316,7 +316,13 @@ void char_from_furniture(struct char_dat
+ #define GET_HOST(ch)		CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->host))
+ #define GET_HISTORY(ch, i)      CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.comm_hist[i]))
+ #define GET_PAGE_LENGTH(ch)     CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.page_length))
++/* Autoquests data */
+ #define GET_QUESTPOINTS(ch)     CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.questpoints))
++#define GET_QUEST(ch)           CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.current_quest))
++#define GET_QUEST_COUNTER(ch)   CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.quest_counter))
++#define GET_QUEST_TIME(ch)      CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.quest_time))
++#define GET_NUM_QUESTS(ch)      CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.num_completed_quests))
++#define GET_QUEST_TYPE(ch)      (real_quest(GET_QUEST((ch))) != NOTHING ? aquest_table[real_quest(GET_QUEST((ch)))].type : AQ_UNDEFINED )
+ 
+ #define GET_SKILL(ch, i)	CHECK_PLAYER_SPECIAL((ch), ((ch)->player_specials->saved.skills[i]))
+ #define SET_SKILL(ch, i, pct)	do { CHECK_PLAYER_SPECIAL((ch), (ch)->player_specials->saved.skills[i]) = pct; } while(0)
+diff -BbuprN tbamud-3.55/src/zedit.c tbamud-3.55+quests/src/zedit.c
+--- tbamud-3.55/src/zedit.c	2008-01-16 23:21:16.000000000 +0000
++++ tbamud-3.55+quests/src/zedit.c	2008-01-31 11:17:40.069422000 +0000
+@@ -263,6 +263,7 @@ void zedit_new_zone(struct char_data *ch
+       case CON_SEDIT:
+       case CON_OEDIT:
+       case CON_TRIGEDIT:
++      case CON_QEDIT:
+         OLC_ZNUM(dsc) += (OLC_ZNUM(dsc) >= result);
+         break;
+       default:

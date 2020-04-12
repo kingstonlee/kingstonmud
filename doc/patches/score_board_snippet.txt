@@ -1,0 +1,105 @@
+/******************************************************************/
+*								   *
+*   Score Board Snippet by Papaya Pete @ tbamud.com forums         *
+*								   *
+*  What this does is every time a character is defeated, the name  *
+*  of the character, what defeated him, and a "Final Score" (think *
+*  of an adventurer's score in the old adventure games back in the * 
+*  day) are recorded in a .txt file located in lib\misc directory. *
+*  What's written in it can be accessed by anyone through the      *
+*  command "fallen" (which can be changed to whatever you want).   *								   *
+*  Make sure you add a blank txt file called "scboard.txt" to your *
+*  lib\misc folder.						   *
+*								   *
+*  Questions or comments?  Head on over to the tbamud.com forums!  *
+*								   *
+/******************************************************************/
+
+This is a fairly easy process, as it takes very simple file manipulation.
+
+1.) Open up act.other.c and, at the end, add...
+
+ACMD(do_fallen)
+{
+        char syscom[120];
+        FILE *fp;
+        char buf2[MAX_INPUT_LENGTH];
+        int number = 255;
+
+    fp = fopen("../lib/misc/scboard.txt", "r");
+
+    sprintf(buf2, "The following adventurers have fallen in the wilds of Nexus:\r\n\r\n");
+    send_to_char(ch, buf2);
+    while (fgets(syscom, number, fp) != NULL) {
+        sprintf(buf2, "%s\r", syscom);
+        send_to_char(ch, buf2);
+        }
+    fclose(fp);
+
+}
+
+2.) Open up interpreter.c and add in...
+
+  { "examine"  , "exa"     , POS_SITTING , do_examine  , 0, 0 },
+  { "export"   , "export"  , POS_DEAD    , do_export_zone, LVL_IMPL, 0 },
+
++  { "fallen"   , "fall"    , POS_DEAD    , do_fallen   , 0, SCMD_V_SCBOARD },
+  { "force"    , "force"   , POS_SLEEPING, do_force    , LVL_GOD, 0 },
+
+3.) Next, open up interpreter.h and add in...
+
+#define SCMD_OASIS_ZLIST       4
+#define SCMD_OASIS_TLIST       5
+#define SCMD_OASIS_QLIST       6
+
++/* do_fallen */
++#define SCMD_V_SCBOARD      0
+
+/* Necessary for CMD_IS macro.  Borland needs the structure defined first
+
+4.) So we have a way to read that file.  But we still need to write to it in the first place!
+Open up utils.c and add in... (I put it after mudlog)
+
+    send_to_char(i->character, "%s%s%s", CCGRN(i->character, C_NRM), buf, CCNRM(i->character, C_NRM));
+  }
+}
+
++/* The scorelog function writes to the scboard file in the lib/misc directory every
++time a player is defeated, adding that name and the character's score to it. */
++void scorelog(struct char_data * ch, struct char_data * killer)
++{
++  FILE *fp;
++
++  fp = fopen("../lib/misc/scboard.txt", "a");
++
++  fprintf(fp, "%s was defeated by %s!\n", GET_NAME(ch), GET_NAME(killer));
++  fprintf(fp, "Final Score: %d\r\n", ((GET_LEVEL(ch) * 2) + (GET_ALIGNMENT(ch) / 10) + (GET_NUM_QUESTS(ch))));
++
++  fclose(fp);
++
++}
+
+/** Take a bitvector and return a human readable
+ * description of which bits are set in it.
+ * @pre The final element in the names array must contain a one character
+
+5.) Open up utils.h and add in...
+
+int get_race_by_name(char *racename);
+char * convert_from_tabs(char * string);
+int count_non_protocol_chars(char * str);
++void scorelog(struct char_data * ch, struct char_data * killer);
+
+6.) We've gotten a way to write into the scboard.txt file.  One last touch: open up fight.c and
+find the raw_kill() function... inside of it, add...
+
+
+  update_pos(ch);
+
++  scorelog(ch, killer);
+  make_corpse(ch);
+  extract_char(ch);
+
+  if (killer) {
+
+That should be it!  Compile, run, and have fun with it.

@@ -1,0 +1,190 @@
+8/29/2014
+
+Hello, the follow snippet will allow you to set races to your NPC thru medit.
+
+1. Open structs.h and search class_other and remove this block of code:
+
+/* NPC classes (currently unused - feel free to implement!) */
+#define CLASS_OTHER       0    /**< NPC Class Other (or undefined) */
+#define CLASS_UNDEAD      1    /**< NPC Class Undead */
+#define CLASS_HUMANOID    2    /**< NPC Class Humanoid */
+#define CLASS_ANIMAL      3    /**< NPC Class Animal */
+#define CLASS_DRAGON      4    /**< NPC Class Dragon */
+#define CLASS_GIANT       5    /**< NPC Class Giant */
+
+2. Where the above block of code was add this:
+
+/* NPC classes (currently unused - feel free to implement!) */
+#define CLASS_NPC_UNDEFINED   0    /**< NPC Class Other (or undefined) */
+#define CLASS_NPC_UNDEAD      1    /**< NPC Class Undead */
+#define CLASS_NPC_HUMANOID    2    /**< NPC Class Humanoid */
+#define CLASS_NPC_ANIMAL      3    /**< NPC Class Animal */
+#define CLASS_NPC_DRAGON      4    /**< NPC Class Dragon */
+#define CLASS_NPC_GIANT       5    /**< NPC Class Giant */
+
+#define NUM_NPC_CLASSES       6    /** < Total NPC Classes */
+
+3. close structs.h and open constants.c
+
+4. search sector_types and under that block of code add this:
+
+/* NPC Races
+Must be in same order as races in structs.h
+*/
+
+const char *npc_races[] = {
+        "Undefined",
+        "Undead",
+        "Humanoid",
+        "Animal",
+        "Dragon",
+        "Giant",
+        "\n"
+};
+
+5. close constants.c and open constants.h
+
+6. search sector_types and under it add:
+
+extern const char *npc_races[];
+
+7. close constants.h
+
+
+8. open oasis.h, search MEDIT_SPELL, and under it add:
+
+#define MEDIT_RACE                      40
+
+9. close oasis.h
+
+10. open medit.c, search: medit_disp_menu and under it add:
+
+static void medit_disp_races(struct descriptor_data *d);
+
+11. search medit_disp_menu and find this line: "%s8%s) Attack    : %s%s\r\n" under it add:
+          "%s0%s) Race      : %s%s\r\n"
+
+12. Still in medit_disp_menu find this line:  grn, nrm, yel, attack_hit_text[(int)GET_ATTACK(mob)].singular, under it add:
+
+          grn, nrm, yel, npc_races[(int)GET_CLASS(mob)],
+
+
+13. After the medit_disp_menu function add this:
+
+/* Display races */
+static void medit_disp_races(struct descriptor_data *d)
+{
+  get_char_colors(d->character);
+  clear_screen(d);
+  column_list(d->character, 0, npc_races, NUM_NPC_CLASSES, TRUE);
+  write_to_output(d, "Enter Race number : ");
+}
+
+
+
+14. search case '8'(Note: this is the case '8' that sets up olc_mode(d) = MEDIT_ATTACK) and under that block of code add this:
+
+    case '0':
+        OLC_MODE(d) = MEDIT_RACE;
+        medit_disp_races(d);
+        return;
+
+15. search case MEDIT_ATTACK: and under it add:
+
+        case MEDIT_RACE:
+                GET_CLASS(OLC_MOB(d)) = LIMIT(i - 1, 0, NUM_NPC_CLASSES - 1);
+                break;
+
+
+
+16. close medit.c and open genmob.c
+
+17.  search write_mobile_record and find this block of code:
+
+  fprintf(fd,   "%d %d\n"
+                "%d %d %d\n",
+                GET_GOLD(mob), GET_EXP(mob),
+                GET_POS(mob), GET_DEFAULT_POS(mob), GET_SEX(mob)
+
+replace that block with this:
+
+  fprintf(fd,   "%d %d\n"
+                "%d %d %d %d\n",
+                GET_GOLD(mob), GET_EXP(mob),
+                GET_POS(mob), GET_DEFAULT_POS(mob), GET_SEX(mob), GET_CLASS(mob)
+
+
+
+
+18. close genmob.c and open genolc.c
+
+19. search: export_mobile_record, and find this block of code:
+
+
+  fprintf(fd,   "%d %d\n"
+                "%d %d %d\n",
+                GET_GOLD(mob), GET_EXP(mob),
+                GET_POS(mob), GET_DEFAULT_POS(mob), GET_SEX(mob)
+
+
+change it to:
+
+
+
+  fprintf(fd,   "%d %d\n"
+                "%d %d %d %d\n",
+                GET_GOLD(mob), GET_EXP(mob),
+                GET_POS(mob), GET_DEFAULT_POS(mob), GET_SEX(mob), GET_CLASS(mob)
+
+
+19. Close genolc.c and open db.c
+ 
+
+20. search get_sex(it takes you right to where we need to be) and find this block of code:
+
+  if (sscanf(line, " %d %d %d ", t, t + 1, t + 2) != 3) {
+    log("SYSERR: Format error in last line of mob #%d\n"
+        "...expecting line of form '# # # '", nr);
+    exit(1);
+  }
+
+  GET_POS(mob_proto + i) = t[0];
+  GET_DEFAULT_POS(mob_proto + i) = t[1];
+  GET_SEX(mob_proto + i) = t[2];
+
+  GET_CLASS(mob_proto + i) = 0;
+
+
+and change that block of code to this:
+
+        t[4] = sscanf(line, " %d %d %d %d ", t, t + 1, t + 2, t + 3);
+
+        if(t[4] !=4 && t[4] != 3) {
+                log("SYSERR: format error in last line of mob #%d\n"
+                "...explecting line of form '# # # #'", nr);
+                exit(1);
+        }
+
+  GET_POS(mob_proto + i) = t[0];
+  GET_DEFAULT_POS(mob_proto + i) = t[1];
+  GET_SEX(mob_proto + i) = t[2];
+  GET_CLASS(mob_proto + i) = t[3];
+
+  //GET_CLASS(mob_proto + i) = 0; /* Comment this line out or it wont save your classes*/
+
+
+21. close and compile.
+
+
+Q: Why did you name them CLASS_NPC_X?
+A: This will allow you to set NPC and Players to have the same race like humans and whatnot.  Since before both NPC and Players used CLASS_ 
+it would of conflicted each other.
+
+
+I hope you all enjoy this snippet.  Please let me know of any bugs or what you thought of it!  I can be reached by e-mail or forums.
+
+E-Mail: liko@xidus.net
+
+Sincerely, 
+Liko
+

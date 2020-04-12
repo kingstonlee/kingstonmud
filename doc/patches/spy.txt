@@ -1,0 +1,106 @@
+/* A spy skill written by Eric V. Bahmer   Raptor of MultiMUD and
+   world of pain .
+
+   basically all you need to do is put this in act.other.c and fill
+   in the acmd protos in interpreter.c, define the skill in spells.h and
+   assign it to a class in class.c, put it in spell_parser.c next to the
+   other skills
+
+   I wrote this when i got bored one day feel free to use it but keep my
+   name in the comment block before the actual code. far as I know there
+   shouldn't be any bugs.                                                */
+
+/* Another note: while the original spy skill snippet was just the ACMD(do_spy) function, additional instructions have been added to make installing it a little easier. Also, code was updated a little so that it *should* compile correctly with tbaMUD 3.64. */
+
+-- in act.other.c
+
+ACMD(do_spy)
+{
+   int percent, prob, return_room;
+   char spy_type;
+   const char *spy_dirs[] = {
+     "north",
+     "east",
+     "south",
+     "west",
+     "up",
+     "down",
+     "northwest", /* Diagonals only used if CONFIG_DIAGONAL_DIRS is set */
+     "northeast",
+     "southeast",
+     "southwest",
+     "\n"
+   };
+
+   /* 101% is a complete failure */
+   percent = rand_number(1, 101);
+   prob = GET_SKILL(ch, SKILL_SPY);
+   spy_type = search_block(argument + 1, spy_dirs, FALSE);
+
+  if (spy_type < 0 || !EXIT(ch, spy_type) || EXIT(ch, spy_type)->to_room == NOWHERE) {
+    send_to_char(ch, "Spy where?\r\n");
+    return;
+  }
+  else {
+     if (!(GET_MOVE(ch) >= 5)) {
+        send_to_char(ch, "You don't have enough movement points.\r\n");
+     }
+     else {
+        if (percent > prob) {
+           send_to_char(ch, "You suck! You need more practice!!\r\n");
+           GET_MOVE(ch) = MAX(0, MIN(GET_MAX_MOVE(ch), GET_MOVE(ch) - 2));
+        }
+        else {
+           if (IS_SET(EXIT(ch, spy_type)->exit_info, EX_CLOSED) && EXIT(ch, spy_type)->keyword) {
+              send_to_char(ch, "The %s is closed.\r\n", fname(EXIT(ch, spy_type)->keyword));
+              GET_MOVE(ch) = MAX(0, MIN(GET_MAX_MOVE(ch), GET_MOVE(ch) - 2));
+           }
+           else {
+              GET_MOVE(ch) = MAX(0, MIN(GET_MAX_MOVE(ch), GET_MOVE(ch) - 5));
+              return_room = ch->in_room;
+              char_from_room(ch);
+              char_to_room(ch, world[return_room].dir_option[spy_type]->to_room);
+              send_to_char(ch, "You spy into the next room and see: \r\n\r\n");
+              look_at_room(ch, 1);
+              char_from_room(ch);
+              char_to_room(ch, return_room);
+              act("$n peeks into the next room.", TRUE, ch, 0, 0, TO_NOTVICT);
+           }
+        }
+     }
+  }
+}
+
+-- in act.h
+
+ACMD(do_split);
++ACMD(do_spy);
+ACMD(do_steal);
+ACMD(do_title);
+
+-- in interpreter.c
+
+  { "split"    , "split"   , POS_SITTING , do_split    , 1, 0 },
++  { "spy"      , "spy"     , POS_STANDING, do_spy     , 1, 0 },
+  { "stand"    , "st"      , POS_RESTING , do_stand    , 0, 0 },
+
+-- in spells.h
+
+#define SKILL_STEAL                 139 /* Reserved Skill[] DO NOT CHANGE */
+#define SKILL_TRACK		            140 /* Reserved Skill[] DO NOT CHANGE */
++ #define SKILL_SPY                   141
+
+-- in spell_parser.c
+
+  skillo(SKILL_TRACK, "track");
+  skillo(SKILL_WHIRLWIND, "whirlwind");
++  skillo(SKILL_SPY, "spy");
+
+-- in class.c
+
+  /* THIEVES */
+  spell_level(SKILL_SNEAK, CLASS_THIEF, 1);
++  spell_level(SKILL_SPY, CLASS_THIEF, 1);
+  spell_level(SKILL_PICK_LOCK, CLASS_THIEF, 2);
+  spell_level(SKILL_BACKSTAB, CLASS_THIEF, 3);
+  spell_level(SKILL_STEAL, CLASS_THIEF, 4);
