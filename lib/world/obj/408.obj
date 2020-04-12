@@ -6,4 +6,36 @@ A pile of @YPixie Dust@n sits here.~
 12 a 0 0 0 a 0 0 0 0 0 0 0
 0 0 0 0
 0 0 0 0 0
+#40801
+torch light~
+a torch~
+A torch stands here lighting the way.~
+~
+1 0 0 0 0 0 0 0 0 0 0 0 0
+0 0 0 0
+1000 0 0 0 0
+#40802
+red bandana~
+a red bandana~
+A strip of red cloth is on the ground here.~
+~
+9 0 0 0 0 ae 0 0 0 0 0 0 0
+3 0 0 0
+1 1 0 0 0
+#40803
+cutlass~
+a sharp cutlass~
+A cutlass is here, gleaming sharply.~
+~
+5 0 0 0 0 an 0 0 0 0 0 0 0
+5 1 4 1
+2 100 10 0 0
+#40804
+feather headband~
+a feather headband~
+A @bblue headband@n with a white feather lies here.~
+~
+11 0 0 0 0 ae 0 0 0 0 0 0 0
+0 0 0 0
+1 100 10 0 0
 $~

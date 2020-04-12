@@ -46,4 +46,14 @@ switch %random.5%
     emote mumbles, "	Y	_Use Pixie Dust	n	n"
     break
 ~
+#40802
+Princess Lily gives feather~
+0 g 100
+~
+if !%actor.has_item(40804)%
+  %load% obj 40804
+  wait 1 s
+  say You'll need this to get into Peter's Hideout
+  give feather %actor.name%
+~
 $~

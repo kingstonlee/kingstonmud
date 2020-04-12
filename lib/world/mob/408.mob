@@ -12,4 +12,34 @@ control panel in front of him.
 6 6 0
 E
 T 40801
+#40801
+pirate jolly roger~
+a pirate from the Jolly Roger~
+A pirate from the Jolly Roger pretends to be busy.
+~
+It looks unfinished.
+~
+72 0 0 0 0 0 0 0 0 E
+3 19 8 0d0+30 1d2+0
+30 900
+8 8 1
+E
+#40802
+princess tiger lily~
+Princess Tiger Lily~
+Princess Tiger Lily stands here surveying the land.
+~
+It looks unfinished.
+~
+8 0 0 0 0 0 0 0 0 E
+5 19 7 1d1+50 1d2+0
+50 2500
+8 8 2
+SavingPara: 1
+SavingRod: 1
+SavingPetri: 1
+SavingBreath: 1
+SavingSpell: 1
+E
+T 40802
 $

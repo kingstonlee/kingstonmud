@@ -19,8 +19,363 @@ T 40800
 S
 #40802
 Hangman's Tree~
-You are in an unfinished room.
+An old tree with several holes sits in the middle of a clearing in the forest.
+
 ~
-408 0 0 0 0 3
+408 32768 0 0 0 3
+D1
+~
+~
+0 0 40803
+D2
+~
+~
+0 0 40805
+D3
+~
+~
+0 0 40808
+D5
+A strange looking no knot in the old tree.
+~
+knot hole~
+3 0 40818
+S
+#40803
+Neverland coast~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D0
+~
+~
+0 0 40812
+D1
+~
+~
+0 0 40814
+D2
+~
+~
+0 0 40804
+D3
+~
+~
+0 0 40802
+S
+#40804
+Mermaid Lagoon~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 2
+D0
+~
+~
+0 0 40803
+D3
+~
+~
+0 0 40805
+S
+#40805
+Neverland Forest~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D0
+~
+~
+0 0 40802
+D1
+~
+~
+0 0 40804
+D3
+~
+~
+0 0 40806
+S
+#40806
+Neverland Forest~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D1
+~
+~
+0 0 40805
+D3
+~
+~
+0 0 40807
+S
+#40807
+Pirates Cove~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 2
+D0
+~
+~
+0 0 40808
+D1
+~
+~
+0 0 40806
+D2
+~
+~
+0 0 40817
+S
+#40808
+Crocodile Creek~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D1
+~
+~
+0 0 40802
+D2
+~
+~
+0 0 40807
+D3
+~
+~
+0 0 40809
+S
+#40809
+Deep Forest Trail~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 3
+D0
+~
+~
+0 0 40810
+D1
+~
+~
+0 0 40808
+D3
+~
+~
+0 0 40811
+S
+#40810
+Misty Mountains~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D2
+~
+~
+0 0 40809
+S
+#40811
+Indian Camp~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 1
+D1
+~
+~
+0 0 40809
+S
+#40812
+The Open Sea~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 7
+D0
+~
+~
+0 0 40813
+D1
+~
+~
+0 0 40813
+D2
+~
+~
+0 0 40803
+S
+#40813
+The Open Sea~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 7
+D0
+~
+~
+0 0 40815
+D1
+~
+~
+0 0 40813
+D2
+~
+~
+0 0 40814
+D3
+~
+~
+0 0 40812
+S
+#40814
+The Open Sea~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 7
+D1
+~
+~
+0 0 40813
+D2
+~
+~
+0 0 40814
+D3
+~
+~
+0 0 40803
+S
+#40815
+The Mouth of Skull Rock~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D0
+~
+~
+0 0 40816
+D1
+~
+~
+0 0 40813
+D2
+~
+~
+0 0 40813
+D3
+~
+~
+0 0 40813
+S
+#40816
+Inside Skull Rock~
+This unfinished room was created by Kingston.
+~
+408 32768 0 0 0 0
+D2
+~
+~
+0 0 40815
+S
+#40817
+The Jolly Roger~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 6
+D0
+~
+~
+0 0 40807
+S
+#40818
+The entrance to the Lost Boys Lair~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D0
+~
+~
+0 0 40819
+D1
+~
+~
+0 0 40821
+D2
+~
+~
+0 0 40822
+D3
+~
+~
+0 0 40820
+D4
+A hole in the ceiling.
+~
+hole ceiling~
+1 0 40802
+S
+#40819
+Peter's Room~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D2
+~
+~
+0 0 40818
+S
+#40820
+Lost Boys' Bedroom~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D0
+~
+~
+0 0 40823
+D1
+~
+~
+0 0 40818
+S
+#40821
+Lost Boys' Kitchen~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D2
+~
+~
+0 0 40824
+D3
+~
+~
+0 0 40818
+S
+#40822
+The Darling Room~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D0
+~
+~
+0 0 40818
+S
+#40823
+Weapon Room~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D2
+~
+~
+0 0 40820
+S
+#40824
+Food Pantry~
+This unfinished room was created by Kingston.
+~
+408 0 0 0 0 0
+D0
+~
+~
+0 0 40821
 S
 $~
