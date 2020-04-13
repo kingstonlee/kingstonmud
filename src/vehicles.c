@@ -39,12 +39,12 @@ typedef struct {
 }
 dirParseStruct;
 
-#
-define DRIVE_DIRS 4# define PILOT_DIRS 6
+#define DRIVE_DIRS 4
+#define PILOT_DIRS 6
 
-# ifndef EXITN# define EXITN(room, door)
-
-(world[room].dir_option[door])# endif
+# ifndef EXITN
+#  define EXITN(room, door) (world[room].dir_option[door])
+# endif
 
 struct obj_data * find_vehicle_by_vnum(int vnum) {
 
@@ -52,7 +52,7 @@ struct obj_data * find_vehicle_by_vnum(int vnum) {
 
   struct obj_data * i;
 
-  for (i = object_list; i; i = i - > next)
+  for (i = object_list; i; i = i->next)
 
     if (GET_OBJ_TYPE(i) == ITEM_VEHICLE)
 
@@ -63,23 +63,23 @@ struct obj_data * find_vehicle_by_vnum(int vnum) {
   return 0;
 }
 
-void auto_exits_by_rnum(struct char_data * ch, int is_in) {
-  int door;
+// void auto_exits_by_rnum(struct char_data * ch, int is_in) {
+//   int door;
 
-  * buf = '\0';
+//   * buf = '\0';
 
-  for (door = 0; door < NUM_OF_DIRS; door++)
-    if (EXITN(is_in, door) && EXITN(is_in, door) - > to_room != NOWHERE &&
+//   for (door = 0; door < NUM_OF_DIRS; door++)
+//     if (EXITN(is_in, door) && EXITN(is_in, door) - > to_room != NOWHERE &&
 
-      !IS_SET(EXITN(is_in, door) - > exit_info, EX_CLOSED))
-      sprintf(buf, "%s%c ", buf, LOWER( * dirs[door]));
+//       !IS_SET(EXITN(is_in, door) - > exit_info, EX_CLOSED))
+//       sprintf(buf, "%s%c ", buf, LOWER( * dirs[door]));
 
-  sprintf(buf2, "%s[ Exits: %s]%s\r\n", CCCYN(ch, C_NRM),
+//   sprintf(buf2, "%s[ Exits: %s]%s\r\n", CCCYN(ch, C_NRM),
 
-    * buf ? buf : "None! ", CCNRM(ch, C_NRM));
+//     * buf ? buf : "None! ", CCNRM(ch, C_NRM));
 
-  send_to_char(buf2, ch);
-}
+//   send_to_char(buf2, ch);
+// }
 
 void view_room_by_rnum(struct char_data * ch, int is_in) {
 
@@ -113,11 +113,11 @@ void view_room_by_rnum(struct char_data * ch, int is_in) {
 
   send_to_char(world[is_in].description, ch);
 
-  /* autoexits */
+  // /* autoexits */
 
-  if (PRF_FLAGGED(ch, PRF_AUTOEXIT))
+  // if (PRF_FLAGGED(ch, PRF_AUTOEXIT))
 
-    auto_exits_by_rnum(ch, is_in);
+  //   auto_exits_by_rnum(ch, is_in);
 
   /* now list characters & objects */
 
