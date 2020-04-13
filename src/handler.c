@@ -622,6 +622,25 @@ struct obj_data *get_obj_in_list_num(int num, struct obj_data *list)
   return (NULL);
 }
 
+/* Search the given list for an object type, and return a ptr to that obj */
+struct obj_data *get_obj_in_list_type(int type, struct obj_data *list) {
+
+struct obj_data * i;
+
+
+
+for (i = list; i; i = i->next_content)
+
+
+if (GET_OBJ_TYPE(i) == type)
+
+
+
+return i;
+
+return NULL;
+}
+
 /* search the entire world for an object number, and return a pointer  */
 struct obj_data *get_obj_num(obj_rnum nr)
 {
