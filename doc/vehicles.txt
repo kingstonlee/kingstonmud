@@ -1,0 +1,60 @@
+From: Chris Jacobson <fear@athenet.net>
+Subject: Vehicles
+
+Ok, here is the vehicles.c I wrote!  I am releasing the /original/ code,
+which is all in a seperate file (except spec_assign) and relied on
+spec_procs, but the new version, which no longer requires ANY specprocs
+(thereby allowing easier vehicle creation, and no modification of
+source), will not be released, because I merged most of it into the main
+source files themselves, and since I expanded it to support 3 extra
+variables (water-capable, flight-capable, and space-capable), along with
+a discussion with my other imms (who do not do any coding, but are
+actively supportive of the game because we are so unique in theme and
+implementation) I decided that it wouldn't be in our best interest to
+release.
+
+THIS IS CODE, but is semi-mailer code... it is from a backup version, no
+more instructions can or will be provided (please don't email me asking
+for help installing), and also realize my version of Circle is HEAVILY
+modified...
+
+Instructions:
+Create a vehicle object.
+Set object value 1 to the room to send people who 'enter' the vehicle to.
+vehicle_controls, vehicle_window, and vehicle_hatch use variable 1 to
+reference the vnum of the vehicle.
+
+DO NOT use more than 1 vehicle of each VNUM...
+Each vehicle requires its own set of the 4 objects, and its own set of
+rooms.  Want 3 tanks?  Make 3 sets of the objects and 3 sets of the rooms.
+
+From any room within the vehicle with the CONTROLS a player can "drive
+<direction>"...
+From any room within the vehicle with the HATCH a player can "exit"
+From any room within the vehicle with the WINDOW a player can "look out"
+
+Note that if there is no vehicle object, proper error checking does take
+place :-)
+
+Also implemented is the ability to let vehicles into other vehicles, but
+it isn't TOO debugged.
+
+Also note that the rooms a vehicle is allowed through need the
+ROOM_VEHICLES flag set... that way it keeps vehicle movement limited to
+appropriate areas.
+
+FINALLY, please >try< to do the debugging yourself first, before emailing
+me.  This is from an old version (4 days ago, but like on the second day
+after I started coding it, and probably the day before I merged it into
+the main source tree), so I can't support it too much, but I >will< try
+if it appears you tried to handle it yourself first (aka, Im not going to
+lead the blind, only those with glasses, or contacts, or sand in their
+eyes :-).  Also, there were very few bugs to begin with (I think it
+worked nearly perfectly on the second day, after I found an initial bug
+in me forgetting 'char_from_room' before 'char_to_room')
+
+Also, if you use it, I would appreciate a line of credit within the login
+screen or credits (your choice :-).  Please email me if you need any
+assistance (and have given it a shot yourself first) or any comments.
+
+- Chris Jacobson
