@@ -1,12 +1,13 @@
-/**************************************************************************
-*  File: genwld.c                                          Part of tbaMUD *
-*  Usage: Generic OLC Library - Rooms.                                    *
-*                                                                         *
-*  By Levork. Copyright 1996 by Harvey Gilpin, 1997-2001 by George Greer. *
-**************************************************************************/
+/************************************************************************
+ * Generic OLC Library - Rooms / genwld.c			v1.0	*
+ * Original author: Levork						*
+ * Copyright 1996 by Harvey Gilpin					*
+ * Copyright 1997-2001 by George Greer (greerga@circlemud.org)		*
+ ************************************************************************/
 
 #include "conf.h"
 #include "sysdep.h"
+
 #include "structs.h"
 #include "utils.h"
 #include "db.h"
@@ -17,11 +18,23 @@
 #include "genzon.h"
 #include "shop.h"
 #include "dg_olc.h"
-#include "mud_event.h"
+#include "htree.h"
 
+extern struct room_data *world;
+extern struct zone_data *zone_table;
+extern struct index_data *mob_index;
+extern struct shop_data *shop_index;
+extern zone_rnum top_of_zone_table;
+extern room_rnum r_mortal_start_room;
+extern room_rnum r_immort_start_room;
+extern room_rnum r_frozen_start_room;
 
-/* This function will copy the strings so be sure you free your own copies of 
- * the description, title, and such. */
+void update_wait_events(struct room_data *to, struct room_data *from);
+
+/*
+ * This function will copy the strings so be sure you free your own
+ * copies of the description, title, and such.
+ */
 room_rnum add_room(struct room_data *room)
 {
   struct char_data *tch;
@@ -35,7 +48,7 @@ room_rnum add_room(struct room_data *room)
   if ((i = real_room(room->number)) != NOWHERE) {
     if (SCRIPT(&world[i]))
       extract_script(&world[i], WLD_TRIGGER);
-    tch = world[i].people;
+    tch = world[i].people; 
     tobj = world[i].contents;
     copy_room(&world[i], room);
     world[i].people = tch;
@@ -67,6 +80,7 @@ room_rnum add_room(struct room_data *room)
       for (tobj = world[i].contents; tobj; tobj = tobj->next_content)
 	IN_ROOM(tobj) += (IN_ROOM(tobj) != NOWHERE);
     }
+    htree_add(room_htree, world[i].number, i);
   }
   if (!found) {
     world[0] = *room;	/* Last place, in front. */
@@ -74,9 +88,12 @@ room_rnum add_room(struct room_data *room)
   }
 
   log("GenOLC: add_room: Added room %d at index #%d.", room->number, found);
+
   /* found is equal to the array index where we added the room. */
 
-  /* Find what zone that room was in so we can update the loading table. */
+  /*
+   * Find what zone that room was in so we can update the loading table.
+   */
   for (i = room->zone; i <= top_of_zone_table; i++)
     for (j = 0; ZCMD(i, j).command != 'S'; j++)
       switch (ZCMD(i, j).command) {
@@ -84,11 +101,11 @@ room_rnum add_room(struct room_data *room)
       case 'O':
       case 'T':
       case 'V':
-	ZCMD(i, j).arg3 += (ZCMD(i, j).arg3 != NOWHERE && ZCMD(i, j).arg3 >= found);
+        ZCMD(i, j).arg3 += (ZCMD(i, j).arg3 != NOWHERE && ZCMD(i, j).arg3 >= found);
 	break;
       case 'D':
       case 'R':
-	ZCMD(i, j).arg1 += (ZCMD(i, j).arg1 != NOWHERE && ZCMD(i, j).arg1 >= found);
+        ZCMD(i, j).arg1 += (ZCMD(i, j).arg1 != NOWHERE && ZCMD(i, j).arg1 >= found);
       case 'G':
       case 'P':
       case 'E':
@@ -96,28 +113,36 @@ room_rnum add_room(struct room_data *room)
 	/* Known zone entries we don't care about. */
         break;
       default:
-        mudlog(BRF, LVL_GOD, TRUE, "SYSERR: GenOLC: add_room: Unknown zone entry found!");
+        mudlog(BRF, ADMLVL_GOD, TRUE, "SYSERR: GenOLC: add_room: Unknown zone entry found!");
       }
-
-  /* Update the loadroom table. Adds 1 or 0. */
+      
+  /*
+   * Update the loadroom table. Adds 1 or 0.
+   */
   r_mortal_start_room += (r_mortal_start_room >= found);
   r_immort_start_room += (r_immort_start_room >= found);
   r_frozen_start_room += (r_frozen_start_room >= found);
 
-  /* Update world exits. */
+  /*
+   * Update world exits.
+   */
   i = top_of_world + 1;
   do {
     i--;
-    for (j = 0; j < DIR_COUNT; j++)
+    for (j = 0; j < NUM_OF_DIRS; j++)
       if (W_EXIT(i, j) && W_EXIT(i, j)->to_room != NOWHERE)
 	W_EXIT(i, j)->to_room += (W_EXIT(i, j)->to_room >= found);
   } while (i > 0);
 
   add_to_save_list(zone_table[room->zone].number, SL_WLD);
 
-  /* Return what array entry we placed the new room in. */
+  /*
+   * Return what array entry we placed the new room in.
+   */
   return found;
 }
+
+/* -------------------------------------------------------------------------- */
 
 int delete_room(room_rnum rnum)
 {
@@ -150,8 +175,10 @@ int delete_room(room_rnum rnum)
     r_frozen_start_room = 0;	/* The Void */
   }
 
-  /* Dump the contents of this room into the Void.  We could also just extract 
-   * the people, mobs, and objects here. */
+  /*
+   * Dump the contents of this room into the Void.  We could also just
+   * extract the people, mobs, and objects here.
+   */
   for (obj = world[rnum].contents; obj; obj = next_obj) {
     next_obj = obj->next_content;
     obj_from_room(obj);
@@ -168,23 +195,14 @@ int delete_room(room_rnum rnum)
     extract_script(room, WLD_TRIGGER);
   free_proto_script(room, WLD_TRIGGER);
 
-  if (room->events != NULL) {
-	  if (room->events->iSize > 0) {
-		struct event * pEvent;
-
-		while ((pEvent = simple_list(room->events)) != NULL)
-		  event_cancel(pEvent);
-	  }
-	  free_list(room->events);
-    room->events = NULL;
-  }
-
-  /* Change any exit going to this room to go the void. Also fix all the exits 
-   * pointing to rooms above this. */
+  /*
+   * Change any exit going to this room to go the void.
+   * Also fix all the exits pointing to rooms above this.
+   */
   i = top_of_world + 1;
   do {
     i--;
-    for (j = 0; j < DIR_COUNT; j++) {
+    for (j = 0; j < NUM_OF_DIRS; j++)
       if (W_EXIT(i, j) == NULL)
         continue;
       else if (W_EXIT(i, j)->to_room > rnum)
@@ -199,15 +217,16 @@ int delete_room(room_rnum rnum)
             free(W_EXIT(i, j)->general_description);
           free(W_EXIT(i, j));
           W_EXIT(i, j) = NULL;
-        } else {
+        } else { 
           /* description is set, just point to nowhere */
           W_EXIT(i, j)->to_room = NOWHERE;
         }
       }
-    }
   } while (i > 0);
 
-  /* Find what zone that room was in so we can update the loading table. */
+  /*
+   * Find what zone that room was in so we can update the loading table.
+   */
   for (i = 0; i <= top_of_zone_table; i++)
     for (j = 0; ZCMD(i , j).command != 'S'; j++)
       switch (ZCMD(i, j).command) {
@@ -233,17 +252,24 @@ int delete_room(room_rnum rnum)
         /* Known zone entries we don't care about. */
         break;
       default:
-        mudlog(BRF, LVL_GOD, TRUE, "SYSERR: GenOLC: delete_room: Unknown zone entry found!");
+        mudlog(BRF, ADMLVL_GOD, TRUE, "SYSERR: GenOLC: delete_room: Unknown zone entry found!");
       }
 
-  /* Remove this room from all shop lists. */
-  for (i = 0; i <= top_shop; i++) {
-    for (j = 0;SHOP_ROOM(i, j) != NOWHERE;j++) {
-      if (SHOP_ROOM(i, j) == world[rnum].number)
-        SHOP_ROOM(i, j) = 0; /* set to the void */
+  /*
+   * Remove this room from all shop lists.
+   */
+  {
+    extern int top_shop;
+    for (i = 0;i < top_shop;i++) {
+      for (j = 0;SHOP_ROOM(i, j) != NOWHERE;j++) {
+        if (SHOP_ROOM(i, j) == world[rnum].number)
+          SHOP_ROOM(i, j) = 0; /* set to the void */
+      }
     }
   }
-  /* Now we actually move the rooms down. */
+  /*
+   * Now we actually move the rooms down.
+   */
   for (i = rnum; i < top_of_world; i++) {
     world[i] = world[i + 1];
     update_wait_events(&world[i], &world[i+1]);
@@ -261,15 +287,16 @@ int delete_room(room_rnum rnum)
   return TRUE;
 }
 
+
 int save_rooms(zone_rnum rzone)
 {
   int i;
   struct room_data *room;
   FILE *sf;
-  char filename[128];
-  char buf[MAX_STRING_LENGTH];
-  char buf1[MAX_STRING_LENGTH];
-  char buf2[MAX_STRING_LENGTH];
+  char filename[128]={'\0'};
+  char buf[MAX_STRING_LENGTH]={'\0'}, buf1[MAX_STRING_LENGTH]={'\0'};
+  char rbuf1[MAX_STRING_LENGTH]={'\0'}, rbuf2[MAX_STRING_LENGTH]={'\0'};
+  char rbuf3[MAX_STRING_LENGTH]={'\0'}, rbuf4[MAX_STRING_LENGTH]={'\0'};
 
 #if CIRCLE_UNSIGNED_INDEX
   if (rzone == NOWHERE || rzone > top_of_zone_table) {
@@ -285,7 +312,7 @@ int save_rooms(zone_rnum rzone)
 
   snprintf(filename, sizeof(filename), "%s/%d.new", WLD_PREFIX, zone_table[rzone].number);
   if (!(sf = fopen(filename, "w"))) {
-    perror("SYSERR: save_rooms");
+    log("SYSERR: save_rooms: %s", strerror(errno));
     return FALSE;
   }
 
@@ -297,33 +324,34 @@ int save_rooms(zone_rnum rzone)
 
       room = (world + rnum);
 
-      /* Copy the description and strip off trailing newlines. */
+      /*
+       * Copy the description and strip off trailing newlines.
+       */
       strncpy(buf, room->description ? room->description : "Empty room.", sizeof(buf)-1 );
       strip_cr(buf);
 
-      /* Save the numeric and string section of the file. */
-      int n = snprintf(buf2, MAX_STRING_LENGTH, "#%d\n"
+      /*
+       * Save the numeric and string section of the file.
+       */
+      sprintascii(rbuf1, room->room_flags[0]);
+      sprintascii(rbuf2, room->room_flags[1]);
+      sprintascii(rbuf3, room->room_flags[2]);
+      sprintascii(rbuf4, room->room_flags[3]);
+      fprintf(sf, 	"#%d\n"
 			"%s%c\n"
 			"%s%c\n"
-			"%d %d %d %d %d %d\n",
-	room->number,
-	room->name ? room->name : "Untitled", STRING_TERMINATOR,
-	buf, STRING_TERMINATOR,
-	zone_table[room->zone].number, room->room_flags[0], room->room_flags[1], room->room_flags[2], 
-	  room->room_flags[3], room->sector_type 
+                        "%d %s %s %s %s %d\n",
+		room->number,
+		room->name ? room->name : "Untitled", STRING_TERMINATOR,
+		buf, STRING_TERMINATOR,
+		zone_table[room->zone].number, 
+                rbuf1, rbuf2, rbuf3, rbuf4, room->sector_type
       );
-      
-      if(n >= MAX_STRING_LENGTH) {
-        mudlog(BRF,LVL_BUILDER,TRUE,
-               "SYSERR: Could not save room #%d due to size (%d > maximum of %d).",
-               room->number, n, MAX_STRING_LENGTH);
-        continue;
-      }
 
-  fprintf(sf, "%s", convert_from_tabs(buf2));
- 
-      /* Now you write out the exits for the room. */
-      for (j = 0; j < DIR_COUNT; j++) {
+      /*
+       * Now you write out the exits for the room.
+       */
+      for (j = 0; j < NUM_OF_DIRS; j++) {
 	if (R_EXIT(room, j)) {
 	  int dflag;
 	  if (R_EXIT(room, j)->general_description) {
@@ -332,16 +360,19 @@ int save_rooms(zone_rnum rzone)
 	  } else
 	    *buf = '\0';
 
-	  /* Figure out door flag. */
+	  /*
+	   * Figure out door flag.
+	   */
 	  if (IS_SET(R_EXIT(room, j)->exit_info, EX_ISDOOR)) {
-	    if (IS_SET(R_EXIT(room, j)->exit_info, EX_PICKPROOF))
+            if (IS_SET(R_EXIT(room, j)->exit_info, EX_SECRET) &&
+                IS_SET(R_EXIT(room, j)->exit_info, EX_PICKPROOF))
+              dflag = 4;
+	    else if (IS_SET(R_EXIT(room, j)->exit_info, EX_SECRET))
+              dflag = 3;
+	    else if (IS_SET(R_EXIT(room, j)->exit_info, EX_PICKPROOF)) 
 	      dflag = 2;
 	    else
 	      dflag = 1;
-	      
-	   if (IS_SET(R_EXIT(room, j)->exit_info, EX_HIDDEN))
-          dflag += 2;   
-          
 	  } else
 	    dflag = 0;
 
@@ -350,13 +381,28 @@ int save_rooms(zone_rnum rzone)
 	  else
 	    *buf1 = '\0';
 
-	  /* Now write the exit to the file. */
+	  /*
+	   * Now write the exit to the file.
+	   */
 	  fprintf(sf,	"D%d\n"
 			"%s~\n"
 			"%s~\n"
-			"%d %d %d\n", j, buf, buf1, dflag,
+			"%d %d %d %d %d %d %d %d %d %d %d\n", 
+			j, 
+			buf, 
+			buf1, 
+			
+			dflag,
 		R_EXIT(room, j)->key != NOTHING ? R_EXIT(room, j)->key : -1,
-		R_EXIT(room, j)->to_room != NOWHERE ? world[R_EXIT(room, j)->to_room].number : -1);
+		R_EXIT(room, j)->to_room != NOWHERE ? world[R_EXIT(room, j)->to_room].number : -1, 
+		R_EXIT(room, j)->dclock, 
+		R_EXIT(room, j)->dchide,
+		R_EXIT(room, j)->dcskill, 
+		R_EXIT(room, j)->dcmove,
+		R_EXIT(room, j)->failsavetype, 
+		R_EXIT(room, j)->dcfailsave,
+		R_EXIT(room, j)->failroom, 
+		R_EXIT(room, j)->totalfailroom);
 
 	}
       }
@@ -364,21 +410,23 @@ int save_rooms(zone_rnum rzone)
       if (room->ex_description) {
         struct extra_descr_data *xdesc;
 
-	for (xdesc = room->ex_description; xdesc; xdesc = xdesc->next) {
-	  strncpy(buf, xdesc->description, sizeof(buf) - 1);
-	  buf[sizeof(buf) - 1] = '\0';
-	  strip_cr(buf);
-	  fprintf(sf,	"E\n"
-			"%s~\n"
-			"%s~\n", xdesc->keyword, buf);
-	}
+	      for (xdesc = room->ex_description; xdesc; xdesc = xdesc->next) {
+	        strncpy(buf, xdesc->description, sizeof(buf));
+	        strip_cr(buf);
+	        fprintf(sf,	"E\n"
+			      "%s~\n"
+			      "%s~\n", xdesc->keyword, buf);
+	      }
       }
       fprintf(sf, "S\n");
       script_save_to_disk(sf, room, WLD_TRIGGER);
     }
   }
 
-  /* Write the final line and close it. */
+
+  /*
+   * Write the final line and close it.
+   */
   fprintf(sf, "$~\n");
   fclose(sf);
 
@@ -398,20 +446,62 @@ int copy_room(struct room_data *to, struct room_data *from)
   free_room_strings(to);
   *to = *from;
   copy_room_strings(to, from);
-  to->events = from->events;
 
-  /* Don't put people and objects in two locations. Should this be done here? */
+  /* Don't put people and objects in two locations.
+     Am thinking this shouldn't be done here... */
   from->people = NULL;
   from->contents = NULL;
-  from->events = NULL;
 
   return TRUE;
 }
 
-/* Copy strings over so bad things don't happen.  We do not free the existing 
- * strings here because copy_room() did a shallow copy previously and we'd be 
- * freeing the very strings we're copying.  If this function is used elsewhere,
- * be sure to free_room_strings() the 'dest' room first. */
+/*
+ * Idea by: Cris Jacobin <jacobin@bellatlantic.net>
+ */
+room_rnum duplicate_room(room_vnum dest_vnum, room_rnum orig)
+{
+  int new_rnum, znum;
+  struct room_data nroom;
+
+#if CIRCLE_UNSIGNED_INDEX
+  if (orig == NOWHERE || orig > top_of_world) {
+#else
+  if (orig < 0 || orig > top_of_world) {
+#endif
+    log("SYSERR: GenOLC: copy_room: Given bad original real room.");
+    return NOWHERE;
+  } else if ((znum = real_zone_by_thing(dest_vnum)) == NOWHERE) {
+    log("SYSERR: GenOLC: copy_room: No such destination zone.");
+    return NOWHERE;
+  }
+
+  /*
+   * add_room will make its own copies of strings.
+   */
+  if ((new_rnum = add_room(&nroom)) == NOWHERE) {
+    log("SYSERR: GenOLC: copy_room: Problem adding room.");
+    return NOWHERE;
+  }
+
+  nroom = world[new_rnum]; 
+  nroom.number = dest_vnum;
+  nroom.zone = znum;
+
+  /* So the people and objects aren't in two places at once... */
+  nroom.contents = NULL;
+  nroom.people = NULL;
+
+  return new_rnum;
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Copy strings over so bad things don't happen.  We do not free the
+ * existing strings here because copy_room() did a shallow copy previously
+ * and we'd be freeing the very strings we're copying.  If this function
+ * is used elsewhere, be sure to free_room_strings() the 'dest' room first.
+ */
 int copy_room_strings(struct room_data *dest, struct room_data *source)
 {
   int i;
@@ -424,7 +514,7 @@ int copy_room_strings(struct room_data *dest, struct room_data *source)
   dest->description = str_udup(source->description);
   dest->name = str_udup(source->name);
 
-  for (i = 0; i < DIR_COUNT; i++) {
+  for (i = 0; i < NUM_OF_DIRS; i++) {
     if (!R_EXIT(source, i))
       continue;
 
@@ -455,14 +545,12 @@ int free_room_strings(struct room_data *room)
     free_ex_descriptions(room->ex_description);
 
   /* Free exits. */
-  for (i = 0; i < DIR_COUNT; i++) {
+  for (i = 0; i < NUM_OF_DIRS; i++) {
     if (room->dir_option[i]) {
       if (room->dir_option[i]->general_description)
         free(room->dir_option[i]->general_description);
-
       if (room->dir_option[i]->keyword)
         free(room->dir_option[i]->keyword);
-
       free(room->dir_option[i]);
       room->dir_option[i] = NULL;
     }

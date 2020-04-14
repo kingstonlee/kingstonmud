@@ -1,6 +1,6 @@
 /**************************************************************************
-*  File: dg_misc.c                                         Part of tbaMUD *
-*  Usage: Contains general functions for script usage.                    *
+*  File: dg_misc.c                                                        *
+*  Usage: contains general functions for script usage.                    *
 *                                                                         *
 *  $Author: Mark A. Heilpern/egreen/Welcor $                              *
 *  $Date: 2004/10/11 12:07:00$                                            *
@@ -10,8 +10,8 @@
 #include "conf.h"
 #include "sysdep.h"
 #include "structs.h"
-#include "utils.h"
 #include "dg_scripts.h"
+#include "utils.h"
 #include "comm.h"
 #include "interpreter.h"
 #include "handler.h"
@@ -20,19 +20,21 @@
 #include "screen.h"
 #include "spells.h"
 #include "constants.h"
-#include "fight.h"
+
+void die(struct char_data *ch, struct char_data * killer);
+
+/* external vars */
+extern struct spell_info_type spell_info[];
 
 
-/* copied from spell_parser.c: */
-#define SINFO spell_info[spellnum]
-
-
-/* Cast a spell; can be called by mobiles, objects and rooms, and no level
- * check is required. Note that mobs should generally use the normal 'cast'
- * command (which must be patched to allow mobs to cast spells) as the spell
- * system is designed to have a character caster, and this cast routine may
- * overlook certain issues. LIMITATION: a target MUST exist for the spell unless
- * the spell is set to TAR_IGNORE. Also, group spells are not permitted. */
+/* cast a spell; can be called by mobiles, objects and rooms, and no   */
+/* level check is required. Note that mobs should generally use the    */
+/* normal 'cast' command (which must be patched to allow mobs to cast  */
+/* spells) as the spell system is designed to have a character caster, */
+/* and this cast routine may overlook certain issues.                  */
+/* LIMITATION: a target MUST exist for the spell unless the spell is   */
+/* set to TAR_IGNORE. Also, group spells are not permitted             */
+/* code borrowed from do_cast() */
 void do_dg_cast(void *go, struct script_data *sc, trig_data *trig, int type, char *cmd)
 {
   struct char_data *caster = NULL;
@@ -41,7 +43,7 @@ void do_dg_cast(void *go, struct script_data *sc, trig_data *trig, int type, cha
   struct room_data *caster_room = NULL;
   char *s, *t;
   int spellnum, target = 0;
-  char buf2[MAX_STRING_LENGTH], orig_cmd[MAX_INPUT_LENGTH];
+  char buf2[MAX_STRING_LENGTH]={'\0'}, orig_cmd[MAX_INPUT_LENGTH]={'\0'};
 
   /* need to get the caster or the room of the temporary caster */
   switch (type) {
@@ -80,8 +82,8 @@ void do_dg_cast(void *go, struct script_data *sc, trig_data *trig, int type, cha
   t = strtok(NULL, "\0");
 
   /* spellnum = search_block(s, spells, 0); */
-  spellnum = find_skill_num(s);
-  if ((spellnum < 1) || (spellnum > MAX_SPELLS)) {
+  spellnum = find_skill_num(s, SKTYPE_SPELL);
+  if ((spellnum < 1) || (spellnum >= SKILL_TABLE_SIZE || (!IS_SET(skill_type(spellnum), SKTYPE_SPELL)))) {
     script_log("Trigger: %s, VNum %d. dg_cast: invalid spell name (%s)",
       GET_TRIG_NAME(trig), GET_TRIG_VNUM(trig), orig_cmd);
     return;
@@ -92,12 +94,14 @@ void do_dg_cast(void *go, struct script_data *sc, trig_data *trig, int type, cha
     one_argument(strcpy(buf2, t), t);
     skip_spaces(&t);
   }
-  if (!IS_SET(SINFO.targets, TAR_IGNORE) && t != NULL && *t) {
+  if (IS_SET(SINFO.targets, TAR_IGNORE)) {
+    target = TRUE;
+  } else if (t != NULL && *t) {
     if (!target &&
           (IS_SET(SINFO.targets, TAR_CHAR_ROOM) ||
            IS_SET(SINFO.targets, TAR_CHAR_WORLD))) {
       if ((tch = get_char(t)) != NULL)
-        target = TRUE;
+        target = TRUE; 
     }
 
     if (!target &&
@@ -106,7 +110,7 @@ void do_dg_cast(void *go, struct script_data *sc, trig_data *trig, int type, cha
            IS_SET(SINFO.targets, TAR_OBJ_ROOM) ||
            IS_SET(SINFO.targets, TAR_OBJ_WORLD))) {
       if ((tobj = get_obj(t)) != NULL)
-        target = TRUE;
+        target = TRUE; 
     }
 
     if (!target) {
@@ -130,56 +134,57 @@ void do_dg_cast(void *go, struct script_data *sc, trig_data *trig, int type, cha
     }
     /* set the caster's name to that of the object, or the gods.... */
     if (type==OBJ_TRIGGER)
-      caster->player.short_descr =
+      caster->short_descr = 
         strdup(((struct obj_data *)go)->short_description);
     else if (type==WLD_TRIGGER)
-      caster->player.short_descr = strdup("The gods");
+      caster->short_descr = strdup("The gods");
     caster->next_in_room = caster_room->people;
     caster_room->people = caster;
-    caster->in_room = real_room(caster_room->number);
-    call_magic(caster, tch, tobj, spellnum, DG_SPELL_LEVEL, CAST_SPELL);
+    IN_ROOM(caster) = real_room(caster_room->number);
+    call_magic(caster, tch, tobj, spellnum, DG_SPELL_LEVEL, CAST_SPELL, t);
     extract_char(caster);
   } else
-    call_magic(caster, tch, tobj, spellnum, GET_LEVEL(caster), CAST_SPELL);
+    call_magic(caster, tch, tobj, spellnum, GET_LEVEL(caster), CAST_SPELL, t);
 }
 
-/* Modify an affection on the target. affections can be of the AFF_x variety
- * or APPLY_x type. APPLY_x's have an integer value for them while AFF_x's
- * have boolean values. In any case, the duration MUST be non-zero.
- * Usage:  apply <target> <property> <value> <duration> */
+
+/* modify an affection on the target. affections can be of the AFF_x  */
+/* variety or APPLY_x type. APPLY_x's have an integer value for them  */
+/* while AFF_x's have boolean values. In any case, the duration MUST  */
+/* be non-zero.                                                       */
+/* usage:  apply <target> <property> <value> <duration>               */
 #define APPLY_TYPE	1
 #define AFFECT_TYPE	2
-void do_dg_affect(void *go, struct script_data *sc, trig_data *trig,
-		  int script_type, char *cmd)
+void do_dg_affect(void *go, struct script_data *sc, trig_data *trig, int script_type, char *cmd)
 {
   struct char_data *ch = NULL;
   int value=0, duration=0;
-  char junk[MAX_INPUT_LENGTH]; /* will be set to "dg_affect" */
-  char charname[MAX_INPUT_LENGTH], property[MAX_INPUT_LENGTH];
-  char value_p[MAX_INPUT_LENGTH], duration_p[MAX_INPUT_LENGTH];
+  char junk[MAX_INPUT_LENGTH]={'\0'}; /* will be set to "dg_affect" */
+  char charname[MAX_INPUT_LENGTH]={'\0'}, property[MAX_INPUT_LENGTH]={'\0'};
+  char value_s[MAX_INPUT_LENGTH]={'\0'}, duration_s[MAX_INPUT_LENGTH]={'\0'};
   int i=0, type=0;
   struct affected_type af;
 
-
+  
   half_chop(cmd, junk, cmd);
   half_chop(cmd, charname, cmd);
   half_chop(cmd, property, cmd);
-  half_chop(cmd, value_p, duration_p);
+  half_chop(cmd, value_s, duration_s);
 
   /* make sure all parameters are present */
-  if (!*charname || !*property || !*value_p || !*duration_p) {
+  if (!*charname || !*property || !*value_s || !*duration_s) {
     script_log("Trigger: %s, VNum %d. dg_affect usage: <target> <property> <value> <duration>",
       GET_TRIG_NAME(trig), GET_TRIG_VNUM(trig));
     return;
   }
 
-  value = atoi(value_p);
-  duration = atoi(duration_p);
+  value = atoi(value_s);
+  duration = atoi(duration_s);
   if (duration <= 0) {
     script_log("Trigger: %s, VNum %d. dg_affect: need positive duration!",
       GET_TRIG_NAME(trig), GET_TRIG_VNUM(trig));
     script_log("Line was: dg_affect %s %s %s %s (%d)",
-      charname, property, value_p, duration_p, duration);
+      charname, property, value_s, duration_s, duration);
     return;
   }
 
@@ -210,6 +215,7 @@ void do_dg_affect(void *go, struct script_data *sc, trig_data *trig,
     return;
   }
 
+
   /* locate the target */
   ch = get_char(charname);
   if (!ch) {
@@ -218,23 +224,24 @@ void do_dg_affect(void *go, struct script_data *sc, trig_data *trig,
     return;
   }
 
-  if (!str_cmp(value_p, "off")) {
+  if (!str_cmp(value_s, "off")) {
     affect_from_char(ch, SPELL_DG_AFFECT);
     return;
   }
-
+  
   /* add the affect */
-  new_affect(&af);
-  af.spell = SPELL_DG_AFFECT;
-  af.duration = duration -1;
+  af.type = SPELL_DG_AFFECT;
+  af.duration = duration;
   af.modifier = value;
 
   if (type == APPLY_TYPE) {
     af.location = i;
+    af.bitvector = 0;
   } else {
-    SET_BIT_AR(af.bitvector, i);
+    af.location = 0;
+    af.bitvector = i;
   }
-
+  
   affect_to_char(ch, &af);
 }
 
@@ -261,50 +268,51 @@ void send_char_pos(struct char_data *ch, int dam)
       if (dam > (GET_MAX_HIT(ch) >> 2))
         act("That really did HURT!", FALSE, ch, 0, 0, TO_CHAR);
       if (GET_HIT(ch) < (GET_MAX_HIT(ch) >> 2))
-        send_to_char(ch, "%sYou wish that your wounds would stop BLEEDING so much!%s\r\n",
-                         CCRED(ch, C_SPR), CCNRM(ch, C_SPR));
+        send_to_char(ch, "@rYou wish that your wounds would stop BLEEDING so much!@n\r\n");
   }
 }
 
-/* Used throughout the xxxcmds.c files for checking if a char can be targetted
- * - allow_gods is false when called by %force%, for instance, while true for
- * %teleport%. - Welcor */
+
+/* Used throughout the xxxcmds.c files for checking if a char
+ * can be targetted 
+ * - allow_gods is false when called by %force%, for instance,
+ * while true for %teleport%.  -- Welcor 
+ */
 int valid_dg_target(struct char_data *ch, int bitvector)
 {
-  if (IS_NPC(ch))
+  if (IS_NPC(ch))  
     return TRUE;  /* all npcs are allowed as targets */
-  else if (ch->desc && (STATE(ch->desc) != CON_PLAYING))
-    return FALSE; /* Only PC's who are playing can be targetted */
-  else if (GET_LEVEL(ch) < LVL_IMMORT)
+  else if (GET_ADMLEVEL(ch) < ADMLVL_IMMORT)
     return TRUE;  /* as well as all mortals */
   else if (!IS_SET(bitvector, DG_ALLOW_GODS) &&
-     GET_LEVEL(ch) >= LVL_GRGOD) /* LVL_GOD has the advance command. Can't allow them to be forced. */
+     GET_ADMLEVEL(ch) >= ADMLVL_GRGOD) /* LVL_GOD has the advance command. Can't allow them to be forced. */
     return FALSE; /* but not always the highest gods */
   else if (!PRF_FLAGGED(ch, PRF_NOHASSLE))
     return TRUE;  /* the ones in between as allowed as long as they have no-hassle off.   */
-  else
+  else            
     return FALSE;  /* The rest are gods with nohassle on... */
 }
 
+
 void script_damage(struct char_data *vict, int dam)
 {
-  if (GET_LEVEL(vict)>=LVL_IMMORT && (dam > 0)) {
-    send_to_char(vict, "Being the cool immortal you are, you sidestep a trap, "
-        "obviously placed to kill you.\r\n");
+  if (ADM_FLAGGED(vict, ADM_NODAMAGE) && (dam > 0)) {
+    send_to_char(vict, "Being the cool immortal you are, you sidestep a trap,\r\n"
+                       "obviously placed to kill you.\r\n");
     return;
   }
 
   GET_HIT(vict) -= dam;
   GET_HIT(vict) = MIN(GET_HIT(vict), GET_MAX_HIT(vict));
-
+  
   update_pos(vict);
   send_char_pos(vict, dam);
 
   if (GET_POS(vict) == POS_DEAD) {
     if (!IS_NPC(vict))
-      mudlog( BRF, MAX(LVL_IMMORT, GET_INVIS_LEV(vict)), TRUE, "%s killed by script at %s",
-          GET_NAME(vict), vict->in_room == NOWHERE ? "NOWHERE" : world[vict->in_room].name);
+      mudlog( BRF, 0, TRUE, "%s killed by script at %s", 
+                            GET_NAME(vict), world[IN_ROOM(vict)].name);
     die(vict, NULL);
   }
-}
-
+}  
+  

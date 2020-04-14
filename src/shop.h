@@ -1,24 +1,13 @@
-/**
-* @file shop.h
-* Shop file definitions, structures, constants.
-* 
-* Part of the core tbaMUD source code distribution, which is a derivative
-* of, and continuation of, CircleMUD.
-*                                                                        
-* All rights reserved.  See license for complete information.                                                                
-* Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University 
-* CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.               
-*/
-#ifndef _SHOP_H_
-#define _SHOP_H_
+/* ************************************************************************
+*   File: shop.h                                        Part of CircleMUD *
+*  Usage: shop file definitions, structures, constants                    *
+*                                                                         *
+*  All rights reserved.  See license.doc for complete information.        *
+*                                                                         *
+*  Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University *
+*  CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.               *
+************************************************************************ */
 
-/* Public function prototypes */
-SPECIAL(shop_keeper);
-void boot_the_shops(FILE *shop_f, char *filename, int rec_count);
-void assign_the_shopkeepers(void);
-void show_shops(struct char_data *ch, char *arg);
-int ok_damage_shopkeeper(struct char_data *ch, struct char_data *victim);
-void destroy_shops(void);
 
 struct shop_buy_data {
    int type;
@@ -27,6 +16,8 @@ struct shop_buy_data {
 
 #define BUY_TYPE(i)		((i).type)
 #define BUY_WORD(i)		((i).keywords)
+
+#define SW_ARRAY_MAX	4
 
 struct shop_data {
    room_vnum vnum;		/* Virtual number of this shop		*/
@@ -44,7 +35,7 @@ struct shop_data {
    int	 temper1;		/* How does keeper react if no money	*/
    bitvector_t	 bitvector;	/* Can attack? Use bank? Cast here?	*/
    mob_rnum	 keeper;	/* The mobile who owns the shop (rnum)	*/
-   int	 with_who;		/* Who does the shop trade with?	*/
+   int	 with_who[SW_ARRAY_MAX];/* Who does the shop trade with?	*/
    room_vnum *in_room;		/* Where is the shop?			*/
    int	 open1, open2;		/* When does the shop open?		*/
    int	 close1, close2;	/* When does the shop close?		*/
@@ -53,14 +44,16 @@ struct shop_data {
    SPECIAL (*func);		/* Secondary spec_proc for shopkeeper	*/
 };
 
+
 #define MAX_TRADE	5	/* List maximums for compatibility	*/
 #define MAX_PROD	5	/*	with shops before v3.0		*/
 #define VERSION3_TAG	"v3.0"	/* The file has v3.0 shops in it!	*/
 #define MAX_SHOP_OBJ	100	/* "Soft" maximum for list maximums	*/
 
+
 /* Pretty general macros that could be used elsewhere */
-#define IS_GOD(ch)		(!IS_NPC(ch) && (GET_LEVEL(ch) >= LVL_GOD))
 #define END_OF(buffer)		((buffer) + strlen((buffer)))
+
 
 /* Possible states for objects trying to be sold */
 #define OBJECT_DEAD		0
@@ -68,21 +61,52 @@ struct shop_data {
 #define OBJECT_OK		2
 #define OBJECT_NOVAL		3
 
+
 /* Types of lists to read */
 #define LIST_PRODUCE		0
 #define LIST_TRADE		1
 #define LIST_ROOM		2
 
+
 /* Whom will we not trade with (bitvector for SHOP_TRADE_WITH()) */
-#define TRADE_NOGOOD       (1 << 0)
-#define TRADE_NOEVIL       (1 << 1)
-#define TRADE_NONEUTRAL    (1 << 2)
-#define TRADE_NOMAGIC_USER (1 << 3)
-#define TRADE_NOCLERIC     (1 << 4)
-#define TRADE_NOTHIEF      (1 << 5)
-#define TRADE_NOWARRIOR    (1 << 6)
-/** Total number of trade types */
-#define NUM_TRADERS     7
+#define TRADE_NOGOOD		0
+#define TRADE_NOEVIL		1
+#define TRADE_NONEUTRAL		2
+#define TRADE_NOWIZARD		3
+#define TRADE_NOCLERIC		4
+#define TRADE_NOROGUE		5
+#define TRADE_NOFIGHTER		6
+#define TRADE_NOHUMAN           7
+#define TRADE_NODWARF           8
+#define TRADE_NOELF             9
+#define TRADE_NOGNOME           10
+#define TRADE_NOHALF_ELF        11
+#define TRADE_NOHALFLING        12
+#define TRADE_NODROW_ELF        13
+#define TRADE_NOANIMAL          14
+#define TRADE_NOCONSTRUCT       15
+#define TRADE_NODEMON           16
+#define TRADE_NODRAGON      	17
+#define TRADE_NOFISH            18
+#define TRADE_NOGIANT       	19
+#define TRADE_NOGOBLIN      	20
+#define TRADE_NOINSECT      	21
+#define TRADE_NOORC         	22
+#define TRADE_NOSNAKE       	23
+#define TRADE_NOTROLL       	24
+#define TRADE_NOHALF_ORC    	25
+#define TRADE_NOMINOTAUR    	26
+#define TRADE_NOKOBOLD      	27
+#define TRADE_NOLIZARDFOLK  	28
+#define TRADE_NOMONK		29
+#define TRADE_NOPALADIN		30
+#define TRADE_UNUSED		31
+#define TRADE_ONLYWIZARD	32
+#define TRADE_ONLYCLERIC	33
+#define TRADE_ONLYROGUE		34
+#define TRADE_ONLYFIGHTER	35
+#define TRADE_ONLYMONK		36
+#define TRADE_ONLYPALADIN	37
 
 struct stack_data {
    int data[100];
@@ -92,6 +116,7 @@ struct stack_data {
 #define S_DATA(stack, index)	((stack)->data[(index)])
 #define S_LEN(stack)		((stack)->len)
 
+
 /* Which expression type we are now parsing */
 #define OPER_OPEN_PAREN		0
 #define OPER_CLOSE_PAREN	1
@@ -99,6 +124,7 @@ struct stack_data {
 #define OPER_AND		3
 #define OPER_NOT		4
 #define MAX_OPER		4
+
 
 #define SHOP_NUM(i)		(shop_index[(i)].vnum)
 #define SHOP_KEEPER(i)		(shop_index[(i)].keeper)
@@ -119,23 +145,30 @@ struct stack_data {
 #define SHOP_SELLPROFIT(i)	(shop_index[(i)].profit_sell)
 #define SHOP_FUNC(i)		(shop_index[(i)].func)
 
-#define NOTRADE_GOOD(i)		(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOGOOD))
-#define NOTRADE_EVIL(i)		(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOEVIL))
-#define NOTRADE_NEUTRAL(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NONEUTRAL))
-#define NOTRADE_MAGIC_USER(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOMAGIC_USER))
-#define NOTRADE_CLERIC(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOCLERIC))
-#define NOTRADE_THIEF(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOTHIEF))
-#define NOTRADE_WARRIOR(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOWARRIOR))
+#define NOTRADE_GOOD(i)		(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOGOOD))
+#define NOTRADE_EVIL(i)		(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOEVIL))
+#define NOTRADE_NEUTRAL(i)	(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NONEUTRAL))
+#define NOTRADE_WIZARD(i)	(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOWIZARD))
+#define NOTRADE_CLERIC(i)	(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOCLERIC))
+#define NOTRADE_ROGUE(i)	(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOROGUE))
+#define NOTRADE_FIGHTER(i)	(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOFIGHTER))
+#define NOTRADE_MONK(i)		(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOMONK))
+#define NOTRADE_PALADIN(i)	(IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOPALADIN))
+#define NOTRADE_HUMAN(i)        (IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOHUMAN))
+#define NOTRADE_DWARF(i)        (IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NODWARF))
+#define NOTRADE_ELF(i)          (IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOELF))
+#define NOTRADE_GNOME(i)        (IS_SET_AR(SHOP_TRADE_WITH((i)), TRADE_NOGNOME))
 
-/* Shop flags */
-#define WILL_START_FIGHT    (1 << 0)
-#define WILL_BANK_MONEY     (1 << 1)
-#define HAS_UNLIMITED_CASH  (1 << 2)
-/** Total number of shop flags */
-#define NUM_SHOP_FLAGS    3
+
+#define WILL_START_FIGHT	(1 << 0)
+#define WILL_BANK_MONEY		(1 << 1)
+#define WILL_ALLOW_STEAL	(1 << 2)
+#define WILL_BUY_BLACKMARKET	(1 << 3)
 
 #define SHOP_KILL_CHARS(i)	(IS_SET(SHOP_BITVECTOR(i), WILL_START_FIGHT))
 #define SHOP_USES_BANK(i)	(IS_SET(SHOP_BITVECTOR(i), WILL_BANK_MONEY))
+#define SHOP_ALLOW_STEAL(i)	(IS_SET(SHOP_BITVECTOR(i), WILL_ALLOW_STEAL))
+#define SHOP_BLACKMARKET(i)      (IS_SET(SHOP_BITVECTOR(i), WILL_BUY_BLACKMARKET))
 
 #define MIN_OUTSIDE_BANK	5000
 #define MAX_OUTSIDE_BANK	15000
@@ -147,12 +180,7 @@ struct stack_data {
 #define MSG_NO_SEE_CHAR		"I don't trade with someone I can't see!"
 #define MSG_NO_SELL_ALIGN	"Get out of here before I call the guards!"
 #define MSG_NO_SELL_CLASS	"We don't serve your kind here!"
+#define MSG_NO_SELL_RACE        "Get lost! We don't serve you kind here!"
 #define MSG_NO_USED_WANDSTAFF	"I don't buy used up wands or staves!"
 #define MSG_CANT_KILL_KEEPER	"Get out of here before I call the guards!"
 
-/* Global variables */
-
-extern const char *trade_letters[];
-extern const char *shop_bits[];
-
-#endif /* _SHOP_H_ */

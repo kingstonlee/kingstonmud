@@ -43,6 +43,7 @@ circle : BccW32.cfg $(Dep_circle)
   echo MakeNode
 
 Dep_circledexe = \
+   alias.obj\
    act.comm.obj\
    act.movement.obj\
    act.item.obj\
@@ -67,6 +68,7 @@ Dep_circledexe = \
    handler.obj\
    magic.obj\
    mail.obj\
+   olc.obj\
    objsave.obj\
    players.obj\
    modify.obj\
@@ -78,15 +80,13 @@ Dep_circledexe = \
    spec_procs.obj\
    spec_assign.obj\
    utils.obj\
-   weather.obj\
-   quest.obj\
-   qedit.obj\
-   genqst.obj
+   weather.obj
 
 circle.exe : $(Dep_circledexe)
   $(TLINK32) @&&|
  /v $(IDE_LinkFLAGS32) $(LinkerOptsAt_circledexe) $(LinkerInheritOptsAt_circledexe) +
 C:\BC5\LIB\c0x32.obj+
+alias.obj+
 act.comm.obj+
 act.movement.obj+
 act.item.obj+
@@ -111,6 +111,7 @@ house.obj+
 handler.obj+
 magic.obj+
 mail.obj+
+olc.obj+
 objsave.obj+
 players.obj+
 modify.obj+
@@ -122,10 +123,7 @@ spell_parser.obj+
 spec_procs.obj+
 spec_assign.obj+
 utils.obj+
-weather.obj+
-quest.obj+
-qedit.obj+
-genqst.obj
+weather.obj
 $<,$*
 C:\BC5\LIB\bidsfi.lib+
 C:\BC5\LIB\import32.lib+
@@ -133,6 +131,11 @@ C:\BC5\LIB\cw32i.lib
 
 
 |
+alias.obj : alias.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ alias.c
+|
+
 act.comm.obj :  act.comm.c
   $(BCC32) -P- -c @&&|
  $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ act.comm.c
@@ -253,6 +256,11 @@ mail.obj :  mail.c
  $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ mail.c
 |
 
+olc.obj :  olc.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ olc.c
+|
+
 objsave.obj :  objsave.c
   $(BCC32) -P- -c @&&|
  $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ objsave.c
@@ -310,21 +318,6 @@ utils.obj :  utils.c
 weather.obj :  weather.c
   $(BCC32) -P- -c @&&|
  $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ weather.c
-|
-
-quest.obj :  quest.c
-  $(BCC32) -P- -c @&&|
- $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ quest.c
-|
-
-qedit.obj :  qedit.c
-  $(BCC32) -P- -c @&&|
- $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ qedit.c
-|
-
-genqst.obj :  genqst.c
-  $(BCC32) -P- -c @&&|
- $(CompOptsAt_circledexe) $(CompInheritOptsAt_circledexe) -o$@ genqst.c
 |
 
 # Compiler configuration file

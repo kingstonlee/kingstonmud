@@ -1,9 +1,5 @@
-/**************************************************************************
-*  File: bsd-snprintf.c                                    Part of tbaMUD *
-*  Usage: Used if your OS does not provide snprintf() or vsnprintf().     *
-**************************************************************************/
-
-/* This file taken from openbsd-compat of OpenSSH 3.1. It is only used
+/*
+ * This file taken from openbsd-compat of OpenSSH 3.1. It is only used
  * if your operating system does not provide snprintf() or vsnprintf().
  *
  * --- 8< --- OpenSSH LICENSE --- 8< ---
@@ -70,9 +66,9 @@
  *    original.  Also, there is now a builtin-test, just compile with:
  *           gcc -DTEST_SNPRINTF -o snprintf snprintf.c -lm
  *    and run snprintf for results.
- *
+ * 
  *  Thomas Roessler <roessler@guug.de> 01/27/98 for mutt 0.89i
- *    The PGP code was using unsigned hexadecimal formats.
+ *    The PGP code was using unsigned hexadecimal formats. 
  *    Unfortunately, unsigned formats simply didn't work.
  *
  *  Michael Elkins <me@cs.hmc.edu> 03/05/98 for mutt 0.90.8
@@ -91,8 +87,15 @@
  *    acceptable.  Consider stealing from mutt or enlightenment.
  **************************************************************/
 
+#if 0
+#include "includes.h"
+
+RCSID("$Id: bsd-snprintf.c 55 2009-03-20 17:58:56Z pladow $");
+#else
 # include "conf.h"
 # include "sysdep.h"
+# define MAX(a, b)	((a) < (b) ? (b) : (a))
+#endif
 
 #if defined(BROKEN_SNPRINTF)		/* For those with broken snprintf() */
 # undef HAVE_SNPRINTF
@@ -101,19 +104,19 @@
 
 #if !defined(HAVE_SNPRINTF) || !defined(HAVE_VSNPRINTF)
 
-static void
+static void 
 dopr(char *buffer, size_t maxlen, const char *format, va_list args);
 
-static void
-fmtstr(char *buffer, size_t *currlen, size_t maxlen, char *value, int flags,
+static void 
+fmtstr(char *buffer, size_t *currlen, size_t maxlen, char *value, int flags, 
        int min, int max);
 
-static void
-fmtint(char *buffer, size_t *currlen, size_t maxlen, long value, int base,
+static void 
+fmtint(char *buffer, size_t *currlen, size_t maxlen, long value, int base, 
        int min, int max, int flags);
 
-static void
-fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
+static void 
+fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue, 
       int min, int max, int flags);
 
 static void
@@ -152,7 +155,7 @@ dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
 #define abs_val(p) (p < 0 ? -p : p)
 
 
-static void
+static void 
 dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 {
 	char *strvalue;
@@ -165,18 +168,18 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 	int flags = 0;
 	int cflags = 0;
 	size_t currlen = 0;
-
+  
 	ch = *format++;
 
 	while (state != DP_S_DONE) {
-		if ((ch == '\0') || (currlen >= maxlen))
+		if ((ch == '\0') || (currlen >= maxlen)) 
 			state = DP_S_DONE;
 
 		switch(state) {
 			case DP_S_DEFAULT:
-				if (ch == '%')
+				if (ch == '%') 
 					state = DP_S_FLAGS;
-				else
+				else 
 					dopr_outch(buffer, &currlen, maxlen, ch);
 				ch = *format++;
 				break;
@@ -215,14 +218,14 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 					min = va_arg (args, int);
 					ch = *format++;
 					state = DP_S_DOT;
-				} else
+				} else 
 					state = DP_S_DOT;
 				break;
 			case DP_S_DOT:
 				if (ch == '.') {
 					state = DP_S_MAX;
 					ch = *format++;
-				} else
+				} else 
 					state = DP_S_MOD;
 				break;
 			case DP_S_MAX:
@@ -235,7 +238,7 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 					max = va_arg (args, int);
 					ch = *format++;
 					state = DP_S_MOD;
-				} else
+				} else 
 					state = DP_S_MOD;
 				break;
 			case DP_S_MOD:
@@ -269,7 +272,7 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 				switch (ch) {
 					case 'd':
 					case 'i':
-						if (cflags == DP_C_SHORT)
+						if (cflags == DP_C_SHORT) 
 							value = va_arg(args, int);
 						else if (cflags == DP_C_LONG)
 							value = va_arg(args, long int);
@@ -346,7 +349,7 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 						break;
 					case 's':
 						strvalue = va_arg(args, char *);
-						if (max < 0)
+						if (max < 0) 
 							max = maxlen; /* ie, no max */
 						fmtstr(buffer, &currlen, maxlen, strvalue, flags, min, max);
 						break;
@@ -393,9 +396,9 @@ dopr(char *buffer, size_t maxlen, const char *format, va_list args)
 				break; /* some picky compilers need this */
 		}
 	}
-	if (currlen < maxlen - 1)
+	if (currlen < maxlen - 1) 
 		buffer[currlen] = '\0';
-	else
+	else 
 		buffer[maxlen - 1] = '\0';
 }
 
@@ -405,15 +408,15 @@ fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 {
 	int padlen, strln;     /* amount to pad */
 	int cnt = 0;
-
-	if (value == 0)
+  
+	if (value == 0) 
 		value = "<NULL>";
 
 	for (strln = 0; value[strln]; ++strln); /* strlen */
 	padlen = min - strln;
-	if (padlen < 0)
+	if (padlen < 0) 
 		padlen = 0;
-	if (flags & DP_F_MINUS)
+	if (flags & DP_F_MINUS) 
 		padlen = -padlen; /* Left Justify */
 
 	while ((padlen > 0) && (cnt < max)) {
@@ -434,7 +437,7 @@ fmtstr(char *buffer, size_t *currlen, size_t maxlen,
 
 /* Have to handle DP_F_NUM (ie 0x and 0 alternates) */
 
-static void
+static void 
 fmtint(char *buffer, size_t *currlen, size_t maxlen,
        long value, int base, int min, int max, int flags)
 {
@@ -445,7 +448,7 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 	int spadlen = 0; /* amount to space pad */
 	int zpadlen = 0; /* amount to zero pad */
 	int caps = 0;
-
+  
 	if (max < 0)
 		max = 0;
 
@@ -460,8 +463,8 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 		else if (flags & DP_F_SPACE)
 			signvalue = ' ';
 	}
-
-	if (flags & DP_F_UP)
+  
+	if (flags & DP_F_UP) 
 		caps = 1; /* Should characters be upper case? */
 
 	do {
@@ -470,7 +473,7 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 			[uvalue % (unsigned)base];
 		uvalue = (uvalue / (unsigned)base );
 	} while (uvalue && (place < 20));
-	if (place == 20)
+	if (place == 20) 
 		place--;
 	convert[place] = 0;
 
@@ -484,7 +487,7 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 		zpadlen = MAX(zpadlen, spadlen);
 		spadlen = 0;
 	}
-	if (flags & DP_F_MINUS)
+	if (flags & DP_F_MINUS) 
 		spadlen = -spadlen; /* Left Justifty */
 
 
@@ -495,7 +498,7 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 	}
 
 	/* Sign */
-	if (signvalue)
+	if (signvalue) 
 		dopr_outch(buffer, currlen, maxlen, signvalue);
 
 	/* Zeros */
@@ -507,9 +510,9 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 	}
 
 	/* Digits */
-	while (place > 0)
+	while (place > 0) 
 		dopr_outch(buffer, currlen, maxlen, convert[--place]);
-
+  
 	/* Left Justified spaces */
 	while (spadlen < 0) {
 		dopr_outch (buffer, currlen, maxlen, ' ');
@@ -517,7 +520,7 @@ fmtint(char *buffer, size_t *currlen, size_t maxlen,
 	}
 }
 
-static long double
+static long double 
 pow10(int exp)
 {
 	long double result = 1;
@@ -526,11 +529,11 @@ pow10(int exp)
 		result *= 10;
 		exp--;
 	}
-
+  
 	return result;
 }
 
-static long
+static long 
 round(long double value)
 {
 	long intpart = value;
@@ -542,8 +545,8 @@ round(long double value)
 	return intpart;
 }
 
-static void
-fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
+static void 
+fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue, 
       int min, int max, int flags)
 {
 	char iconvert[20];
@@ -552,13 +555,13 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 	int iplace = 0;
 	int fplace = 0;
 	int padlen = 0; /* amount to pad */
-	int zpadlen = 0;
+	int zpadlen = 0; 
 	int caps = 0;
 	long intpart;
 	long fracpart;
 	long double ufvalue;
-
-	/*
+  
+	/* 
 	 * AIX manpage says the default is 0, but Solaris says the default
 	 * is 6, and sprintf on AIX defaults to 6
 	 */
@@ -576,8 +579,8 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 
 	intpart = ufvalue;
 
-	/*
-	 * Sorry, we only support 9 digits past the decimal because of our
+	/* 
+	 * Sorry, we only support 9 digits past the decimal because of our 
 	 * conversion method
 	 */
 	if (max > 9)
@@ -599,7 +602,7 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 		  (caps? "0123456789ABCDEF":"0123456789abcdef")[intpart % 10];
 		intpart = (intpart / 10);
 	} while(intpart && (iplace < 20));
-	if (iplace == 20)
+	if (iplace == 20) 
 		iplace--;
 	iconvert[iplace] = 0;
 
@@ -609,18 +612,18 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 		  (caps? "0123456789ABCDEF":"0123456789abcdef")[fracpart % 10];
 		fracpart = (fracpart / 10);
 	} while(fracpart && (fplace < 20));
-	if (fplace == 20)
+	if (fplace == 20) 
 		fplace--;
 	fconvert[fplace] = 0;
 
 	/* -1 for decimal point, another -1 if we are printing a sign */
-	padlen = min - iplace - max - 1 - ((signvalue) ? 1 : 0);
+	padlen = min - iplace - max - 1 - ((signvalue) ? 1 : 0); 
 	zpadlen = max - fplace;
 	if (zpadlen < 0)
 		zpadlen = 0;
-	if (padlen < 0)
+	if (padlen < 0) 
 		padlen = 0;
-	if (flags & DP_F_MINUS)
+	if (flags & DP_F_MINUS) 
 		padlen = -padlen; /* Left Justifty */
 
 	if ((flags & DP_F_ZERO) && (padlen > 0)) {
@@ -638,10 +641,10 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 		dopr_outch(buffer, currlen, maxlen, ' ');
 		--padlen;
 	}
-	if (signvalue)
+	if (signvalue) 
 		dopr_outch(buffer, currlen, maxlen, signvalue);
 
-	while (iplace > 0)
+	while (iplace > 0) 
 		dopr_outch(buffer, currlen, maxlen, iconvert[--iplace]);
 
 	/*
@@ -650,7 +653,7 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 	 */
 	dopr_outch(buffer, currlen, maxlen, '.');
 
-	while (fplace > 0)
+	while (fplace > 0) 
 		dopr_outch(buffer, currlen, maxlen, fconvert[--fplace]);
 
 	while (zpadlen > 0) {
@@ -664,7 +667,7 @@ fmtfp(char *buffer, size_t *currlen, size_t maxlen, long double fvalue,
 	}
 }
 
-static void
+static void 
 dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
 {
 	if (*currlen < maxlen)
@@ -673,7 +676,7 @@ dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c)
 #endif /* !defined(HAVE_SNPRINTF) || !defined(HAVE_VSNPRINTF) */
 
 #ifndef HAVE_VSNPRINTF
-int
+int 
 vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 {
 	str[0] = 0;
@@ -684,7 +687,7 @@ vsnprintf(char *str, size_t count, const char *fmt, va_list args)
 #endif /* !HAVE_VSNPRINTF */
 
 #ifndef HAVE_SNPRINTF
-int
+int 
 snprintf(char *str,size_t count,const char *fmt,...)
 {
 	va_list ap;
@@ -697,12 +700,12 @@ snprintf(char *str,size_t count,const char *fmt,...)
 }
 
 #ifdef TEST_SNPRINTF
-int
-main(void)
+
+int main(void)
 {
 #define LONG_STRING 1024
-	char buf1[LONG_STRING];
-	char buf2[LONG_STRING];
+	char buf1[LONG_STRING]={'\0'};
+	char buf2[LONG_STRING]={'\0'};
 	char *fp_fmt[] = {
 		"%-1.5f",
 		"%1.5f",
@@ -717,17 +720,17 @@ main(void)
 		"%3.2f",
 		NULL
 	};
-	double fp_nums[] = {
-		-1.5,
-		134.21,
-		91340.2,
-		341.1234,
-		0203.9,
-		0.96,
-		0.996,
-		0.9996,
-		1.996,
-		4.136,
+	double fp_nums[] = { 
+		-1.5, 
+		134.21, 
+		91340.2, 
+		341.1234, 
+		0203.9, 
+		0.96, 
+		0.996, 
+		0.9996, 
+		1.996, 
+		4.136, 
 		0
 	};
 	char *int_fmt[] = {
@@ -757,7 +760,7 @@ main(void)
 			sprintf (buf2, fp_fmt[x], fp_nums[y]);
 			if (strcmp (buf1, buf2)) {
 				printf("snprintf doesn't match Format: %s\n\t"
-                                       "snprintf = %s\n\tsprintf  = %s\n",
+                                       "snprintf = %s\n\tsprintf  = %s\n", 
 					fp_fmt[x], buf1, buf2);
 				fail++;
 			}
@@ -770,7 +773,7 @@ main(void)
 			sprintf(buf2, int_fmt[x], int_nums[y]);
 			if (strcmp (buf1, buf2)) {
 				printf("snprintf doesn't match Format: %s\n\t"
-				       "snprintf = %s\n\tsprintf  = %s\n",
+				       "snprintf = %s\n\tsprintf  = %s\n", 
 					int_fmt[x], buf1, buf2);
 				fail++;
 			}

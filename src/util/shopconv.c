@@ -1,15 +1,11 @@
-/* ************************************************************************
-*  file:  shopconv.c                                       Part of tbaMUD *
-*  Usage: code to convert 2.20 shop files to 3.0 shop files               *
-*  Written by Jeff Fink                                                   *
-************************************************************************* */
+/* code to convert 2.20 shop files to 3.0 shop files - written by Jeff Fink */
 
 #include "conf.h"
 #include "sysdep.h"
 
 #include "structs.h"
-#include "utils.h"
 #include "db.h"
+#include "utils.h"
 #include "shop.h"
 
 void basic_mud_log(const char *x, ...)
@@ -19,7 +15,7 @@ void basic_mud_log(const char *x, ...)
 
 char *fread_string(FILE * fl, const char *error)
 {
-  char buf[MAX_STRING_LENGTH], tmp[512], *rslt, *point;
+  char buf[MAX_STRING_LENGTH]={'\0'}, tmp[512]={'\0'}, *rslt, *point;
   int flag;
 
   *buf = '\0';
@@ -58,12 +54,12 @@ char *fread_string(FILE * fl, const char *error)
 
 void do_list(FILE * shop_f, FILE * newshop_f, int max)
 {
-  int count, temp, i;
-  char buf[MAX_STRING_LENGTH], *buf2;
+  int count, temp;
+  char buf[MAX_STRING_LENGTH]={'\0'};
 
   for (count = 0; count < max; count++) {
-    i = fscanf(shop_f, "%d", &temp);
-    buf2 = fgets(buf, MAX_STRING_LENGTH - 1, shop_f);
+    fscanf(shop_f, "%d", &temp);
+    fgets(buf, MAX_STRING_LENGTH - 1, shop_f);
     if (temp > 0)
       fprintf(newshop_f, "%d%s", temp, buf);
   }
@@ -76,9 +72,8 @@ void do_float(FILE * shop_f, FILE * newshop_f)
 {
   float f;
   char str[20];
-  int i;
 
-  i = fscanf(shop_f, "%f \n", &f);
+  fscanf(shop_f, "%f \n", &f);
   sprintf(str, "%f", f);
   while ((str[strlen(str) - 1] == '0') && (str[strlen(str) - 2] != '.'))
     str[strlen(str) - 1] = 0;
@@ -88,9 +83,9 @@ void do_float(FILE * shop_f, FILE * newshop_f)
 
 void do_int(FILE * shop_f, FILE * newshop_f)
 {
-  int i, j;
+  int i;
 
-  j = fscanf(shop_f, "%d \n", &i);
+  fscanf(shop_f, "%d \n", &i);
   fprintf(newshop_f, "%d \n", i);
 }
 
@@ -105,7 +100,7 @@ void do_string(FILE * shop_f, FILE * newshop_f, char *msg)
 }
 
 
-static int boot_the_shops_conv(FILE * shop_f, FILE * newshop_f, char *filename)
+int boot_the_shops(FILE * shop_f, FILE * newshop_f, char *filename)
 {
   char *buf, buf2[150];
   int temp, count;
@@ -156,7 +151,7 @@ int main(int argc, char *argv[])
 {
   FILE *sfp, *nsfp;
   char fn[256], part[256];
-  int result, index, i;
+  int result, index;
 
   if (argc < 2) {
     printf("Usage: shopconv <file1> [file2] [file3] ...\n");
@@ -165,7 +160,7 @@ int main(int argc, char *argv[])
   for (index = 1; index < argc; index++) {
     sprintf(fn, "%s", argv[index]);
     sprintf(part, "mv %s %s.tmp", fn, fn);
-    i = system(part);
+    system(part);
     sprintf(part, "%s.tmp", fn);
     sfp = fopen(part, "r");
     if (sfp == NULL) {
@@ -177,15 +172,15 @@ int main(int argc, char *argv[])
 	continue;
       }
       printf("%s:\n", fn);
-      result = boot_the_shops_conv(sfp, nsfp, fn);
+      result = boot_the_shops(sfp, nsfp, fn);
       fclose(nsfp);
       fclose(sfp);
       if (result) {
 	sprintf(part, "mv %s.tmp %s", fn, fn);
-	i = system(part);
+	system(part);
       } else {
 	sprintf(part, "mv %s.tmp %s.bak", fn, fn);
-	i = system(part);
+	system(part);
 	printf("Done!\n");
       }
     }

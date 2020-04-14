@@ -4,8 +4,8 @@
 * Purpose:   To provide special quest-related code.                      *
 * Copyright: Kenneth Ray                                                 *
 * Original Version Details:                                              *
-* Copyright 1996 by Harvey Gilpin           *
-* Copyright 1997-2001 by George Greer (greerga@circlemud.org)     *
+* Copyright 1996 by Harvey Gilpin					 *
+* Copyright 1997-2001 by George Greer (greerga@circlemud.org)		 *
 ************************************************************************ */
 
 #include "conf.h"
@@ -15,8 +15,11 @@
 #include "db.h"
 #include "quest.h"
 #include "genolc.h"
-#include "genzon.h" /* for create_world_index */
+#include "genzon.h"
 
+void create_world_index(int znum, const char *type);
+
+extern zone_rnum top_of_zone_table;
 
 /*-------------------------------------------------------------------*/
 
@@ -82,7 +85,6 @@ void free_quest(struct aq_data *quest)
 int add_quest(struct aq_data *nqst)
 {
   qst_rnum rnum;
-  mob_rnum qmrnum;
   zone_rnum rznum = real_zone_by_thing(nqst->vnum);
 
   /* The quest already exists, just update it.  */
@@ -106,19 +108,17 @@ int add_quest(struct aq_data *nqst)
     }
     copy_quest(&aquest_table[rnum], nqst, FALSE);
   }
-  qmrnum = real_mobile(QST_MASTER(rnum));
   /* Make sure we assign spec procs to the questmaster */
-  if (qmrnum != NOBODY && mob_index[qmrnum].func &&
-     mob_index[qmrnum].func != questmaster)
-     QST_FUNC(rnum) = mob_index[qmrnum].func;
-  if(qmrnum != NOBODY) 
-    mob_index[qmrnum].func = questmaster;
+  if (mob_index[QST_MASTER(rnum)].func &&
+      mob_index[QST_MASTER(rnum)].func != questmaster)
+    QST_FUNC(rnum) = mob_index[QST_MASTER(rnum)].func;
+  mob_index[QST_MASTER(rnum)].func = questmaster;
 
   /* And make sure we save the updated quest information to disk */
   if (rznum != NOWHERE)
     add_to_save_list(zone_table[rznum].number, SL_QST);
   else
-    mudlog(BRF, LVL_BUILDER, TRUE,
+    mudlog(BRF, ADMLVL_BUILDER, TRUE,
            "SYSERR: GenOLC: Cannot determine quest zone.");
 
   return rnum;
@@ -129,14 +129,13 @@ int add_quest(struct aq_data *nqst)
 int delete_quest(qst_rnum rnum)
 {
   qst_rnum i;
-  zone_rnum rznum;
-  mob_vnum qm = QST_MASTER(rnum);
+  zone_rnum rznum = real_zone_by_thing(QST_NUM(rnum));
+  mob_rnum qm = QST_MASTER(rnum);
   SPECIAL (*tempfunc);
   int  quests_remaining = 0;
 
   if (rnum >= total_quests)
     return FALSE;
-  rznum = real_zone_by_thing(QST_NUM(rnum)); 
   log("GenOLC: delete_quest: Deleting quest #%d (%s).",
        QST_NUM(rnum), QST_NAME(rnum));
   /* make a note of the quest master's secondary spec proc */
@@ -148,16 +147,12 @@ int delete_quest(qst_rnum rnum)
     aquest_table[i] = aquest_table[i + 1];
   }
   total_quests--;
-  if (total_quests > 0)
-    RECREATE(aquest_table, struct aq_data, total_quests);
-  else {
-    free(aquest_table);
-    aquest_table = NULL; 
-   }
+  RECREATE(aquest_table, struct aq_data, total_quests);
+
   if (rznum != NOWHERE)
      add_to_save_list(zone_table[rznum].number, SL_QST);
   else
-    mudlog(BRF, LVL_BUILDER, TRUE,
+    mudlog(BRF, ADMLVL_BUILDER, TRUE,
            "SYSERR: GenOLC: Cannot determine quest zone.");
   /* does the questmaster mob have any quests left? */
   if (qm != NOBODY) {
@@ -176,10 +171,9 @@ int delete_quest(qst_rnum rnum)
 int save_quests(zone_rnum zone_num)
 {
   FILE *sf;
-  char filename[128], oldname[128], quest_flags[MAX_STRING_LENGTH];
-  char quest_desc[MAX_STRING_LENGTH], quest_info[MAX_STRING_LENGTH];
-  char quest_done[MAX_STRING_LENGTH], quest_quit[MAX_STRING_LENGTH];
-  char buf[MAX_STRING_LENGTH];
+  char filename[128]={'\0'}, oldname[128]={'\0'}, quest_flags[MAX_STRING_LENGTH]={'\0'};
+  char quest_desc[MAX_STRING_LENGTH]={'\0'}, quest_info[MAX_STRING_LENGTH]={'\0'};
+  char quest_done[MAX_STRING_LENGTH]={'\0'}, quest_quit[MAX_STRING_LENGTH]={'\0'};
   int i, num_quests = 0;
 
 #if CIRCLE_UNSIGNED_INDEX
@@ -187,19 +181,19 @@ int save_quests(zone_rnum zone_num)
 #else
   if (zone_num < 0 || zone_num > top_of_zone_table) {
 #endif
-    log("SYSERR: GenOLC: save_quests: Invalid zone number %d passed! (0-%d)",
+   log("SYSERR: GenOLC: save_quests: Invalid zone number %d passed! (0-%d)",
          zone_num, top_of_zone_table);
     return FALSE;
   }
 
   log("GenOLC: save_quests: Saving quests in zone #%d (%d-%d).",
         zone_table[zone_num].number,
- genolc_zone_bottom(zone_num), zone_table[zone_num].top);
+	genolc_zone_bottom(zone_num), zone_table[zone_num].top);
 
   snprintf(filename, sizeof(filename), "%s/%d.new",
- QST_PREFIX, zone_table[zone_num].number);
+	QST_PREFIX, zone_table[zone_num].number);
   if (!(sf = fopen(filename, "w"))) {
-    perror("SYSERR: save_quests");
+    log("SYSERR: save_quests: %s", strerror(errno));
     return FALSE;
   }
   for (i = genolc_zone_bottom(zone_num); i <= zone_table[zone_num].top; i++) {
@@ -220,8 +214,8 @@ int save_quests(zone_rnum zone_num)
       strip_cr(quest_quit);
       /* Save the quest details to the file.  */
       sprintascii(quest_flags, QST_FLAGS(rnum));
-      int n = snprintf(buf, MAX_STRING_LENGTH,
-        "#%d\n"
+      fprintf(sf,
+	"#%d\n"
         "%s%c\n"
         "%s%c\n"
         "%s%c\n"
@@ -234,30 +228,22 @@ int save_quests(zone_rnum zone_num)
         QST_NUM(rnum),
         QST_NAME(rnum) ? QST_NAME(rnum) : "Untitled", STRING_TERMINATOR,
         quest_desc, STRING_TERMINATOR,
-        quest_info, STRING_TERMINATOR,
-        quest_done, STRING_TERMINATOR,
-        quest_quit, STRING_TERMINATOR,
+	quest_info, STRING_TERMINATOR,
+	quest_done, STRING_TERMINATOR,
+	quest_quit, STRING_TERMINATOR,
         QST_TYPE(rnum),
-        QST_MASTER(rnum) == NOBODY ? -1 : QST_MASTER(rnum),
-        quest_flags,
-        QST_TARGET(rnum) == NOTHING ? -1 : QST_TARGET(rnum),
-        QST_PREV(rnum)   == NOTHING ? -1 : QST_PREV(rnum),
-        QST_NEXT(rnum)   == NOTHING ? -1 : QST_NEXT(rnum),
-        QST_PREREQ(rnum) == NOTHING ? -1 : QST_PREREQ(rnum),
+	QST_MASTER(rnum) == NOBODY ? -1 : mob_index[QST_MASTER(rnum)].vnum,
+	quest_flags,
+	QST_TARGET(rnum) == NOTHING ? -1 : QST_TARGET(rnum),
+	QST_PREV(rnum)   == NOTHING ? -1 : QST_PREV(rnum),
+	QST_NEXT(rnum)   == NOTHING ? -1 : QST_NEXT(rnum),
+	QST_PREREQ(rnum) == NOTHING ? -1 : QST_PREREQ(rnum),
         QST_POINTS(rnum), QST_PENALTY(rnum), QST_MINLEVEL(rnum),
         QST_MAXLEVEL(rnum), QST_TIME(rnum),
-        QST_RETURNMOB(rnum) == NOBODY ? -1 : QST_RETURNMOB(rnum),
-        QST_QUANTITY(rnum), QST_GOLD(rnum), QST_EXP(rnum), QST_OBJ(rnum)
+	QST_RETURNMOB(rnum) == NOBODY ? -1 : QST_RETURNMOB(rnum),
+	QST_QUANTITY(rnum), QST_GOLD(rnum), QST_EXP(rnum), QST_OBJ(rnum)
       );
-      
-      if(n < MAX_STRING_LENGTH) {
-        fprintf(sf, "%s", convert_from_tabs(buf));
-        num_quests++;
-      } else {
-        mudlog(BRF,LVL_BUILDER,TRUE, 
-               "SYSERR: Could not save quest #%d due to size (%d > maximum of %d).", 
-               QST_NUM(rnum), n, MAX_STRING_LENGTH);
-      }
+      num_quests++;
     }
   }
   /* Write the final line and close it.  */

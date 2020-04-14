@@ -25,8 +25,8 @@ OBJFILES = o.comm act.o.comm act.o.informative act.o.movement act.o.item \
 	act.o.offensive act.o.other act.o.social act.o.wizard o.ban o.boards \
 	o.castle o.class o.config o.constants o.db o.fight o.graph o.handler \
 	o.house o.interpreter o.limits o.magic o.mail o.mobact o.modify \
-	o.objsave o.random o.shop o.spec_assign o.spec_procs \
-	o.spell_parser o.spells o.utils o.weather o.players o.quest o.qedit o.genqst
+	o.objsave o.olc o.players o.random o.shop o.spec_assign o.spec_procs \
+	o.spell_parser o.spells o.utils o.weather o.alias
 
 default:	all
 
@@ -41,6 +41,8 @@ clean:
 # Dependencies for the object files (automagically generated with
 # gcc -MM)
 
+o.alias: c.alias h.conf h.sysdep h.structs h.utils h.interpreter h.db
+        $(CC) -c $(CFLAGS) c.alias -o o.alias
 act.o.comm: act.c.comm h.conf h.sysdep h.structs \
   h.utils h.comm h.interpreter h.handler \
   h.db h.screen
@@ -153,15 +155,3 @@ o.utils: c.utils h.conf h.sysdep h.structs h.utils h.comm h.screen h.spells \
 o.weather: c.weather h.conf h.sysdep h.structs h.utils h.comm h.handler \
   h.interpreter h.db
 	$(CC) -c $(CFLAGS) c.weather
-o.players: c.players h.conf h.sysdep h.structs h.utils h.db h.handler \
-  h.pfdefaults h.dg_scripts h.comm h.interpreter h.genolc h.config h.spells 
-	$(CC) -c $(CFLAGS) c.players
-o.quest: c.quest h.conf h.sysdep h.structs h.utils h.interpreter h.handler \
-  h.comm h.db h.screen h.quest
-	$(CC) -c $(CFLAGS) quest.c
-o.qedit: c.qedit h.conf h.sysdep h.structs h.utils h.comm h.db h.oasis \
-  h.improved-edit h.screen h.genolc h.genzon h.interpreter h.quest
-	$(CC) -c $(CFLAGS) qedit.c
-o.genqst: c.genqst h.conf h.sysdep h.structs h.utils h.db h.quest \
-  h.genolc h.genzon 
-	$(CC) -c $(CFLAGS) genqst.c

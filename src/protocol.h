@@ -9,11 +9,33 @@
  Set your MUD_NAME, and change descriptor_t if necessary.
  ******************************************************************************/
 
-#define MUD_NAME "tbaMUD"
+#define MUD_NAME "PFmud"
 
 typedef struct descriptor_data descriptor_t;
 
 /******************************************************************************
+ If you wish to support traditional mud colour codes, uncomment COLOUR_CHAR.
+ ******************************************************************************/
+ 
+/* You may replace the '^' with another character if you wish, eg '&' or '@'. */
+/*
+#define COLOUR_CHAR '^'
+*/
+ 
+/* Change this to 'false' if colour codes are off by default (see README.TXT) */
+#define COLOUR_ON_BY_DEFAULT true
+ 
+/* Uncomment this if players can also use RGB colour codes such as "^[F135]" */
+/*
+#define EXTENDED_COLOUR
+*/
+ 
+/* Uncomment this if invalid colours are displayed rather than being eaten. */
+/*
+#define DISPLAY_INVALID_COLOUR_CODES
+*/
+ 
+ /******************************************************************************
  If your mud supports MCCP (compression), uncomment the next line.
  ******************************************************************************/
 
@@ -33,11 +55,11 @@ typedef struct descriptor_data descriptor_t;
  Symbolic constants.
  ******************************************************************************/
 
-#define SNIPPET_VERSION                6 /* Helpful for debugging */
+#define SNIPPET_VERSION                8 /* Helpful for debugging */
 
-#define MAX_PROTOCOL_BUFFER            MAX_RAW_INPUT_LENGTH
+#define MAX_PROTOCOL_BUFFER            2048
 #define MAX_VARIABLE_LENGTH            4096
-#define MAX_OUTPUT_BUFFER              LARGE_BUFSIZE
+#define MAX_OUTPUT_BUFFER              8192
 #define MAX_MSSP_BUFFER                4096
 
 #define SEND                           1
@@ -79,10 +101,27 @@ typedef enum
 
 typedef enum
 {
-   eUNKNOWN, 
-   eNO, 
-   eSOMETIMES, 
-   eYES
+  eNEGOTIATED_TTYPE,
+  eNEGOTIATED_ECHO,
+  eNEGOTIATED_NAWS,
+  eNEGOTIATED_CHARSET,
+  eNEGOTIATED_MSDP,
+  eNEGOTIATED_MSSP,
+  eNEGOTIATED_ATCP,
+  eNEGOTIATED_MSP,
+  eNEGOTIATED_MXP,
+  eNEGOTIATED_MXP2,
+  eNEGOTIATED_MCCP,
+
+  eNEGOTIATED_MAX /* This must always be last */
+} negotiated_t;
+
+typedef enum
+{
+  eUNKNOWN,
+  eNO,
+  eSOMETIMES,
+  eYES
 } support_t;
 
 typedef enum
@@ -96,71 +135,114 @@ typedef enum
    eMSDP_SNIPPET_VERSION, 
 
    /* Character */
-   eMSDP_AFFECTS, 
+   eMSDP_AFFECTS, 		/* 5 */
    eMSDP_ALIGNMENT, 
    eMSDP_EXPERIENCE, 
    eMSDP_EXPERIENCE_MAX, 
    eMSDP_EXPERIENCE_TNL, 
-   eMSDP_HEALTH, 
+   eMSDP_HEALTH, 		/* 10 */
    eMSDP_HEALTH_MAX, 
    eMSDP_LEVEL, 
    eMSDP_RACE, 
    eMSDP_CLASS, 
-   eMSDP_MANA, 
+   eMSDP_MANA, 			/* 15 */
    eMSDP_MANA_MAX, 
    eMSDP_WIMPY, 
    eMSDP_PRACTICE, 
    eMSDP_MONEY, 
+   eMSDP_BANK, 			/* 20 */
    eMSDP_MOVEMENT, 
    eMSDP_MOVEMENT_MAX, 
    eMSDP_HITROLL, 
    eMSDP_DAMROLL, 
-   eMSDP_AC, 
+   eMSDP_AC, 			/* 25 */
+   eMSDP_FORT,
+   eMSDP_WILL,
    eMSDP_STR, 
    eMSDP_INT, 
-   eMSDP_WIS, 
+   eMSDP_WIS, 			/* 30 */
    eMSDP_DEX, 
    eMSDP_CON, 
+   eMSDP_CHA,
    eMSDP_STR_PERM, 
-   eMSDP_INT_PERM, 
+   eMSDP_INT_PERM, 		/* 35 */
    eMSDP_WIS_PERM, 
    eMSDP_DEX_PERM, 
    eMSDP_CON_PERM, 
-
+   eMSDP_CHA_PERM,
+		
    /* Combat */
-   eMSDP_OPPONENT_HEALTH, 
+   eMSDP_OPPONENT_HEALTH, 	/* 40 */
    eMSDP_OPPONENT_HEALTH_MAX, 
    eMSDP_OPPONENT_LEVEL, 
    eMSDP_OPPONENT_NAME, 
 
    /* World */
    eMSDP_AREA_NAME, 
-   eMSDP_ROOM_EXITS, 
+   eMSDP_ROOM_EXITS, 		/* 45 */
    eMSDP_ROOM_NAME, 
    eMSDP_ROOM_VNUM, 
    eMSDP_WORLD_TIME, 
+   eMSDP_ROOM_MAP,
 
    /* Configuration */
-   eMSDP_CLIENT_ID, 
+   eMSDP_CLIENT_ID, 		/* 50 */
    eMSDP_CLIENT_VERSION, 
    eMSDP_PLUGIN_ID, 
    eMSDP_ANSI_COLORS, 
    eMSDP_XTERM_256_COLORS, 
-   eMSDP_UTF_8, 
+   eMSDP_UTF_8, 		/* 55 */
    eMSDP_SOUND, 
    eMSDP_MXP, 
 
    /* GUI variables */
    eMSDP_BUTTON_1, 
    eMSDP_BUTTON_2, 
-   eMSDP_BUTTON_3, 
+   eMSDP_BUTTON_3, 		/* 60 */
    eMSDP_BUTTON_4, 
    eMSDP_BUTTON_5, 
    eMSDP_GAUGE_1, 
    eMSDP_GAUGE_2, 
-   eMSDP_GAUGE_3, 
+   eMSDP_GAUGE_3, 		/* 65 */
    eMSDP_GAUGE_4, 
    eMSDP_GAUGE_5, 
+
+  // Affects
+  eMSDP_NOHEAL,
+  eMSDP_NOCAMP,
+
+  // Group Variables
+  eMSDP_GROUP1_NAME,		/* 70 */
+  eMSDP_GROUP1_CUR_HP,
+  eMSDP_GROUP1_MAX_HP,
+  eMSDP_GROUP1_CUR_MV,
+  eMSDP_GROUP1_MAX_MV,
+  eMSDP_GROUP1_TNL,		/* 75 */
+  eMSDP_GROUP2_NAME,
+  eMSDP_GROUP2_CUR_HP,
+  eMSDP_GROUP2_MAX_HP,
+  eMSDP_GROUP2_CUR_MV,
+  eMSDP_GROUP2_MAX_MV,		/* 80 */
+  eMSDP_GROUP2_TNL,
+  eMSDP_GROUP3_NAME,
+  eMSDP_GROUP3_CUR_HP,
+  eMSDP_GROUP3_MAX_HP,
+  eMSDP_GROUP3_CUR_MV,		/* 85 */
+  eMSDP_GROUP3_MAX_MV,
+  eMSDP_GROUP3_TNL,
+  eMSDP_GROUP4_NAME,
+  eMSDP_GROUP4_CUR_HP,
+  eMSDP_GROUP4_MAX_HP,		/* 90 */
+  eMSDP_GROUP4_CUR_MV,
+  eMSDP_GROUP4_MAX_MV,
+  eMSDP_GROUP4_TNL,
+  eMSDP_GROUP5_NAME,
+  eMSDP_GROUP5_CUR_HP,		/* 95 */
+  eMSDP_GROUP5_MAX_HP,
+  eMSDP_GROUP5_CUR_MV,
+  eMSDP_GROUP5_MAX_MV,
+  eMSDP_GROUP5_TNL,
+  eMSDP_CAMPAIGN,		/* 100 */
 
    eMSDP_MAX                   /* This must always be last */
 } variable_t;
@@ -191,29 +273,34 @@ typedef struct
 {
    const char  *pName;         /* The name of the MSSP variable */
    const char  *pValue;        /* The value of the MSSP variable */
-   const char  *(*pFunction)(void); /* Optional function to return the value */
+   const char  *(*pFunction)();/* Optional function to return the value */
 } MSSP_t;
 
 typedef struct
 {
-   int       WriteOOB;         /* Used internally to indicate OOB data */
-   bool_t    bIACMode;         /* Current mode - deals with broken packets */
-   bool_t    bNegotiated;      /* Indicates client successfully negotiated */
-   bool_t    bBlockMXP;        /* Used internally based on MXP version */
-   bool_t    bTTYPE;           /* The client supports TTYPE */
-   bool_t    bNAWS;            /* The client supports NAWS */
-   bool_t    bCHARSET;         /* The client supports CHARSET */
-   bool_t    bMSDP;            /* The client supports MSDP */
-   bool_t    bATCP;            /* The client supports ATCP */
-   bool_t    bMSP;             /* The client supports MSP */
-   bool_t    bMXP;             /* The client supports MXP */
-   bool_t    bMCCP;            /* The client supports MCCP */
-   support_t b256Support;      /* The client supports XTerm 256 colors */
-   int       ScreenWidth;      /* The client's screen width */
-   int       ScreenHeight;     /* The client's screen height */
-   char     *pMXPVersion;      /* The version of MXP supported */
-   char     *pLastTTYPE;       /* Used for the cyclic TTYPE check */
-   MSDP_t  **pVariables;       /* The MSDP variables */
+  int WriteOOB; /* Used internally to indicate OOB data */
+  bool_t Negotiated[eNEGOTIATED_MAX];
+  bool_t bIACMode; /* Current mode - deals with broken packets */
+  bool_t bNegotiated; /* Indicates client successfully negotiated */
+  bool_t bRenegotiate; /* Workaround for clients that autoconnect */
+  bool_t bNeedMXPVersion; /* Workaround for clients that autoconnect */
+  bool_t bBlockMXP; /* Used internally based on MXP version */
+  bool_t bTTYPE; /* The client supports TTYPE */
+  bool_t bECHO; /* Toggles ECHO on/off */
+  bool_t bNAWS; /* The client supports NAWS */
+  bool_t bCHARSET; /* The client supports CHARSET */
+  bool_t bMSDP; /* The client supports MSDP */
+  bool_t bMSSP; /* The client supports MSSP */
+  bool_t bATCP; /* The client supports ATCP */
+  bool_t bMSP; /* The client supports MSP */
+  bool_t bMXP; /* The client supports MXP */
+  bool_t bMCCP; /* The client supports MCCP */
+  support_t b256Support; /* The client supports XTerm 256 colors */
+  int ScreenWidth; /* The client's screen width */
+  int ScreenHeight; /* The client's screen height */
+  char *pMXPVersion; /* The version of MXP supported */
+  char *pLastTTYPE; /* Used for the cyclic TTYPE check */
+  MSDP_t **pVariables; /* The MSDP variables */
 } protocol_t;
 
 /******************************************************************************
@@ -244,77 +331,85 @@ void ProtocolDestroy( protocol_t *apProtocol );
  */
 void ProtocolNegotiate( descriptor_t *apDescriptor );
 
+/* Function: ProtocolNoEcho
+ *
+ * Tells the client to switch echo on or off.
+ */
+void ProtocolNoEcho( descriptor_t *apDescriptor, bool_t abOn );
+
 /* Function: ProtocolInput
  *
  * Extracts any negotiation sequences from the input buffer, and passes back 
  * whatever is left for the mud to parse normally.  Call this after data has 
  * been read into the input buffer, before it is used for anything else.
  */
- 
-/* MUD Primary Colours */
-extern const char * RGBone;
-extern const char * RGBtwo;
-extern const char * RGBthree; 
- 
-ssize_t ProtocolInput( descriptor_t *apDescriptor, char *apData, int aSize, char *apOut );
+void ProtocolInput( descriptor_t *apDescriptor, char *apData, int aSize, char *apOut );
 
 /* Function: ProtocolOutput
  *
- * This function takes a string, applies colour codes to it, and returns the 
- * result.  It should be called just before writing to the output buffer.
- * 
- * The special character used to indicate the start of a colour sequence is 
- * '\t' (i.e., a tab, or ASCII character 9).  This makes it easy to include 
- * in help files (as you can literally press the tab key) as well as strings 
- * (where you can use \t instead).  However players can't send tabs (on most 
+ * This function takes a string, applies colour codes to it, and returns the
+ * result. It should be called just before writing to the output buffer.
+ *
+ * The special character used to indicate the start of a colour sequence is
+ * '\t' (i.e., a tab, or ASCII character 9). This makes it easy to include
+ * in help files (as you can literally press the tab key) as well as strings
+ * (where you can use \t instead). However players can't send tabs (on most
  * muds at least), so this stops them from sending colour codes to each other.
- * 
+ *
  * The predefined colours are:
- * 
- *   n: no colour (switches colour off)
- *   r: dark red                        R: bright red
- *   g: dark green                      G: bright green
- *   b: dark blue                       B: bright blue
- *   y: dark yellow                     Y: bright yellow
- *   m: dark magenta                    M: bright magenta
- *   c: dark cyan                       C: bright cyan
- *   w: dark white                      W: bright white
- *   o: dark orange                     O: bright orange
- * 
- * So for example "This is \tOorange\tn." will colour the word "orange".  You 
+ *
+ * n: no colour (switches colour off)
+ *
+ * r: dark red R: light red
+ * g: dark green G: light green
+ * b: dark blue B: light blue
+ * y: dark yellow Y: light yellow
+ * m: dark magenta M: light magenta
+ * c: dark cyan C: light cyan
+ * w: dark white W: light white
+ *
+ * a: dark azure A: light azure
+ * j: dark jade J: light jade
+ * l: dark lime L: light lime
+ * o: dark orange O: bright orange
+ * p: dark pink P: light pink
+ * t: dark tan T: light tan
+ * v: dark violet V: light violet
+ *
+ * So for example "This is \tOorange\tn." will colour the word "orange". You
  * can add more colours yourself just by updating the switch statement.
- * 
- * It's also possible to explicitly specify an RGB value, by including the four 
+ *
+ * It's also possible to explicitly specify an RGB value, by including the four
  * character colour sequence (as used by ColourRGB) within square brackets, eg:
- * 
- *    This is a \t[F010]very dark green foreground\tn.
- *    
+ *
+ * This is a \t[F010]very dark green foreground\tn.
+ *
  * The square brackets can also be used to send unicode characters, like this:
- * 
- *    Boat: \t[U9973/B]
- *    Rook: \t[U9814/C]
- * 
- * For example you might use 'B' to represent a boat on your ASCII map, or a 'C' 
- * to represent a castle - but players with UTF-8 support would actually see the 
+ *
+ * Boat: \t[U9973/B]
+ * Rook: \t[U9814/C]
+ *
+ * For example you might use 'B' to represent a boat on your ASCII map, or a 'C'
+ * to represent a castle - but players with UTF-8 support would actually see the
  * appropriate unicode characters for a boat or a rook (the chess playing piece).
- * 
- * The exact syntax is '\t' (tab), '[', 'U' (indicating unicode), then the decimal 
- * number of the unicode character (see http://www.unicode.org/charts), then '/' 
- * followed by the ASCII character/s that should be used if the client doesn't 
- * support UTF-8.  The ASCII sequence can be up to 7 characters in length, but in 
- * most cases you'll only want it to be one or two characters (so that it has the 
+ *
+ * The exact syntax is '\t' (tab), '[', 'U' (indicating unicode), then the decimal
+ * number of the unicode character (see http://www.unicode.org/charts), then '/'
+ * followed by the ASCII character/s that should be used if the client doesn't
+ * support UTF-8. The ASCII sequence can be up to 7 characters in length, but in
+ * most cases you'll only want it to be one or two characters (so that it has the
  * same alignment as the unicode character).
- * 
- * Finally, this function also allows you to embed MXP tags.  The easiest and 
+ *
+ * Finally, this function also allows you to embed MXP tags. The easiest and
  * safest way to do this is via the ( and ) bracket options:
- *    
- *    From here, you can walk \t(north\t).
- * 
+ *
+ * From here, you can walk \t(north\t).
+ *
  * However it's also possible to include more explicit MSP tags, like this:
- * 
- *    The baker offers to sell you a \t<send href="buy pie">pie\t</send>.
- * 
- * Note that the MXP tags will automatically be removed if the user doesn't 
+ *
+ * The baker offers to sell you a \t<send href="buy pie">pie\t</send>.
+ *
+ * Note that the MXP tags will automatically be removed if the user doesn't
  * support MXP, but it's very important you remember to close the tags.
  */
 const char *ProtocolOutput( descriptor_t *apDescriptor, const char *apData, int *apLength );

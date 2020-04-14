@@ -1,8 +1,8 @@
-/**************************************************************************
-*  File: graph.c                                           Part of tbaMUD *
-*  Usage: Various graph algorithms.                                       *
+/* ************************************************************************
+*   File: graph.c                                       Part of CircleMUD *
+*  Usage: various graph algorithms                                        *
 *                                                                         *
-*  All rights reserved.  See license for complete information.            *
+*  All rights reserved.  See license.doc for complete information.        *
 *                                                                         *
 *  Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University *
 *  CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.               *
@@ -10,6 +10,7 @@
 
 #include "conf.h"
 #include "sysdep.h"
+
 #include "structs.h"
 #include "utils.h"
 #include "comm.h"
@@ -17,22 +18,29 @@
 #include "handler.h"
 #include "db.h"
 #include "spells.h"
-#include "act.h" /* for the do_say command */
-#include "constants.h"
-#include "graph.h"
-#include "fight.h"
+#include "feats.h"
+
+/* external functions */
+ACMD(do_say);
+int has_favored_enemy(struct char_data *ch, struct char_data *victim);
+
+/* external variables */
+extern const char *dirs[];
 
 /* local functions */
-static int VALID_EDGE(room_rnum x, int y);
-static void bfs_enqueue(room_rnum room, int dir);
-static void bfs_dequeue(void);
-static void bfs_clear_queue(void);
-static int find_first_step(room_rnum src, room_rnum target);
+int VALID_EDGE(room_rnum x, int y);
+void bfs_enqueue(room_rnum room, int dir);
+void bfs_dequeue(void);
+void bfs_clear_queue(void);
+int find_first_step(room_rnum src, room_rnum target);
+ACMD(do_track);
+void hunt_victim(struct char_data *ch);
 
-struct bfs_queue_struct {
-  room_rnum room;
-  char dir;
-  struct bfs_queue_struct *next;
+struct bfs_queue_struct 
+{
+    room_rnum room;
+    char dir;
+    struct bfs_queue_struct *next;
 };
 
 static struct bfs_queue_struct *queue_head = 0, *queue_tail = 0;
@@ -44,7 +52,7 @@ static struct bfs_queue_struct *queue_head = 0, *queue_tail = 0;
 #define TOROOM(x, y)	(world[(x)].dir_option[(y)]->to_room)
 #define IS_CLOSED(x, y)	(EXIT_FLAGGED(world[(x)].dir_option[(y)], EX_CLOSED))
 
-static int VALID_EDGE(room_rnum x, int y)
+int VALID_EDGE(room_rnum x, int y)
 {
   if (world[x].dir_option[y] == NULL || TOROOM(x, y) == NOWHERE)
     return 0;
@@ -56,7 +64,7 @@ static int VALID_EDGE(room_rnum x, int y)
   return 1;
 }
 
-static void bfs_enqueue(room_rnum room, int dir)
+void bfs_enqueue(room_rnum room, int dir)
 {
   struct bfs_queue_struct *curr;
 
@@ -72,7 +80,8 @@ static void bfs_enqueue(room_rnum room, int dir)
     queue_head = queue_tail = curr;
 }
 
-static void bfs_dequeue(void)
+
+void bfs_dequeue(void)
 {
   struct bfs_queue_struct *curr;
 
@@ -83,17 +92,22 @@ static void bfs_dequeue(void)
   free(curr);
 }
 
-static void bfs_clear_queue(void)
+
+void bfs_clear_queue(void)
 {
   while (queue_head)
     bfs_dequeue();
 }
 
-/* find_first_step: given a source room and a target room, find the first step 
- * on the shortest path from the source to the target. Intended usage: in 
- * mobile_activity, give a mob a dir to go if they're tracking another mob or a
- * PC.  Or, a 'track' skill for PCs. */
-static int find_first_step(room_rnum src, room_rnum target)
+
+/* 
+ * find_first_step: given a source room and a target room, find the first
+ * step on the shortest path from the source to the target.
+ *
+ * Intended usage: in mobile_activity, give a mob a dir to go if they're
+ * tracking another mob or a PC.  Or, a 'track' skill for PCs.
+ */
+int find_first_step(room_rnum src, room_rnum target)
 {
   int curr_dir;
   room_rnum curr_room;
@@ -112,7 +126,7 @@ static int find_first_step(room_rnum src, room_rnum target)
   MARK(src);
 
   /* first, enqueue the first steps, saving which direction we're going. */
-  for (curr_dir = 0; curr_dir < DIR_COUNT; curr_dir++)
+  for (curr_dir = 0; curr_dir < NUM_OF_DIRS; curr_dir++)
     if (VALID_EDGE(src, curr_dir)) {
       MARK(TOROOM(src, curr_dir));
       bfs_enqueue(TOROOM(src, curr_dir), curr_dir);
@@ -125,7 +139,7 @@ static int find_first_step(room_rnum src, room_rnum target)
       bfs_clear_queue();
       return (curr_dir);
     } else {
-      for (curr_dir = 0; curr_dir < DIR_COUNT; curr_dir++)
+      for (curr_dir = 0; curr_dir < NUM_OF_DIRS; curr_dir++)
 	if (VALID_EDGE(queue_head->room, curr_dir)) {
 	  MARK(TOROOM(queue_head->room, curr_dir));
 	  bfs_enqueue(TOROOM(queue_head->room, curr_dir), queue_head->dir);
@@ -137,15 +151,41 @@ static int find_first_step(room_rnum src, room_rnum target)
   return (BFS_NO_PATH);
 }
 
-/* Functions and Commands which use the above functions. */
+
+/********************************************************
+* Functions and Commands which use the above functions. *
+********************************************************/
+
+int num_rooms_between(room_rnum src, room_rnum target) {
+
+  int dir;
+  room_rnum room = src;
+  int num = 0;
+
+  while (room != target) {
+    dir = find_first_step(room, target);
+    if (dir == BFS_ERROR || dir == BFS_NO_PATH)
+      return 0;
+    if (dir == BFS_ALREADY_THERE)
+      return num;
+    room = world[room].dir_option[dir]->to_room;
+    num++;
+  }
+  
+  return num;
+}
+
+
 ACMD(do_track)
 {
-  char arg[MAX_INPUT_LENGTH];
+  char arg[MAX_INPUT_LENGTH]={'\0'};
   struct char_data *vict;
-  int dir;
+  int dir = 0;
+  int bonus = 0;
+  int roll = 0;
 
   /* The character must have the track skill. */
-  if (IS_NPC(ch) || !GET_SKILL(ch, SKILL_TRACK)) {
+  if (IS_NPC(ch) || !GET_SKILL(ch, SKILL_SURVIVAL)) {
     send_to_char(ch, "You have no idea how.\r\n");
     return;
   }
@@ -160,17 +200,19 @@ ACMD(do_track)
     return;
   }
   /* We can't track the victim. */
-  if (AFF_FLAGGED(vict, AFF_NOTRACK)) {
+  if (AFF_FLAGGED(vict, AFF_NOTRACK) || (OUTSIDE(vict) && !IS_NPC(vict) && HAS_FEAT(vict, FEAT_TRACKLESS_STEP))) {
     send_to_char(ch, "You sense no trail.\r\n");
     return;
   }
 
-  /* 101 is a complete failure, no matter what the proficiency. */
-  if (rand_number(0, 101) >= GET_SKILL(ch, SKILL_TRACK)) {
+  if (has_favored_enemy(ch, vict))
+    bonus += dice(1, (GET_CLASS_RANKS(ch, CLASS_RANGER) / 5) + 1) * 2;
+
+  if (!(roll = dice(1, 20) + get_skill_value(ch, SKILL_SURVIVAL) + bonus)) {
     int tries = 10;
     /* Find a random direction. :) */
     do {
-      dir = rand_number(0, DIR_COUNT - 1);
+      dir = rand_number(0, NUM_OF_DIRS - 1);
     } while (!CAN_GO(ch, dir) && --tries);
     send_to_char(ch, "You sense a trail %s from here!\r\n", dirs[dir]);
     return;
@@ -190,14 +232,20 @@ ACMD(do_track)
     send_to_char(ch, "You can't sense a trail to %s from here.\r\n", HMHR(vict));
     break;
   default:	/* Success! */
+    if (num_rooms_between(IN_ROOM(ch), IN_ROOM(vict)) > (roll * 50)) {
+      send_to_char(ch, "The trail is too faint to follow.\r\n");
+      return;
+    }
+
     send_to_char(ch, "You sense a trail %s from here!\r\n", dirs[dir]);
     break;
   }
 }
 
+
 void hunt_victim(struct char_data *ch)
 {
-  int dir;
+  int dir = 0;
   byte found;
   struct char_data *tmp;
 
@@ -216,13 +264,16 @@ void hunt_victim(struct char_data *ch)
     HUNTING(ch) = NULL;
     return;
   }
-  if ((dir = find_first_step(IN_ROOM(ch), IN_ROOM(HUNTING(ch)))) < 0) {
-    char buf[MAX_INPUT_LENGTH];
+  if ((dir = find_first_step(IN_ROOM(ch), IN_ROOM(HUNTING(ch)))) < 0) 
+  {
+    char buf[MAX_INPUT_LENGTH]={'\0'};
 
     snprintf(buf, sizeof(buf), "Damn!  I lost %s!", HMHR(HUNTING(ch)));
     do_say(ch, buf, 0, 0);
     HUNTING(ch) = NULL;
-  } else {
+  } 
+  else 
+  {
     perform_move(ch, dir, 1);
     if (IN_ROOM(ch) == IN_ROOM(HUNTING(ch)))
       hit(ch, HUNTING(ch), TYPE_UNDEFINED);

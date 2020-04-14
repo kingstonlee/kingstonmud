@@ -36,18 +36,11 @@ LFLAGS=/OUT:circle.exe /nologo /subsystem:console
 MAKE = $(MAKE) /NOLOGO /S
 
 OBJFILES = comm.obj act.comm.obj act.informative.obj act.movement.obj act.item.obj \
-asciimap.obj act.offensive.obj act.other.obj act.social.obj act.wizard.obj \
-ban.obj boards.obj castle.obj class.obj config.obj constants.obj db.obj \
-dg_event.obj dg_scripts.obj dg_triggers.obj fight.obj genolc.obj graph.obj \
-handler.obj house.obj ibt.obj interpreter.obj limits.obj lists.obj magic.obj \
-mail.obj msgedit.obj mobact.obj modify.obj mud_event.obj oasis.obj oasis_copy.obj \
-oasis_delete.obj oasis_list.obj objsave.obj protocol.obj shop.obj spec_assign.obj \
-spec_procs.obj spell_parser.obj improved-edit.obj spells.obj utils.obj weather.obj \
-random.obj players.obj quest.obj qedit.obj genqst.obj aedit.obj cedit.obj hedit.obj \
-medit.obj oedit.obj qedit.obj redit.obj sedit.obj tedit.obj zedit.obj \
-dg_comm.obj dg_db_scripts.obj dg_handler.obj dg_misc.obj dg_mobcmd.obj dg_objcmd.obj \
-dg_olc.obj dg_variables.obj dg_wldcmd.obj genmob.obj genobj.obj genshp.obj genwld.obj \
-genzon.obj prefedit.obj
+        act.offensive.obj act.other.obj act.social.obj act.wizard.obj ban.obj boards.obj \
+        castle.obj class.obj config.obj constants.obj db.obj fight.obj graph.obj handler.obj \
+        house.obj interpreter.obj limits.obj magic.obj mail.obj mobact.obj modify.obj \
+        objsave.obj olc.obj players.obj shop.obj spec_assign.obj spec_procs.obj \
+        spell_parser.obj spells.obj utils.obj weather.obj random.obj alias.obj
 
 default: circle.exe
         $(MAKE) circle.exe
@@ -59,6 +52,8 @@ circle.exe : $(OBJFILES)
 # Dependencies for the object files (automagically generated with
 # gcc -MM)
 
+alias.obj: alias.c conf.h sysdep.h structs.h utils.h interpreter.h db.h
+	$(CC) -c $(CFLAGS) alias.c
 act.comm.obj: act.comm.c conf.h sysdep.h structs.h utils.h comm.h interpreter.h \
   handler.h db.h screen.h
 	$(CC) -c $(CFLAGS) act.comm.c
@@ -135,6 +130,9 @@ modify.obj: modify.c conf.h sysdep.h structs.h utils.h interpreter.h handler.h d
 objsave.obj: objsave.c conf.h sysdep.h structs.h comm.h handler.h db.h \
   interpreter.h utils.h spells.h
 	$(CC) -c $(CFLAGS) objsave.c
+olc.obj: olc.c conf.h sysdep.h structs.h utils.h comm.h interpreter.h handler.h db.h \
+  olc.h
+	$(CC) -c $(CFLAGS) olc.c
 players.o: players.c conf.h sysdep.h structs.h utils.h db.h handler.h pfdefaults.h
 	$(CC) -c $(CFLAGS) players.c
 random.obj: random.c
@@ -160,12 +158,3 @@ utils.obj: utils.c conf.h sysdep.h structs.h utils.h comm.h screen.h spells.h \
 weather.obj: weather.c conf.h sysdep.h structs.h utils.h comm.h handler.h \
   interpreter.h db.h
 	$(CC) -c $(CFLAGS) weather.c
-quest.obj: quest.c conf.h sysdep.h structs.h utils.h interpreter.h handler.h \
-  comm.h db.h screen.h quest.h
-	$(CC) -c $(CFLAGS) quest.c
-qedit.obj: qedit.c conf.h sysdep.h structs.h utils.h comm.h db.h oasis.h \
-  improved-edit.h screen.h genolc.h genzon.h interpreter.h quest.h
-	$(CC) -c $(CFLAGS) qedit.c
-genqst.obj: genqst.c conf.h sysdep.h structs.h utils.h db.h quest.h \
-  genolc.h genzon.h 
-	$(CC) -c $(CFLAGS) genqst.c

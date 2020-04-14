@@ -1,9 +1,8 @@
-/**************************************************************************
-*  File: genmob.c                                          Part of tbaMUD *
-*  Usage: Generic OLC Library - Mobiles.                                  *
-*                                                                         *
-*  Copyright 1996 by Harvey Gilpin, 1997-2001 by George Greer.            *
-**************************************************************************/
+/************************************************************************
+ * Generic OLC Library - Mobiles / genmob.c			v1.0	*
+ * Copyright 1996 by Harvey Gilpin					*
+ * Copyright 1997-2001 by George Greer (greerga@circlemud.org)		*
+ ************************************************************************/
 
 #include "conf.h"
 #include "sysdep.h"
@@ -16,10 +15,33 @@
 #include "genmob.h"
 #include "genzon.h"
 #include "dg_olc.h"
-#include "spells.h"
+#include "htree.h"
+#include "feats.h"
 
-/* local functions */
-static void extract_mobile_all(mob_vnum vnum);
+/* From db.c */
+void init_mobile_skills(void);
+
+
+int update_mobile_strings(struct char_data *t, struct char_data *f);
+void check_mobile_strings(struct char_data *mob);
+void check_mobile_string(mob_vnum i, char **string, const char *dscr);
+int write_mobile_record(mob_vnum mvnum, struct char_data *mob, FILE *fd);
+int write_mobile_espec(mob_vnum mvnum, struct char_data *mob, FILE *fd);
+int free_mobile_strings(struct char_data *mob);
+int copy_mobile_strings(struct char_data *t, struct char_data *f);
+#if CONFIG_GENOLC_MOBPROG
+int write_mobile_mobprog(mob_vnum mvnum, struct char_data *mob, FILE *fd);
+#endif
+
+extern struct race_data race_list[NUM_RACES];
+extern int top_shop;
+extern mob_rnum top_of_mobt;
+extern zone_rnum top_of_zone_table;
+extern struct zone_data *zone_table;
+extern struct shop_data *shop_index;
+extern struct char_data *character_list;
+extern struct char_data *mob_proto;
+extern struct index_data *mob_index;
 
 int add_mobile(struct char_data *mob, mob_vnum vnum)
 {
@@ -59,6 +81,7 @@ int add_mobile(struct char_data *mob, mob_vnum vnum)
     mob_index[i] = mob_index[i - 1];
     mob_proto[i] = mob_proto[i - 1];
     mob_proto[i].nr++;
+    htree_add(mob_htree, mob_index[i].vnum, i);
   }
   if (!found) {
     mob_proto[0] = *mob;
@@ -67,24 +90,40 @@ int add_mobile(struct char_data *mob, mob_vnum vnum)
     mob_index[0].vnum = vnum;
     mob_index[0].number = 0;
     mob_index[0].func = 0;
+    htree_add(mob_htree, mob_index[0].vnum, 0);
   }
 
   log("GenOLC: add_mobile: Added mobile %d at index #%d.", vnum, found);
 
-  /* Update live mobile rnums. */
-  for (live_mob = character_list; live_mob; live_mob = live_mob->next)
-    GET_MOB_RNUM(live_mob) += (GET_MOB_RNUM(live_mob) != NOTHING && GET_MOB_RNUM(live_mob) >= found);
+#if CONFIG_GENOLC_MOBPROG
+  GET_MPROG(OLC_MOB(d)) = OLC_MPROGL(d);
+  GET_MPROG_TYPE(OLC_MOB(d)) = (OLC_MPROGL(d) ? OLC_MPROGL(d)->type : 0);
+  while (OLC_MPROGL(d)) {
+    GET_MPROG_TYPE(OLC_MOB(d)) |= OLC_MPROGL(d)->type;
+    OLC_MPROGL(d) = OLC_MPROGL(d)->next;
+  }
+#endif
 
-  /* Update zone table. */
+  /*
+   * Update live mobile rnums.
+   */
+  for (live_mob = character_list; live_mob; live_mob = live_mob->next)
+    GET_MOB_RNUM(live_mob) += (GET_MOB_RNUM(live_mob) >= found);
+
+  /*
+   * Update zone table.
+   */
   for (zone = 0; zone <= top_of_zone_table; zone++)
     for (cmd_no = 0; ZCMD(zone, cmd_no).command != 'S'; cmd_no++)
       if (ZCMD(zone, cmd_no).command == 'M')
 	ZCMD(zone, cmd_no).arg1 += (ZCMD(zone, cmd_no).arg1 >= found);
 
-  /* Update shop keepers. */
+  /*
+   * Update shop keepers.
+   */
   if (shop_index)
-    for (shop = 0; shop <= top_shop; shop++)
-      SHOP_KEEPER(shop) += (SHOP_KEEPER(shop) != NOTHING && SHOP_KEEPER(shop) >= found);
+    for (shop = 0; shop <= top_shop - top_shop_offset; shop++)
+      SHOP_KEEPER(shop) += (SHOP_KEEPER(shop) >= found);
 
   add_to_save_list(zone_table[real_zone_by_thing(vnum)].number, SL_MOB);
   return found;
@@ -99,53 +138,24 @@ int copy_mobile(struct char_data *to, struct char_data *from)
   return TRUE;
 }
 
-static void extract_mobile_all(mob_vnum vnum)
+void extract_mobile_all(mob_vnum vnum)
 {
   struct char_data *next, *ch;
-  int i;
 
   for (ch = character_list; ch; ch = next) {
     next = ch->next;
-    if (GET_MOB_VNUM(ch) == vnum) {
-			if ((i = GET_MOB_RNUM(ch)) != NOBODY) {
-	    if (ch->player.name && ch->player.name != mob_proto[i].player.name)
-          free(ch->player.name);
-				ch->player.name = NULL;
-				
-        if (ch->player.title && ch->player.title != mob_proto[i].player.title)
-          free(ch->player.title);
-				ch->player.title = NULL;
-				
-        if (ch->player.short_descr && ch->player.short_descr != mob_proto[i].player.short_descr)
-          free(ch->player.short_descr);
-				ch->player.short_descr = NULL;
-				
-        if (ch->player.long_descr && ch->player.long_descr != mob_proto[i].player.long_descr)
-          free(ch->player.long_descr);
-				ch->player.long_descr = NULL;
-				
-        if (ch->player.description && ch->player.description != mob_proto[i].player.description)
-          free(ch->player.description);
-				ch->player.description = NULL;
-    
-        /* free script proto list if it's not the prototype */
-        if (ch->proto_script && ch->proto_script != mob_proto[i].proto_script)
-          free_proto_script(ch, MOB_TRIGGER);			
-				ch->proto_script = NULL;
-			}
+    if (GET_MOB_VNUM(ch) == vnum)
       extract_char(ch);
-		}
   }
 }
 
 int delete_mobile(mob_rnum refpt)
 {
   struct char_data *live_mob;
-  struct char_data *proto;
   int counter, cmd_no;
   mob_vnum vnum;
   zone_rnum zone;
-
+  
 #if CIRCLE_UNSIGNED_INDEX
   if (refpt == NOBODY || refpt > top_of_mobt) {
 #else
@@ -156,10 +166,9 @@ int delete_mobile(mob_rnum refpt)
   }
 
   vnum = mob_index[refpt].vnum;
-  proto = &mob_proto[refpt];
-  
+  add_to_save_list(zone_table[real_zone_by_thing(vnum)].number, SL_MOB);
   extract_mobile_all(vnum);
-  extract_char(proto);
+  free_mobile_strings(&mob_proto[refpt]);
 
   for (counter = refpt; counter < top_of_mobt; counter++) {
     mob_index[counter] = mob_index[counter + 1];
@@ -171,77 +180,79 @@ int delete_mobile(mob_rnum refpt)
   RECREATE(mob_index, struct index_data, top_of_mobt + 1);
   RECREATE(mob_proto, struct char_data, top_of_mobt + 1);
 
-  /* Update live mobile rnums. */
+  /*
+   * Update live mobile rnums.
+   */
   for (live_mob = character_list; live_mob; live_mob = live_mob->next)
     GET_MOB_RNUM(live_mob) -= (GET_MOB_RNUM(live_mob) >= refpt);
 
-  /* Update zone table. */
+  /*
+   * Update zone table.
+   */
   for (zone = 0; zone <= top_of_zone_table; zone++)
     for (cmd_no = 0; ZCMD(zone, cmd_no).command != 'S'; cmd_no++)
-      if (ZCMD(zone, cmd_no).command == 'M'){
-       if (ZCMD(zone, cmd_no).arg1 == refpt) {
-        delete_zone_command(&zone_table[zone], cmd_no);
-        } else
-          ZCMD(zone, cmd_no).arg1 -= (ZCMD(zone, cmd_no).arg1 > refpt);
-        }
+      if (ZCMD(zone, cmd_no).command == 'M')
+	ZCMD(zone, cmd_no).arg1 -= (ZCMD(zone, cmd_no).arg1 >= refpt);
 
-  /* Update shop keepers. */
+  /*
+   * Update shop keepers.
+   */
   if (shop_index)
-    for (counter = 0; counter <= top_shop; counter++)
+    for (counter = 0; counter <= top_shop - top_shop_offset; counter++)
       SHOP_KEEPER(counter) -= (SHOP_KEEPER(counter) >= refpt);
-
-  save_mobiles(real_zone_by_thing(vnum));
 
   return refpt;
 }
 
 int copy_mobile_strings(struct char_data *t, struct char_data *f)
 {
-  if (f->player.name)
-    t->player.name = strdup(f->player.name);
-  if (f->player.title)
-    t->player.title = strdup(f->player.title);
-  if (f->player.short_descr)
-    t->player.short_descr = strdup(f->player.short_descr);
-  if (f->player.long_descr)
-    t->player.long_descr = strdup(f->player.long_descr);
-  if (f->player.description)
-    t->player.description = strdup(f->player.description);
+  if (f->name)
+    t->name = strdup(f->name);
+  if (f->title)
+    t->title = strdup(f->title);
+  if (f->short_descr)
+    t->short_descr = strdup(f->short_descr);
+  if (f->long_descr)
+    t->long_descr = strdup(f->long_descr);
+  if (f->description)
+    t->description = strdup(f->description);
   return TRUE;
 }
 
 int update_mobile_strings(struct char_data *t, struct char_data *f)
 {
-  if (f->player.name)
-    t->player.name = f->player.name;
-  if (f->player.title)
-    t->player.title = f->player.title;
-  if (f->player.short_descr)
-    t->player.short_descr = f->player.short_descr;
-  if (f->player.long_descr)
-    t->player.long_descr = f->player.long_descr;
-  if (f->player.description)
-    t->player.description = f->player.description;
+  if (f->name)
+    t->name = f->name;
+  if (f->title)
+    t->title = f->title;
+  if (f->short_descr)
+    t->short_descr = f->short_descr;
+  if (f->long_descr)
+    t->long_descr = f->long_descr;
+  if (f->description)
+    t->description = f->description;
   return TRUE;
 }
 
 int free_mobile_strings(struct char_data *mob)
 {
-  if (mob->player.name)
-    free(mob->player.name);
-  if (mob->player.title)
-    free(mob->player.title);
-  if (mob->player.short_descr)
-    free(mob->player.short_descr);
-  if (mob->player.long_descr)
-    free(mob->player.long_descr);
-  if (mob->player.description)
-    free(mob->player.description);
+  if (mob->name)
+    free(mob->name);
+  if (mob->title)
+    free(mob->title);
+  if (mob->short_descr)
+    free(mob->short_descr);
+  if (mob->long_descr)
+    free(mob->long_descr);
+  if (mob->description)
+    free(mob->description);
   return TRUE;
 }
 
-/* Free a mobile structure that has been edited. Take care of existing mobiles
- * and their mob_proto! */
+/*
+ * Free a mobile structure that has been edited.
+ * Take care of existing mobiles and their mob_proto!
+ */
 int free_mobile(struct char_data *mob)
 {
   mob_rnum i;
@@ -249,22 +260,24 @@ int free_mobile(struct char_data *mob)
   if (mob == NULL)
     return FALSE;
 
-  /* Non-prototyped mobile.  Also known as new mobiles. */
+  /*
+   * Non-prototyped mobile.  Also known as new mobiles.
+   */
   if ((i = GET_MOB_RNUM(mob)) == NOBODY) {
     free_mobile_strings(mob);
     /* free script proto list */
     free_proto_script(mob, MOB_TRIGGER);
    } else {	/* Prototyped mobile. */
-    if (mob->player.name && mob->player.name != mob_proto[i].player.name)
-      free(mob->player.name);
-    if (mob->player.title && mob->player.title != mob_proto[i].player.title)
-      free(mob->player.title);
-    if (mob->player.short_descr && mob->player.short_descr != mob_proto[i].player.short_descr)
-      free(mob->player.short_descr);
-    if (mob->player.long_descr && mob->player.long_descr != mob_proto[i].player.long_descr)
-      free(mob->player.long_descr);
-    if (mob->player.description && mob->player.description != mob_proto[i].player.description)
-      free(mob->player.description);
+    if (mob->name && mob->name != mob_proto[i].name)
+      free(mob->name);
+    if (mob->title && mob->title != mob_proto[i].title)
+      free(mob->title);
+    if (mob->short_descr && mob->short_descr != mob_proto[i].short_descr)
+      free(mob->short_descr);
+    if (mob->long_descr && mob->long_descr != mob_proto[i].long_descr)
+      free(mob->long_descr);
+    if (mob->description && mob->description != mob_proto[i].description)
+      free(mob->description);
     /* free script proto list if it's not the prototype */
     if (mob->proto_script && mob->proto_script != mob_proto[i].proto_script)
       free_proto_script(mob, MOB_TRIGGER);
@@ -287,7 +300,7 @@ int save_mobiles(zone_rnum rznum)
   room_vnum i;
   mob_rnum rmob;
   int written;
-  char mobfname[64], usedfname[64];
+  char mobfname[64]={'\0'}, usedfname[64]={'\0'};
 
 #if CIRCLE_UNSIGNED_INDEX
   if (rznum == NOWHERE || rznum > top_of_zone_table) {
@@ -301,7 +314,7 @@ int save_mobiles(zone_rnum rznum)
   vznum = zone_table[rznum].number;
   snprintf(mobfname, sizeof(mobfname), "%s%d.new", MOB_PREFIX, vznum);
   if ((mobfd = fopen(mobfname, "w")) == NULL) {
-    mudlog(BRF, LVL_GOD, TRUE, "SYSERR: GenOLC: Cannot open mob file for writing.");
+    mudlog(BRF, ADMLVL_GOD, TRUE, "SYSERR: GenOLC: Cannot open mob file for writing.");
     return FALSE;
   }
 
@@ -318,57 +331,113 @@ int save_mobiles(zone_rnum rznum)
   snprintf(usedfname, sizeof(usedfname), "%s%d.mob", MOB_PREFIX, vznum);
   remove(usedfname);
   rename(mobfname, usedfname);
-
-  if (in_save_list(vznum, SL_MOB))
+  
+  if (in_save_list(vznum, SL_MOB)) {
     remove_from_save_list(vznum, SL_MOB);
-  log("GenOLC: '%s' saved, %d bytes written.", usedfname, written);
+    log("GenOLC: save_mobiles: Saving mobiles '%s'", usedfname);
+  }
   return written;
 }
 
+#if CONFIG_GENOLC_MOBPROG
+int write_mobile_mobprog(mob_vnum mvnum, struct char_data *mob, FILE *fd)
+{
+  char wmmarg[MAX_STRING_LENGTH]={'\0'}, wmmcom[MAX_STRING_LENGTH]={'\0'};
+  MPROG_DATA *mob_prog;
+
+  for (mob_prog = GET_MPROG(mob); mob_prog; mob_prog = mob_prog->next) {
+    wmmarg[MAX_STRING_LENGTH - 1] = '\0';
+    wmmcom[MAX_STRING_LENGTH - 1] = '\0';
+    strip_cr(strncpy(wmmarg, mob_prog->arglist, MAX_STRING_LENGTH - 1));
+    strip_cr(strncpy(wmmcom, mob_prog->comlist, MAX_STRING_LENGTH - 1));
+    fprintf(fd,	"%s %s~\n"
+		"%s%c\n",
+	medit_get_mprog_type(mob_prog), wmmarg,
+	wmmcom, STRING_TERMINATOR
+    );
+    if (mob_prog->next == NULL)
+      fputs("|\n", fd);
+  }
+  return TRUE;
+}
+#endif
+
 int write_mobile_espec(mob_vnum mvnum, struct char_data *mob, FILE *fd)
 {
+  struct affected_type *aff;
+  int i;
+
+  if (get_size(mob) != race_list[GET_RACE(mob)].size)
+    fprintf(fd, "E\nSize: %d\n", get_size(mob));
   if (GET_ATTACK(mob) != 0)
-    fprintf(fd, "BareHandAttack: %d\n", GET_ATTACK(mob));
-  if (GET_STR(mob) != 11)
-    fprintf(fd, "Str: %d\n", GET_STR(mob));
-  if (GET_ADD(mob) != 0)
-    fprintf(fd, "StrAdd: %d\n", GET_ADD(mob));
-  if (GET_DEX(mob) != 11)
-    fprintf(fd, "Dex: %d\n", GET_DEX(mob));
-  if (GET_INT(mob) != 11)
-    fprintf(fd, "Int: %d\n", GET_INT(mob));
-  if (GET_WIS(mob) != 11)
-    fprintf(fd, "Wis: %d\n", GET_WIS(mob));
-  if (GET_CON(mob) != 11)
-    fprintf(fd, "Con: %d\n", GET_CON(mob));
-  if (GET_CHA(mob) != 11)
-    fprintf(fd, "Cha: %d\n", GET_CHA(mob));
-  if (GET_SAVE(mob, SAVING_PARA) != 0)
-    fprintf(fd, "SavingPara: %d\n", GET_SAVE(mob, SAVING_PARA));
-  if (GET_SAVE(mob, SAVING_ROD) != 0)
-    fprintf(fd, "SavingRod: %d\n", GET_SAVE(mob, SAVING_ROD));
-  if (GET_SAVE(mob, SAVING_PETRI) != 0)
-    fprintf(fd, "SavingPetri: %d\n", GET_SAVE(mob, SAVING_PETRI));
-  if (GET_SAVE(mob, SAVING_BREATH) != 0)
-    fprintf(fd, "SavingBreath: %d\n", GET_SAVE(mob, SAVING_BREATH));
-  if (GET_SAVE(mob, SAVING_SPELL) != 0)
-    fprintf(fd, "SavingSpell: %d\n", GET_SAVE(mob, SAVING_SPELL));
-  fputs("E\n", fd);
+    fprintf(fd, "E\nBareHandAttack: %d\n", GET_ATTACK(mob));
+  if (GET_STR(mob) != 0)
+    fprintf(fd, "E\nStr: %d\n", GET_STR(mob));
+  if (GET_DEX(mob) != 0)
+    fprintf(fd, "E\nDex: %d\n", GET_DEX(mob));
+  if (GET_INT(mob) != 0)
+    fprintf(fd, "E\nInt: %d\n", GET_INT(mob));
+  if (GET_WIS(mob) != 0)
+    fprintf(fd, "E\nWis: %d\n", GET_WIS(mob));
+  if (GET_CON(mob) != 0)
+    fprintf(fd, "E\nCon: %d\n", GET_CON(mob));
+  if (GET_CHA(mob) != 0)
+    fprintf(fd, "E\nCha: %d\n", GET_CHA(mob));
+  if(mob->mob_specials.skin_data[0] != 0)
+	   fprintf(fd, "E\nSkinData0: %d\n", mob->mob_specials.skin_data[0]);
+  if(mob->mob_specials.skin_data[1] != 0)
+	   fprintf(fd, "E\nSkinData1: %d\n", mob->mob_specials.skin_data[1]);
+  if(mob->mob_specials.skin_data[2] != 0)
+	   fprintf(fd, "E\nSkinData2: %d\n", mob->mob_specials.skin_data[2]);
+  if(mob->mob_specials.skin_data[3] != 0)
+	   fprintf(fd, "E\nSkinData3: %d\n", mob->mob_specials.skin_data[3]);
+  if (mob_proto + real_mobile(mvnum) != mob) { /* Not saving a prototype */
+    fprintf(fd, "E\nHit: %d\nE\nMaxHit: %d\nE\nMana: %d\nE\nMaxMana: %d\nE\nMoves: %d\nE\nMaxMoves: %d\n",
+            GET_HIT(mob), GET_MAX_HIT(mob), GET_MANA(mob), GET_MAX_MANA(mob),
+            GET_MOVE(mob), GET_MAX_MOVE(mob));
+    for (aff = mob->affected; aff; aff = aff->next)
+      if (aff->type)
+        fprintf(fd, "E\nAffect: %d %d %d %d %d %d\n", aff->type, aff->duration,
+                aff->modifier, aff->location, (int)aff->bitvector, aff->specific);
+    for (aff = mob->affectedv; aff; aff = aff->next)
+      if (aff->type)
+        fprintf(fd, "E\nAffectV: %d %d %d %d %d %d\n", aff->type, aff->duration,
+                aff->modifier, aff->location, (int)aff->bitvector, aff->specific);
+  }
+  for (i = 0; i <= NUM_FEATS_DEFINED; i++)
+    if (HAS_FEAT(mob, i))
+      fprintf(fd, "E\nFeat: %d %d\n", i, HAS_FEAT(mob, i));
+  for (i = 0; i < SKILL_TABLE_SIZE; i++)
+    if (GET_SKILL_BASE(mob, i))
+      fprintf(fd, "E\nSkill: %d %d\n", i, HAS_FEAT(mob, i));
+  for (i = 0; i <= NUM_FEATS_DEFINED; i++)
+    if (GET_SKILL_BONUS(mob, i))
+      fprintf(fd, "E\nSkillMod: %d %d\n", i, HAS_FEAT(mob, i));
+  for (i = 0; i < NUM_CLASSES; i++) {
+    if (GET_CLASS_NONEPIC(mob, i))
+      fprintf(fd, "E\nClass: %d %d\n", i, GET_CLASS_NONEPIC(mob, i));
+    if (GET_CLASS_EPIC(mob, i))
+      fprintf(fd, "E\nEpicClass: %d %d\n", i, GET_CLASS_EPIC(mob, i));
+  }
   return TRUE;
 }
 
+
 int write_mobile_record(mob_vnum mvnum, struct char_data *mob, FILE *fd)
 {
-  char ldesc[MAX_STRING_LENGTH];
-  char ddesc[MAX_STRING_LENGTH];
-  char buf[MAX_STRING_LENGTH];
+
+  char ldesc[MAX_STRING_LENGTH]={'\0'}, ddesc[MAX_STRING_LENGTH]={'\0'};
+  char fbuf1[MAX_STRING_LENGTH]={'\0'}, fbuf2[MAX_STRING_LENGTH]={'\0'};
+  char fbuf3[MAX_STRING_LENGTH]={'\0'}, fbuf4[MAX_STRING_LENGTH]={'\0'};
+  char abuf1[MAX_STRING_LENGTH]={'\0'}, abuf2[MAX_STRING_LENGTH]={'\0'};
+  char abuf3[MAX_STRING_LENGTH]={'\0'}, abuf4[MAX_STRING_LENGTH]={'\0'};
 
   ldesc[MAX_STRING_LENGTH - 1] = '\0';
   ddesc[MAX_STRING_LENGTH - 1] = '\0';
   strip_cr(strncpy(ldesc, GET_LDESC(mob), MAX_STRING_LENGTH - 1));
   strip_cr(strncpy(ddesc, GET_DDESC(mob), MAX_STRING_LENGTH - 1));
 
-  int n = snprintf(buf, MAX_STRING_LENGTH, "#%d\n"
+  fprintf(fd,	"#%d\n"
 		"%s%c\n"
 		"%s%c\n"
 		"%s%c\n"
@@ -380,42 +449,42 @@ int write_mobile_record(mob_vnum mvnum, struct char_data *mob, FILE *fd)
 	ddesc, STRING_TERMINATOR
   );
 
-  if(n < MAX_STRING_LENGTH) {
-    fprintf(fd, "%s", convert_from_tabs(buf));
-  
-    fprintf(fd, "%d %d %d %d %d %d %d %d %d E\n"
-        "%d %d %d %dd%d+%d %dd%d+%d\n",
-        MOB_FLAGS(mob)[0], MOB_FLAGS(mob)[1],
-        MOB_FLAGS(mob)[2], MOB_FLAGS(mob)[3],
-        AFF_FLAGS(mob)[0], AFF_FLAGS(mob)[1],
-        AFF_FLAGS(mob)[2], AFF_FLAGS(mob)[3],
-        GET_ALIGNMENT(mob),
-        GET_LEVEL(mob), 20 - GET_HITROLL(mob), GET_AC(mob) / 10, GET_HIT(mob),
-        GET_MANA(mob), GET_MOVE(mob), GET_NDD(mob), GET_SDD(mob),
-        GET_DAMROLL(mob));
-  
-    fprintf(fd, 	"%d %d\n"
-      "%d %d %d\n",
-      GET_GOLD(mob), GET_EXP(mob),
-      GET_POS(mob), GET_DEFAULT_POS(mob), GET_SEX(mob)
-    );
-  
-    if (write_mobile_espec(mvnum, mob, fd) < 0)
-      log("SYSERR: GenOLC: Error writing E-specs for mobile #%d.", mvnum);
-  
-    script_save_to_disk(fd, mob, MOB_TRIGGER);
-  
-  
-  #if CONFIG_GENOLC_MOBPROG
-    if (write_mobile_mobprog(mvnum, mob, fd) < 0)
-      log("SYSERR: GenOLC: Error writing MobProgs for mobile #%d.", mvnum);
-  #endif
-  } else {
-    mudlog(BRF,LVL_BUILDER,TRUE,
-           "SYSERR: Could not save mobile #%d due to size (%d > maximum of %d)",
-           mvnum, n, MAX_STRING_LENGTH);
-  }
-  
+  sprintascii(fbuf1, MOB_FLAGS(mob)[0]);
+  sprintascii(fbuf2, MOB_FLAGS(mob)[1]);
+  sprintascii(fbuf3, MOB_FLAGS(mob)[2]);
+  sprintascii(fbuf4, MOB_FLAGS(mob)[3]);
+  sprintascii(abuf1, AFF_FLAGS(mob)[0]);
+  sprintascii(abuf2, AFF_FLAGS(mob)[1]);
+  sprintascii(abuf3, AFF_FLAGS(mob)[2]);
+  sprintascii(abuf4, AFF_FLAGS(mob)[3]);
+
+  fprintf(fd, "%s %s %s %s %s %s %s %s %d\n"
+		"%d %d %d %dd%d+%d %dd%d+%d\n",
+                fbuf1, fbuf2, fbuf3, fbuf4,
+                abuf1, abuf2, abuf3, abuf4,
+		GET_ALIGNMENT(mob),
+		GET_HITDICE(mob), 20 - GET_ACCURACY_MOD(mob), 10 - (GET_ARMOR(mob) / 10),
+                GET_HIT(mob), GET_MANA(mob), GET_MOVE(mob), GET_NDD(mob), GET_SDD(mob),
+		GET_DAMAGE_MOD(mob)
+  );
+  fprintf(fd, 	"%d %d %d %d\n"
+		"%d %d %d\n",
+		GET_GOLD(mob), GET_EXP(mob), GET_RACE(mob), GET_CLASS(mob),
+		GET_POS(mob), GET_DEFAULT_POS(mob), GET_SEX(mob)
+  );
+
+  if (write_mobile_espec(mvnum, mob, fd) < 0)
+    log("SYSERR: GenOLC: Error writing E-specs for mobile #%d.", mvnum);
+
+  fprintf(fd, "S\n");
+  script_save_to_disk(fd, mob, MOB_TRIGGER);
+
+
+#if CONFIG_GENOLC_MOBPROG
+  if (write_mobile_mobprog(mvnum, mob, fd) < 0)
+    log("SYSERR: GenOLC: Error writing MobProgs for mobile #%d.", mvnum);
+#endif
+
   return TRUE;
 }
 
@@ -428,14 +497,14 @@ void check_mobile_strings(struct char_data *mob)
   check_mobile_string(mvnum, &GET_SDESC(mob), "short description");
 }
 
-void check_mobile_string(mob_vnum i, char **string, const char *desc)
+void check_mobile_string(mob_vnum i, char **string, const char *dscr)
 {
   if (*string == NULL || **string == '\0') {
-    char smbuf[128];
-    sprintf(smbuf, "GenOLC: Mob #%d has an invalid %s.", i, desc);
-    mudlog(BRF, LVL_GOD, TRUE, "%s", smbuf);
+    char smbuf[128]={'\0'};
+    sprintf(smbuf, "GenOLC: Mob #%d has an invalid %s.", i, dscr);
+    mudlog(BRF, ADMLVL_GOD, TRUE, "%s", smbuf);
     if (*string)
       free(*string);
-    *string = strdup("An undefined string.\n");
+    *string = strdup("An undefined string.");
   }
 }

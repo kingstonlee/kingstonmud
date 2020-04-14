@@ -1,8 +1,5 @@
 /* src/conf.h.in.  Generated automatically from configure.in by autoheader.  */
 
-#ifndef _CONF_H_
-#define _CONF_H_
-
 /* Define to empty if the keyword does not work.  */
 #undef const
 
@@ -161,6 +158,9 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Define if you have the <zlib.h> header file.  */
+#undef HAVE_ZLIB_H
 
 /* Define if you have the malloc library (-lmalloc).  */
 #undef HAVE_LIBMALLOC
@@ -333,5 +333,12 @@
 /* Check for a prototype to write. */
 #undef NEED_WRITE_PROTO
 
-
-#endif /* _CONF_H_ */
+/* Variable storage sizes */
+#undef SIZEOF_CHAR
+#undef SIZEOF_INT
+#undef SIZEOF_SHORT
+#undef SIZEOF_LONG
+#undef SIZEOF_LONG_LONG
+#undef SIZEOF_SIZE_T
+#undef SIZEOF_TIME_T
+#undef SIZEOF_CHAR_P

@@ -4,11 +4,9 @@
 * Purpose:   To provide special quest-related code.                      *
 * Copyright: Kenneth Ray                                                 *
 * Original Version Details:                                              *
-* Morgaelin - quest.h                     *
+* Morgaelin - quest.h						         *
 * Copyright (C) 1997 MS                                                  *
 *********************************************************************** */
-#ifndef _QUEST_H_
-#define _QUEST_H_
 
 /* Aquest related defines ********************************************* */
 #define AQ_UNDEFINED       -1   /* (R) Quest unavailable                */
@@ -44,7 +42,7 @@ struct aq_data {
   char     *quit;               /* Message displayed when quit quest    */
   long     flags;               /* Flags (repeatable, etc               */
   int      type;                /* Quest type                           */
-  mob_vnum qm;                  /* questmaster offering quest           */
+  mob_rnum qm;                  /* questmaster offering quest           */
   int      target;              /* Target value                         */
   obj_vnum prereq;              /* Object required to undertake quest   */
   int      value[7];            /* Quest values                         */
@@ -99,7 +97,6 @@ void remove_completed_quest(struct char_data *ch, qst_vnum vnum);
 void quest_timeout(struct char_data *ch);
 void check_timed_quests(void);
 SPECIAL(questmaster);
-ACMD(do_quest);
 /* Implemented in qedit.c  */
 void qedit_parse(struct descriptor_data *d, char *arg);
 void qedit_string_cleanup(struct descriptor_data *d, int terminator);
@@ -111,7 +108,11 @@ void free_quest(struct aq_data *quest);
 int add_quest(struct aq_data *nqst);
 int delete_quest(qst_rnum rnum);
 int save_quests(zone_rnum zone_num);
-
+/* AQ Global Variables ************************************************ */
+extern struct aq_data *aquest_table; /* all quest definitions (db.c)    */
+extern qst_rnum total_quests;        /* number of quests      (db.c)    */
+extern const char *aq_flags[];       /* names for quest flags (quest.c) */
+extern const char *quest_types[];    /* named for quest types (quest.c) */
 /* Qedit Connectedness ************************************************ */
 #define QEDIT_MAIN_MENU                 0
 #define QEDIT_CONFIRM_SAVESTRING        1
@@ -139,9 +140,3 @@ int save_quests(zone_rnum zone_num);
 #define QEDIT_EXP                      23
 #define QEDIT_OBJ                      24
 /* ******************************************************************** */
-
-/* AQ Global Variables ************************************************ */
-extern const char *aq_flags[];       /* names for quest flags (quest.c) */
-extern const char *quest_types[];    /* named for quest types (quest.c) */
-
-#endif /* _QUEST_H_ */

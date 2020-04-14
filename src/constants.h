@@ -1,22 +1,12 @@
-/**
-* @file constants.h
-* Declares the global constants defined in constants.c.
-*
-* Part of the core tbaMUD source code distribution, which is a derivative
-* of, and continuation of, CircleMUD.
-*
-* All rights reserved.  See license for complete information.
-* Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University
-* CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.
-*/
-#ifndef _CONSTANTS_H_
-#define _CONSTANTS_H_
+#ifndef CONSTANTS_H_
+#define CONSTANTS_H_
 
-extern const char *tbamud_version;
+extern const char *circlemud_version;
+extern const char *oasisolc_version;
+extern const char *ascii_pfiles_version;
 extern const char *dirs[];
-extern const char *autoexits[];
+extern const char *abbr_dirs[];
 extern const char *room_bits[];
-extern const char *zone_bits[];
 extern const char *exit_bits[];
 extern const char *sector_types[];
 extern const char *genders[];
@@ -39,24 +29,29 @@ extern const char *color_liquid[];
 extern const char *fullness[];
 extern const char *weekdays[];
 extern const char *month_name[];
-extern const struct str_app_type str_app[];
-extern const struct dex_skill_type dex_app_skill[];
-extern const struct dex_app_type dex_app[];
-extern const struct con_app_type con_app[];
-extern const struct int_app_type int_app[];
-extern const struct wis_app_type wis_app[];
+extern const char *trig_types[];
+extern const char *otrig_types[];
+extern const char *wtrig_types[];
+extern const char *size_names[];
 extern int rev_dir[];
 extern int movement_loss[];
 extern int drink_aff[][3];
 extern const char *trig_types[];
 extern const char *otrig_types[];
 extern const char *wtrig_types[];
-extern const char *history_types[];
-extern const char *ibt_bits[];
 extern size_t room_bits_count;
 extern size_t action_bits_count;
 extern size_t affected_bits_count;
 extern size_t extra_bits_count;
 extern size_t wear_bits_count;
+extern const char *patch_list[];
+extern const char *AssemblyTypes[];
+extern const char *alignments[];
+extern const char *admin_level_names[];
+extern struct aging_data racial_aging_data[];
+extern const char *spell_schools[];
+extern const char *cchoice_names[];
+extern const char *dr_style_names[];
+extern const char *creation_methods[];
 
-#endif /* _CONSTANTS_H_ */
+#endif

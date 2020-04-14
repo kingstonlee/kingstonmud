@@ -1,8 +1,5 @@
 /* CircleMUD for ACORN conf.h file - manually created (G. Duncan 13 June 98)
 
-#ifndef _CONF_H_
-#define _CONF_H_
-
 #define CIRCLE_ACORN
 
 /* Define to empty if the keyword does not work.  */
@@ -79,4 +76,3 @@
 /* Define if your compiler does not prototype strerror().  */
 /* #undef NEED_STRERROR_PROTO */
 
-#endif /* _CONF_H_ */

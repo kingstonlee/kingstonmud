@@ -1,12 +1,13 @@
-/**************************************************************************
-*  File: tedit.c                                           Part of tbaMUD *
-*  Usage: Oasis OLC - Text files.                                         *
-*                                                                         *
-* By Michael Scott [Manx].                                                *
-**************************************************************************/
+/*
+ * Originally written by: Michael Scott -- Manx.
+ * Last known e-mail address: scottm@workcomm.net
+ *
+ * XXX: This needs Oasis-ifying.
+ */
 
 #include "conf.h"
 #include "sysdep.h"
+
 #include "structs.h"
 #include "utils.h"
 #include "interpreter.h"
@@ -15,90 +16,94 @@
 #include "genolc.h"
 #include "oasis.h"
 #include "improved-edit.h"
-#include "modify.h"
+#include "tedit.h"
 
-extern time_t motdmod;
-extern time_t newsmod;
+extern const char *credits;
+extern const char *news;
+extern const char *motd;
+extern const char *imotd;
+extern const char *help;
+extern const char *info;
+extern const char *background;
+extern const char *handbook;
+extern const char *policies;
 
 void tedit_string_cleanup(struct descriptor_data *d, int terminator)
 {
-  FILE *fl;
-  char *storage = OLC_STORAGE(d);
+    FILE *fl;
+    char *storage = OLC_STORAGE(d);
 
-  if (!storage)
-    terminator = STRINGADD_ABORT;
+    if (!storage)
+        terminator = STRINGADD_ABORT;
 
-  switch (terminator) {
-  case STRINGADD_SAVE:
-    if (!(fl = fopen(storage, "w")))
-      mudlog(CMP, LVL_IMPL, TRUE, "SYSERR: Can't write file '%s'.", storage);
-    else {
-      if (*d->str) {
-        strip_cr(*d->str);
-        fputs(*d->str, fl);
-      }
-      fclose(fl);
-      mudlog(CMP, MAX(LVL_GOD, GET_INVIS_LEV(d->character)), TRUE, "OLC: %s saves '%s'.", GET_NAME(d->character), storage);
-      write_to_output(d, "Saved.\r\n");
-      if (!strcmp(storage, NEWS_FILE))
-        newsmod = time(0);
-      if (!strcmp(storage, MOTD_FILE))
-        motdmod = time(0);
+    switch (terminator) 
+    {
+        case STRINGADD_SAVE:
+        if (!(fl = fopen(storage, "w")))
+        {
+            mudlog(CMP, ADMLVL_IMPL, TRUE, "SYSERR: Can't write file '%s'.", storage);
+        }
+        else 
+        {
+            if (*d->str) 
+            {
+                strip_cr(*d->str);
+                fputs(*d->str, fl);
+            }
+            fclose(fl);
+            mudlog(CMP, ADMLVL_GOD, TRUE, "OLC: %s saves '%s'.", GET_NAME(d->character), storage);
+            write_to_output(d, "Saved.\r\n");
+        }
+        break;
+        case STRINGADD_ABORT:
+        write_to_output(d, "Edit aborted.\r\n");
+        act("$n stops editing some scrolls.", TRUE, d->character, 0, 0, TO_ROOM);
+        break;
+        default:
+        log("SYSERR: tedit_string_cleanup: Unknown terminator status.");
+        break;
     }
-    break;
-  case STRINGADD_ABORT:
-    write_to_output(d, "Edit aborted.\r\n");
-    act("$n stops editing some scrolls.", TRUE, d->character, 0, 0, TO_ROOM);
-    break;
-  default:
-    log("SYSERR: tedit_string_cleanup: Unknown terminator status.");
-    break;
-  }
 
-  /* Common cleanup code. */
-  cleanup_olc(d, CLEANUP_ALL);
-  STATE(d) = CON_PLAYING;
+    /* Common cleanup code. */
+    cleanup_olc(d, CLEANUP_ALL);
+    STATE(d) = CON_PLAYING;
 }
 
 ACMD(do_tedit)
 {
   int l, i = 0;
-  char field[MAX_INPUT_LENGTH];
+  char field[MAX_INPUT_LENGTH]={'\0'};
   char *backstr = NULL;
-
+   
   struct {
     char *cmd;
     char level;
-    char **buffer;
+    const char **buffer;
     int  size;
     char *filename;
   } fields[] = {
 	/* edit the lvls to your own needs */
-	{ "credits",	LVL_IMPL,	&credits,	2400,	CREDITS_FILE},
-	{ "news",	LVL_GRGOD,	&news,		8192,	NEWS_FILE},
-	{ "motd",	LVL_GRGOD,	&motd,		2400,	MOTD_FILE},
-	{ "imotd",	LVL_IMPL,	&imotd,		2400,	IMOTD_FILE},
-        { "greetings",  LVL_IMPL,       &GREETINGS,     2400,   GREETINGS_FILE},
-        { "help",       LVL_GRGOD,      &help,          2400,   HELP_PAGE_FILE},
-	{ "ihelp",      LVL_GRGOD,	&ihelp, 	2400,	IHELP_PAGE_FILE},
-	{ "info",	LVL_GRGOD,	&info,		8192,	INFO_FILE},
-	{ "background",	LVL_IMPL,	&background,	8192,	BACKGROUND_FILE},
-	{ "handbook",   LVL_IMPL,	&handbook,	8192,   HANDBOOK_FILE},
-	{ "policies",	LVL_IMPL,	&policies,	8192,	POLICIES_FILE},
-        { "wizlist",    LVL_IMPL,       &wizlist,       2400,   WIZLIST_FILE},
-        { "immlist",    LVL_GRGOD,      &immlist,       2400,   IMMLIST_FILE},
+	{ "credits",	ADMLVL_IMPL,	&credits,	2400,	CREDITS_FILE},
+	{ "news",	ADMLVL_GRGOD,	&news,		8192,	NEWS_FILE},
+	{ "motd",	ADMLVL_GRGOD,	&motd,		2400,	MOTD_FILE},
+	{ "imotd",	ADMLVL_IMPL,	&imotd,		2400,	IMOTD_FILE},
+	{ "help",       ADMLVL_GRGOD,	&help,		2400,	HELP_PAGE_FILE},
+	{ "info",	ADMLVL_GRGOD,	&info,		8192,	INFO_FILE},
+	{ "background",	ADMLVL_IMPL,	&background,	8192,	BACKGROUND_FILE},
+	{ "handbook",   ADMLVL_IMPL,	&handbook,	8192,   HANDBOOK_FILE},
+	{ "policies",	ADMLVL_IMPL,	&policies,	8192,	POLICIES_FILE},
 	{ "\n",		0,		NULL,		0,	NULL }
   };
 
   if (ch->desc == NULL)
     return;
-
+   
   one_argument(argument, field);
 
   if (!*field) {
     send_to_char(ch, "Files available to be edited:\r\n");
     for (l = 0; *fields[l].cmd != '\n'; l++) {
-      if (GET_LEVEL(ch) >= fields[l].level) {
+      if (GET_ADMLEVEL(ch) >= fields[l].level) {
 	send_to_char(ch, "%-11.11s ", fields[l].cmd);
 	if (!(++i % 7))
 	  send_to_char(ch, "\r\n");
@@ -113,13 +118,13 @@ ACMD(do_tedit)
   for (l = 0; *(fields[l].cmd) != '\n'; l++)
     if (!strncmp(field, fields[l].cmd, strlen(field)))
       break;
-
+   
   if (*fields[l].cmd == '\n') {
     send_to_char(ch, "Invalid text editor option.\r\n");
     return;
   }
-
-  if (GET_LEVEL(ch) < fields[l].level) {
+   
+  if (GET_ADMLEVEL(ch) < fields[l].level) {
     send_to_char(ch, "You are not godly enough for that!\r\n");
     return;
   }
@@ -130,11 +135,11 @@ ACMD(do_tedit)
   send_to_char(ch, "Edit file below:\r\n\r\n");
 
   if (ch->desc->olc) {
-    mudlog(BRF, LVL_IMMORT, TRUE, "SYSERR: do_tedit: Player already had olc structure.");
+    mudlog(BRF, ADMLVL_IMMORT, TRUE, "SYSERR: do_tedit: Player already had olc structure.");
     free(ch->desc->olc);
   }
   CREATE(ch->desc->olc, struct oasis_olc_data, 1);
-
+  
   if (*fields[l].buffer) {
     send_to_char(ch, "%s", *fields[l].buffer);
     backstr = strdup(*fields[l].buffer);

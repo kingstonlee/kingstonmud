@@ -3,9 +3,6 @@
  * Created by Jeremy Elson, 1 July 1998
  */
 
-#ifndef _CONF_H_
-#define _CONF_H_
-
 #define CIRCLE_WINDOWS
 
 /* Define to empty if the keyword does not work.  */
@@ -189,7 +186,7 @@
 #undef NEED_CHDIR_PROTO
 
 /* Check for a prototype to close. */
-#undef NEED_CLOSE_PROTO
+#define NEED_CLOSE_PROTO
 
 /* Check for a prototype to crypt. */
 #undef NEED_CRYPT_PROTO
@@ -338,4 +335,12 @@
 /* Check for a prototype to write. */
 #undef NEED_WRITE_PROTO
 
-#endif /* _CONF_H_ */
+#define strcasecmp strcmpi
+#define strncasecmp strnicmp
+#define snprintf _snprintf
+#define vsnprintf _vsnprintf
+#define strcasecmp strcmpi
+#define strncasecmp strnicmp
+#define ssize_t int
+#define off_t _off_t
+

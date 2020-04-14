@@ -1,82 +1,145 @@
-/**
-* @file sysdep.h
-* Machine-specific defs based on values in conf.h (from configure)
-* 
-* Part of the core tbaMUD source code distribution, which is a derivative
-* of, and continuation of, CircleMUD.
-*                                                                        
-* All rights reserved.  See license for complete information.                                                                
-* Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University 
-* CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.               
-*/
-#ifndef _SYSDEP_H_
-#define _SYSDEP_H_
+/* ************************************************************************
+*   File: sysdep.h                                      Part of CircleMUD *
+*  Usage: machine-specific defs based on values in conf.h (from configure)*
+*                                                                         *
+*  All rights reserved.  See license.doc for complete information.        *
+*                                                                         *
+*  Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University *
+*  CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.               *
+************************************************************************ */
 
-/* Configurables: tbaMUD uses the crypt(3) function to encrypt player passwords
- * in the players file so that they are never stored in plaintext form. However,
- * due to U.S. export restrictions on machine-readable cryptographic software, 
- * the crypt() function is not available on some operating systems such as 
- * FreeBSD.  By default, the 'configure' script will determine if you have 
- * crypt() available and enable or disable password encryption appropriately.  
- * #define NOCRYPT (by uncommenting the line below) if you'd like to explicitly
- * disable password encryption (i.e., if you have moved your MUD from an OS that
- * does not support encryption to one that does). */
+/* Configurables: */
+
+/*
+ * CircleMUD uses the crypt(3) function to encrypt player passwords in the
+ * playerfile so that they are never stored in plaintext form.  However,
+ * due to U.S. export restrictions on machine-readable cryptographic
+ * software, the crypt() function is not available on some operating
+ * systems such as FreeBSD.  By default, the 'configure' script will
+ * determine if you have crypt() available and enable or disable password
+ * encryption appropriately.  #define NOCRYPT (by uncommenting the line
+ * below) if you'd like to explicitly disable password encryption (i.e.,
+ * if you have moved your MUD from an OS that does not support encryption
+ * to one that does.)
+ *
+ * See running.doc for details.
+ */
+
 /* #define NOCRYPT */
 
-/* If you are porting tbaMUD to a new (untested) platform and you find that 
- * POSIX-standard non-blocking I/O does *not* work, you can define the constant
- * below to work around the problem.  Not having non-blocking I/O can cause the
- * MUD to freeze if someone types part of a command while the MUD waits for the
- * remainder of the command.
+/**************************************************************************/
+
+/*
+ * If you are porting CircleMUD to a new (untested) platform and you find
+ * that POSIX-standard non-blocking I/O does *not* work, you can define
+ * the constant below to have Circle work around the problem.  Not having
+ * non-blocking I/O can cause the MUD to freeze if someone types part of
+ * a command while the MUD waits for the remainder of the command.
  *
  * NOTE: **DO** **NOT** use this constant unless you are SURE you understand
- * exactly what non-blocking I/O is, and you are SURE that your operating system
- * does NOT have it!  (The only UNIX system I've ever seen that has broken POSIX
- * non-blocking I/O is AIX 3.2.)  If your MUD is freezing but you're not sure 
- * why, do NOT use this constant.  Use this constant ONLY if you're sure that 
- * your MUD is freezing because of a non-blocking I/O problem. */
+ * exactly what non-blocking I/O is, and you are SURE that your operating
+ * system does NOT have it!  (The only UNIX system I've ever seen that has
+ * broken POSIX non-blocking I/O is AIX 3.2.)  If your MUD is freezing but
+ * you're not sure why, do NOT use this constant.  Use this constant ONLY
+ * if you're sure that your MUD is freezing because of a non-blocking I/O
+ * problem.
+ *
+ * See running.doc for details.
+ */
+
 /* #define POSIX_NONBLOCK_BROKEN */
 
-/* The code prototypes library functions to avoid compiler warnings. (Operating
- * system header files *should* do this, but sometimes don't.) However, Circle's
- * prototypes cause the compilation to fail under some combinations of operating
- * systems and compilers. If your compiler reports "conflicting types" for 
- * functions, you need to define this constant to turn off library function 
- * prototyping.  Note, **DO** **NOT** blindly turn on this constant unless you 
- * are sure the problem is type conflicts between my header files and the header
- * files of your operating system.  The error message will look something like
- * this: In file included from comm.c:14:
+/**************************************************************************/
+
+/*
+ * The Circle code prototypes library functions to avoid compiler warnings.
+ * (Operating system header files *should* do this, but sometimes don't.)
+ * However, Circle's prototypes cause the compilation to fail under some
+ * combinations of operating systems and compilers.
+ *
+ * If your compiler reports "conflicting types" for functions, you need to
+ * define this constant to turn off library function prototyping.  Note,
+ * **DO** **NOT** blindly turn on this constant unless you're sure the
+ * problem is type conflicts between my header files and the header files
+ * of your operating system.  The error message will look something like
+ * this:
+ *
+ * In file included from comm.c:14:
  *    sysdep.h:207: conflicting types for `random'
  * /usr/local/lib/gcc-lib/alpha-dec-osf3.2/2.7.2/include/stdlib.h:253:
- *    previous declaration of `random' */
+ *    previous declaration of `random'
+ *
+ * See running.doc for details.
+ */
+
 /* #define NO_LIBRARY_PROTOTYPES */
 
-/* If using the GNU C library, version 2+, then you can have it trace memory 
- * allocations to check for leaks, uninitialized uses, and bogus free() calls.
- * To see if your version supports it, run:
- * info libc 'Allocation Debugging' 'Tracing malloc'
+/**************************************************************************/
+
+/*
+ * If using the GNU C library, version 2+, then you can have it trace
+ * memory allocations to check for leaks, uninitialized uses, and bogus
+ * free() calls.  To see if your version supports it, run:
+ *
+ *      info libc 'Allocation Debugging' 'Tracing malloc'
+ *
  * Example usage (Bourne shell):
+ *
  *      MALLOC_TRACE=/tmp/circle-trace bin/circle
+ *
+ * After it finishes:
+ *
+ *      mtrace bin/circle /tmp/circle-trace
+ *
+ * (Stock CircleMUD produces a file approximately 1.5 megabytes in size
+ * just running in Syntax Check mode.)
+ *
+ * NOTE: The GNU C library version 2.1.3 leaks a tiny bit of memory
+ *	by itself. You will see something similar to:
+ *
+ *	- 0000000000 Free 36910 was never alloc'd /lib/libcrypt.so.1:(fcrypt+0x883)[0x4001b9ef]
+ *
+ *	Memory not freed:
+ *	-----------------
+ *	   Address     Size     Caller
+ *	0x080ca830      0xf  at /lib/libc.so.6:(__strdup+0x29)[0x400a6a09]
+ *	0x080ca848      0xc  at /lib/libc.so.6:(adjtime+0x25c)[0x400d127c]
+ *	0x080ca858      0xc  at /lib/libc.so.6:(adjtime+0x25c)[0x400d127c]
+ *	0x080ca868      0xc  at /lib/libc.so.6:(adjtime+0x25c)[0x400d127c]
+ *
+ * But with GNU C library version 2.2.4:
+ *
+ *	No memory leaks.
+ *
  * Read the entire "Allocation Debugging" section of the GNU C library
- * documentation before setting this to '1'. */
+ * documentation before setting this to '1'.
+ */
+
 #define CIRCLE_GNU_LIBC_MEMORY_TRACK	0	/* 0 = off, 1 = on */
 
-/* Do not change anything below this line. */
 
-/* Set up various machine-specific things based on the values determined from 
- * configure and conf.h. */
+/************************************************************************/
+/*** Do not change anything below this line *****************************/
+/************************************************************************/
+
+/*
+ * Set up various machine-specific things based on the values determined
+ * from configure and conf.h.
+ */
+
+/* Standard C headers  *************************************************/
 
 #include <stdio.h>
 #include <ctype.h>
 #include <stdarg.h>
 
-#ifdef HAVE_STRING_H
 #include <string.h>
-#endif
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
+
+//#include "strlcpy.h"
 
 #if     (defined (STDC_HEADERS) || defined (__GNU_LIBRARY__))
 #include <stdlib.h>
@@ -94,7 +157,8 @@ extern void abort (), exit ();
 
 #endif  /* Standard headers.  */
 
-/* POSIX compliance */
+/* POSIX compliance  *************************************************/
+
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
@@ -132,7 +196,12 @@ extern void abort (), exit ();
 #define POSIX_NONBLOCK_BROKEN
 #endif
 
+
+/* Header files *******************************************************/
+
+ 
 /* Header files common to all source files */
+
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
@@ -170,6 +239,14 @@ extern void abort (), exit ();
 #else
 #define assert(arg)
 #endif
+
+#ifdef HAVE_ZLIB_H
+# include <zlib.h>
+#endif
+
+/* Header files only used in comm.c and some of the utils */
+
+#if defined(__COMM_C__) || defined(CIRCLE_UTIL)
 
 #ifndef HAVE_STRUCT_IN_ADDR
 struct in_addr {
@@ -227,11 +304,21 @@ struct in_addr {
 # include <sys/uio.h>
 #endif
 
+#endif /* __COMM_C__ && CIRCLE_UNIX */
+
+
+/* Header files that are only used in act.other.c */
+#ifdef __ACT_OTHER_C__
+
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
 
-/* Basic system dependencies. */
+#endif /* __ACT_OTHER_C__ */
+
+
+/* Basic system dependencies *******************************************/
+
 #if CIRCLE_GNU_LIBC_MEMORY_TRACK && !defined(HAVE_MCHECK_H)
 #error "Cannot use GNU C library memory tracking without <mcheck.h>"
 #endif
@@ -252,6 +339,9 @@ struct in_addr {
 
 #if !defined(__GNUC__)
 # define __attribute__(x)	/* nothing */
+# define SVNHEADER(x)	static char svn_header[] = x
+#else
+# define SVNHEADER(x)	static char __attribute__((unused)) svn_header[] = x
 #endif
 
 #if defined(__MWERKS__)
@@ -265,6 +355,10 @@ struct in_addr {
 # define snprintf _snprintf
 # define vsnprintf _vsnprintf
 # define PATH_MAX MAX_PATH
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 # if !defined(__BORLANDC__) && !defined(LCC_WIN32)	/* MSVC */
 #  define chdir _chdir
@@ -288,7 +382,9 @@ struct in_addr {
 
 #elif defined(CIRCLE_VMS)
 
-/* Necessary Definitions For DEC C With DEC C Sockets Under OpenVMS. */
+/*
+ * Necessary Definitions For DEC C With DEC C Sockets Under OpenVMS.
+ */
 # if defined(DECC)
 #  include <stdio.h>
 #  include <time.h>
@@ -324,6 +420,7 @@ struct in_addr {
 #endif
 #endif
 #endif /*CIRCLE_OS_X*/
+  
 
 /* Make sure we have STDERR_FILENO */
 #ifndef STDERR_FILENO
@@ -339,15 +436,50 @@ struct in_addr {
 # include "bsd-snprintf.h"
 #endif
 
-/* Function prototypes. */
-/* Header files of many OS's do not contain function prototypes for the
- * standard C library functions.  This produces annoying warning messages 
- * (sometimes, a lot of them) on such OS's when compiling with gcc's -Wall.
+/* Function prototypes ************************************************/
+
+/*
+ * For reasons that perplex me, the header files of many OS's do not contain
+ * function prototypes for the standard C library functions.  This produces
+ * annoying warning messages (sometimes, a huge number of them) on such OS's
+ * when compiling with gcc's -Wall.
  *
- * Configuration script has been changed to detect which prototypes exist 
- * already; this header file only prototypes functions that aren't already 
- * prototyped by the system headers.  A clash should be impossible.  This 
- * should give us our strong type-checking back. */
+ * Some versions of CircleMUD prior to 3.0 patchlevel 9 attempted to
+ * include prototypes taken from OS man pages for a large number of
+ * OS's in the header files.  I now think such an approach is a bad
+ * idea: maintaining that list is very difficult and time-consuming,
+ * and when new revisions of OS's are released with new header files,
+ * Circle can break if the prototypes contained in Circle's .h files
+ * differs from the new OS header files; for example, Circle 3.0
+ * patchlevel 8 failed with compiler errors under Solaris 2.5 and
+ * Linux 1.3.xx whereas under previous revisions of those OS's it had
+ * been fine.
+ *
+ * Thus, to silence the compiler warnings but still maintain some level of
+ * portability (albiet at the expense of worse error checking in the code),
+ * my solution is to define a "typeless" function prototype for all problem
+ * functions that have not already been prototyped by the OS. --JE
+ *
+ * 20 Mar 96: My quest is not yet over.  These definitions still cause
+ * clashes with some compilers.  Therefore, we only use these prototypes
+ * if we're using gcc (which makes sense, since they're only here for gcc's
+ * -Wall option in the first place), and configure tells gcc to use
+ * -fno-strict-prototypes, so that these definitions don't clash with
+ * previous prototypes.
+ *
+ * 4 June 96: The quest continues.  OSF/1 still doesn't like these
+ * prototypes, even with gcc and -fno-strict-prototypes.  I've created
+ * the constant NO_LIBRARY_PROTOTYPES to allow people to turn off the
+ * prototyping.
+ *
+ * 27 Oct 97: This is driving me crazy but I think I've finally come
+ * up with the solution that will work.  I've changed the configure
+ * script to detect which prototypes exist already; this header file
+ * only prototypes functions that aren't already prototyped by the
+ * system headers.  A clash should be impossible.  This should give us
+ * our strong type-checking back.  This should be the last word on
+ * this issue!
+ */
 
 #ifndef NO_LIBRARY_PROTOTYPES
 
@@ -359,12 +491,14 @@ struct in_addr {
    long atol(const char *str);
 #endif
 
-/* bzero is deprecated - use memset() instead. This prototype is needed for 
- * FD_xxx macros on some machines. */
+/*
+ * bzero is deprecated - use memset() instead.  Not directly used in Circle
+ * but the prototype needed for FD_xxx macros on some machines.
+ */
 #ifdef NEED_BZERO_PROTO
-   void bzero(char *b, int length);
+     void bzero(char *b, int length);
 #endif
-
+ 
 #ifdef NEED_CRYPT_PROTO
    char *crypt(const char *key, const char *salt);
 #endif
@@ -434,9 +568,9 @@ struct in_addr {
    char *strerror(int errnum);
 #endif
 
-#ifdef NEED_STRLCPY_PROTO
+//#ifdef NEED_STRLCPY_PROTO
    size_t strlcpy(char *dest, const char *src, size_t copylen);
-#endif
+//#endif
 
 #ifdef NEED_SYSTEM_PROTO
    int system(const char *string);
@@ -453,6 +587,10 @@ struct in_addr {
 #ifdef NEED_REMOVE_PROTO
    int remove(const char *path);
 #endif
+
+/* Function prototypes that are only used in comm.c and some of the utils */
+
+#if defined(__COMM_C__) || defined(CIRCLE_UTIL)
 
 #ifdef NEED_ACCEPT_PROTO
    int accept(socket_t s, struct sockaddr *addr, int *addrlen);
@@ -495,7 +633,7 @@ struct in_addr {
 #endif
 
 #ifdef NEED_GETTIMEOFDAY_PROTO
-   void gettimeofday(struct timeval *tp, void * );
+   int gettimeofday(struct timeval *tp, void * );
 #endif
 
 #ifdef NEED_HTONL_PROTO
@@ -536,7 +674,7 @@ struct in_addr {
 
 #ifdef NEED_SELECT_PROTO
    int select(int nfds, fd_set *readfds, fd_set *writefds,
-          fd_set *exceptfds, struct timeval *timeout);
+          fd_set *exceptfds, struct timeval *timeout);   
 #endif
 
 #ifdef NEED_SETITIMER_PROTO
@@ -561,7 +699,7 @@ struct in_addr {
     ssize_t write(int fildes, const void *buf, size_t nbyte);
 #endif
 
+#endif /* __COMM_C__ */
+
+
 #endif /* NO_LIBRARY_PROTOTYPES */
-
-#endif /* _SYSDEP_H_ */
-
