@@ -28,18 +28,20 @@
 #include "modify.h"
 #include "asciimap.h"
 #include "quest.h"
+#include "vehicles.h"
 
 /* prototypes of local functions */
 /* do_diagnose utility functions */
 static void diag_char_to_char(struct char_data *i, struct char_data *ch);
 /* do_look and do_examine utility functions */
-static void do_auto_exits(struct char_data *ch);
+static void do_auto_exits(room_rnum target_room, struct char_data *ch, int exit_mode);
 static void list_char_to_char(struct char_data *list, struct char_data *ch);
 static void list_one_char(struct char_data *i, struct char_data *ch);
 static void look_at_char(struct char_data *i, struct char_data *ch);
-static void look_at_target(struct char_data *ch, char *arg);
+static void look_at_target(struct char_data *ch, char *arg, int read);
 static void look_in_direction(struct char_data *ch, int dir);
 static void look_in_obj(struct char_data *ch, char *arg);
+static void look_out_window(struct char_data *ch, char *arg);
 /* do_look, do_inventory utility functions */
 static void list_obj_to_char(struct obj_data *list, struct char_data *ch, int mode, int show);
 /* do_look, do_equipment, do_examine, do_inventory */
@@ -55,6 +57,18 @@ static void print_object_location(int num, struct obj_data *obj, struct char_dat
 #define SHOW_OBJ_LONG     0
 #define SHOW_OBJ_SHORT    1
 #define SHOW_OBJ_ACTION   2
+
+/* Portal appearance types */
+const char *portal_appearance[] = {
+    "All you can see is the glow of the portal.",
+    "You see an image of yourself in the room - my, you are looking attractive today.",
+    "All you can see is a swirling grey mist.",
+    "The scene is of the surrounding countryside, but somehow blurry and lacking focus.",
+    "The blackness appears to stretch on forever.",
+    "Suddenly, out of the blackness a flaming red eye appears and fixes its gaze upon you.",
+    "\n"
+};
+#define MAX_PORTAL_TYPES        6
 
 static void show_obj_to_char(struct obj_data *obj, struct char_data *ch, int mode)
 {
@@ -414,29 +428,100 @@ static void list_char_to_char(struct char_data *list, struct char_data *ch)
     }
 }
 
-static void do_auto_exits(struct char_data *ch)
+static void do_auto_exits(room_rnum target_room, struct char_data *ch, int exit_mode)
 {
-  int door, slen = 0;
+  int door, door_found = 0, has_light = FALSE;
 
-  send_to_char(ch, "%s[ Exits: ", CCCYN(ch, C_NRM));
-
-  for (door = 0; door < DIR_COUNT; door++) {
-    if (!EXIT(ch, door) || EXIT(ch, door)->to_room == NOWHERE)
-      continue;
-    if (EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED) && !CONFIG_DISP_CLOSED_DOORS)
-      continue;
-	if (EXIT_FLAGGED(EXIT(ch, door), EX_HIDDEN) && !PRF_FLAGGED(ch, PRF_HOLYLIGHT))
-	  continue;
-    if (EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED))
-	  send_to_char(ch, "%s(%s)%s ", EXIT_FLAGGED(EXIT(ch, door), EX_HIDDEN) ? CCWHT(ch, C_NRM) : CCRED(ch, C_NRM), autoexits[door], CCCYN(ch, C_NRM));
-	else if (EXIT_FLAGGED(EXIT(ch, door), EX_HIDDEN))
-	  send_to_char(ch, "%s%s%s ", CCWHT(ch, C_NRM), autoexits[door], CCCYN(ch, C_NRM));
-    else
-      send_to_char(ch, "\t(%s\t) ", autoexits[door]);
-    slen++;
+  if (exit_mode == EXIT_NORMAL) {
+    /* Standard behaviour - just list the available exit directions */
+    send_to_char(ch, "%s[ Exits: ", CCCYN(ch, C_NRM));
+    for (door = 0; door < NUM_OF_DIRS; door++) {
+      if (!W_EXIT(target_room, door) ||
+           W_EXIT(target_room, door)->to_room == NOWHERE)
+        continue;
+      if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_CLOSED) &&
+          !CONFIG_DISP_CLOSED_DOORS)
+        continue;
+      if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_HIDDEN) && 
+          EXIT_FLAGGED(W_EXIT(target_room, door), EX_CLOSED))
+        continue;
+      if (EXIT_FLAGGED(W_EXIT(target_room, door), EX_CLOSED))
+        send_to_char(ch, "%s(%s)%s ",
+                     CCRED(ch, C_NRM), abbr_dirs[door], CCCYN(ch, C_NRM));
+      else
+        send_to_char(ch, "%s ", abbr_dirs[door]);
+      door_found++;
+    }
+    send_to_char(ch, "%s]%s\r\n", door_found ? "" : "None!", CCNRM(ch, C_NRM));
   }
 
-  send_to_char(ch, "%s]%s\r\n", slen ? "" : "None!", CCNRM(ch, C_NRM));
+  if (exit_mode == EXIT_COMPLETE) {
+    send_to_char(ch, "%sObvious Exits:%s\r\n", CCCYN(ch, C_NRM), CCNRM(ch,C_NRM));
+    if (IS_AFFECTED(ch, AFF_BLIND)) {
+      send_to_char(ch, "You can't see a damned thing, you're blind!\r\n");
+      return;
+    }
+    if (IS_DARK(IN_ROOM(ch)) && !CAN_SEE_IN_DARK(ch)) {
+      send_to_char(ch, "It is pitch black...\r\n");
+      return;
+    }
+
+    /* Is the character using a working light source? */
+    if (GET_EQ(ch, WEAR_LIGHT))
+      if (GET_OBJ_TYPE(GET_EQ(ch, WEAR_LIGHT)) == ITEM_LIGHT)
+        if (GET_OBJ_VAL(GET_EQ(ch, WEAR_LIGHT),VAL_LIGHT_HOURS))
+          has_light = TRUE;
+
+    for (door = 0; door < NUM_OF_DIRS; door++) {
+      if (W_EXIT(target_room, door) &&
+          W_EXIT(target_room, door)->to_room != NOWHERE) {
+       /* We have a door that leads somewhere */
+        if (GET_LEVEL(ch) >= LVL_IMMORT) {
+          /* Immortals see everything */
+          door_found++;
+          send_to_char(ch, "%-9s - [%5d] %s.\r\n", dirs[door],
+                world[W_EXIT(target_room, door)->to_room].number,
+                world[W_EXIT(target_room, door)->to_room].name);
+          if (IS_SET(W_EXIT(target_room, door)->exit_info, EX_ISDOOR) ||
+              IS_SET(W_EXIT(target_room, door)->exit_info, EX_HIDDEN)   ) {
+            /* This exit has a door - tell all about it */
+            send_to_char(ch,"                    The %s%s is %s %s%s.\r\n",
+                IS_SET(W_EXIT(target_room, door)->exit_info, EX_HIDDEN) ?
+                    "secret " : "",
+                (W_EXIT(target_room, door)->keyword &&
+                 str_cmp(fname(W_EXIT(target_room, door)->keyword), "undefined")) ?
+                    fname(W_EXIT(target_room, door)->keyword) : "opening",
+                IS_SET(W_EXIT(target_room, door)->exit_info, EX_CLOSED) ?
+                    "closed" : "open",
+                IS_SET(W_EXIT(target_room, door)->exit_info, EX_LOCKED) ?
+                    "and locked" : "but unlocked",
+                IS_SET(W_EXIT(target_room, door)->exit_info, EX_PICKPROOF) ?
+                    " (pickproof)" : "");
+          }
+        }
+        else { /* This is what mortal characters see */
+          if (!IS_SET(W_EXIT(target_room, door)->exit_info, EX_CLOSED)) {
+            /* And the door is open */
+            door_found++;
+            send_to_char(ch, "%-9s - %s\r\n", dirs[door],
+                IS_DARK(W_EXIT(target_room, door)->to_room) &&
+                !CAN_SEE_IN_DARK(ch) && !has_light ?
+                "Too dark to tell." :
+                world[W_EXIT(target_room, door)->to_room].name);
+          } else if (CONFIG_DISP_CLOSED_DOORS &&
+              !IS_SET(W_EXIT(target_room, door)->exit_info, EX_HIDDEN)) {
+              /* But we tell them the door is closed */
+              door_found++;
+              send_to_char(ch, "%-9s - The %s is closed.\r\n", dirs[door],
+                  (W_EXIT(target_room, door)->keyword) ?
+                  fname(W_EXIT(target_room,door)->keyword) : "opening" );
+            }
+        }
+      }
+    }
+    if (!door_found)
+    send_to_char(ch, " None.\r\n");
+  }
 }
 
 ACMD(do_exits)
@@ -478,58 +563,50 @@ ACMD(do_exits)
     send_to_char(ch, " None.\r\n");
 }
 
-void look_at_room(struct char_data *ch, int ignore_brief)
+void look_at_room(room_rnum target_room, struct char_data *ch, int ignore_brief)
 {
-  trig_data *t;
   struct room_data *rm = &world[IN_ROOM(ch)];
-  room_vnum target_room;
-
-  target_room = IN_ROOM(ch);
-
   if (!ch->desc)
     return;
 
-  if (IS_DARK(IN_ROOM(ch)) && !CAN_SEE_IN_DARK(ch)) {
+  if (IS_DARK(target_room) && !CAN_SEE_IN_DARK(ch)) {
     send_to_char(ch, "It is pitch black...\r\n");
     return;
-  } else if (AFF_FLAGGED(ch, AFF_BLIND) && GET_LEVEL(ch) < LVL_IMMORT) {
+  } else if (AFF_FLAGGED(ch, AFF_BLIND)) {
     send_to_char(ch, "You see nothing but infinite darkness...\r\n");
     return;
   }
   send_to_char(ch, "%s", CCCYN(ch, C_NRM));
-  if (!IS_NPC(ch) && PRF_FLAGGED(ch, PRF_SHOWVNUMS)) {
+  if (!IS_NPC(ch) && PRF_FLAGGED(ch, PRF_ROOMFLAGS)) {
     char buf[MAX_STRING_LENGTH];
+    char buf2[MAX_STRING_LENGTH];
 
-    sprintbitarray(ROOM_FLAGS(IN_ROOM(ch)), room_bits, RF_ARRAY_MAX, buf);
+    sprintbitarray(ROOM_FLAGS(target_room), room_bits, RF_ARRAY_MAX, buf);
+    sprinttype(rm->sector_type, sector_types, buf2, sizeof(buf2));
     send_to_char(ch, "[%5d] ", GET_ROOM_VNUM(IN_ROOM(ch)));
-    send_to_char(ch, "%s [ %s] [ %s ]", world[IN_ROOM(ch)].name, buf, sector_types[world[IN_ROOM(ch)].sector_type]);
 
-    if (SCRIPT(rm)) {
-      send_to_char(ch, "[T");
-      for (t = TRIGGERS(SCRIPT(rm)); t; t = t->next)
-        send_to_char(ch, " %d", GET_TRIG_VNUM(t));
-      send_to_char(ch, "]");
-    }
-  }
-  else
-    send_to_char(ch, "%s", world[IN_ROOM(ch)].name);
+    send_to_char(ch, "%s%s [ %s] [ %s ]",
+                     SCRIPT(rm) ? "[TRIG] " : "",
+                     world[IN_ROOM(ch)].name, buf, buf2);
+  } else
+    send_to_char(ch, "%s", world[target_room].name);
+
   send_to_char(ch, "%s\r\n", CCNRM(ch, C_NRM));
 
   if ((!IS_NPC(ch) && !PRF_FLAGGED(ch, PRF_BRIEF)) || ignore_brief ||
-      ROOM_FLAGGED(IN_ROOM(ch), ROOM_DEATH)) {
-    if(!IS_NPC(ch) && PRF_FLAGGED(ch, PRF_AUTOMAP) && can_see_map(ch))
-        str_and_map(world[target_room].description, ch, target_room);
-    else
-      send_to_char(ch, "%s", world[IN_ROOM(ch)].description);
-  }
+      ROOM_FLAGGED(target_room, ROOM_DEATH))
+    send_to_char(ch, "%s", world[target_room].description);
 
   /* autoexits */
   if (!IS_NPC(ch) && PRF_FLAGGED(ch, PRF_AUTOEXIT))
-    do_auto_exits(ch);
+    do_auto_exits(target_room, ch, EXIT_LEV(ch));
 
   /* now list characters & objects */
-  list_obj_to_char(world[IN_ROOM(ch)].contents, ch, SHOW_OBJ_LONG, FALSE);
-  list_char_to_char(world[IN_ROOM(ch)].people, ch);
+  send_to_char(ch, "%s", CCGRN(ch, C_NRM));
+  list_obj_to_char(world[target_room].contents, ch, SHOW_OBJ_LONG, FALSE);
+  send_to_char(ch, "%s", CCYEL(ch, C_NRM));
+  list_char_to_char(world[target_room].people, ch);
+  send_to_char(ch, "%s", CCNRM(ch, C_NRM));
 }
 
 static void look_in_direction(struct char_data *ch, int dir)
@@ -548,7 +625,7 @@ static void look_in_direction(struct char_data *ch, int dir)
     send_to_char(ch, "Nothing special there...\r\n");
 }
 
-static void look_in_obj(struct char_data *ch, char *arg)
+void look_in_obj(struct char_data *ch, char *arg)
 {
   struct obj_data *obj = NULL;
   struct char_data *dummy = NULL;
@@ -556,54 +633,95 @@ static void look_in_obj(struct char_data *ch, char *arg)
 
   if (!*arg)
     send_to_char(ch, "Look in what?\r\n");
-  else if (!(bits = generic_find(arg, FIND_OBJ_INV | FIND_OBJ_ROOM |
-				 FIND_OBJ_EQUIP, ch, &dummy, &obj))) {
+  else if (!(bits = generic_find(arg, FIND_OBJ_INV | FIND_OBJ_ROOM | FIND_OBJ_EQUIP, ch, &dummy, &obj))) {
     send_to_char(ch, "There doesn't seem to be %s %s here.\r\n", AN(arg), arg);
-  } else if ((GET_OBJ_TYPE(obj) != ITEM_DRINKCON) &&
-	     (GET_OBJ_TYPE(obj) != ITEM_FOUNTAIN) &&
-	     (GET_OBJ_TYPE(obj) != ITEM_CONTAINER))
+  } else if (find_exdesc(arg, obj->ex_description) != NULL && !bits)
+      send_to_char(ch, "There's nothing inside that!\r\n");
+    else if ((GET_OBJ_TYPE(obj) == ITEM_PORTAL) && !OBJVAL_FLAGGED(obj, CONT_CLOSEABLE)) {
+   if (GET_OBJ_VAL(obj, VAL_PORTAL_APPEAR) < 0) {
+     /* You can look through the portal to the destination */
+     /* where does this lead to? */
+     room_rnum portal_dest = real_room(GET_OBJ_VAL(obj, VAL_PORTAL_DEST));
+     if (portal_dest == NOWHERE) {
+       send_to_char(ch, "You see nothing but infinite darkness...\r\n");
+     } else if (IS_DARK(portal_dest) && !CAN_SEE_IN_DARK(ch)) {
+       send_to_char(ch, "You see nothing but infinite darkness...\r\n");
+     } else {
+       send_to_char(ch, "After seconds of concentration you see the image of %s.\r\n", world[portal_dest].name);
+     }
+   } else if (GET_OBJ_VAL(obj, VAL_PORTAL_APPEAR) < MAX_PORTAL_TYPES) {
+     /* display the appropriate description from the list of descriptions
+*/
+     send_to_char(ch, "%s\r\n", portal_appearance[GET_OBJ_VAL(obj, VAL_PORTAL_APPEAR)]);
+   } else {
+     /* We shouldn't really get here, so give a default message */
+     send_to_char(ch, "All you can see is the glow of the portal.\r\n");
+   }
+ } else if (GET_OBJ_TYPE(obj) == ITEM_VEHICLE) {
+   if (OBJVAL_FLAGGED(obj, CONT_CLOSED))
+     send_to_char(ch, "It is closed.\r\n");
+   else if (GET_OBJ_VAL(obj, VAL_VEHICLE_APPEAR) < 0) {
+     /* You can look inside the vehicle */
+     /* where does this lead to? */
+     room_rnum vehicle_inside = real_room(GET_OBJ_VAL(obj, VAL_VEHICLE_ROOM));
+     if (vehicle_inside == NOWHERE) {
+       send_to_char(ch, "You cannot see inside that.\r\n");
+     } else if (IS_DARK(vehicle_inside) && !CAN_SEE_IN_DARK(ch)) {
+       send_to_char(ch, "It is pitch black...\r\n");
+     } else {
+       send_to_char(ch, "You look inside and see:\r\n");
+       look_at_room(vehicle_inside, ch, 0);
+     }
+   } else {
+     send_to_char(ch, "You cannot see inside that.\r\n");
+   }
+ } else if (GET_OBJ_TYPE(obj) == ITEM_WINDOW) {
+   look_out_window(ch, arg);
+ } else if ((GET_OBJ_TYPE(obj) != ITEM_DRINKCON) &&
+            (GET_OBJ_TYPE(obj) != ITEM_FOUNTAIN) &&
+            (GET_OBJ_TYPE(obj) != ITEM_CONTAINER)&&
+            (GET_OBJ_TYPE(obj) != ITEM_PORTAL))     {
     send_to_char(ch, "There's nothing inside that!\r\n");
-  else {
-    if (GET_OBJ_TYPE(obj) == ITEM_CONTAINER) {
-      if (OBJVAL_FLAGGED(obj, CONT_CLOSED) && (GET_LEVEL(ch) < LVL_IMMORT || !PRF_FLAGGED(ch, PRF_NOHASSLE)))
-	send_to_char(ch, "It is closed.\r\n");
-      else {
-	send_to_char(ch, "%s", fname(obj->name));
-	switch (bits) {
-	case FIND_OBJ_INV:
-	  send_to_char(ch, " (carried): \r\n");
-	  break;
-	case FIND_OBJ_ROOM:
-	  send_to_char(ch, " (here): \r\n");
-	  break;
-	case FIND_OBJ_EQUIP:
-	  send_to_char(ch, " (used): \r\n");
-	  break;
-	}
+ } else if ((GET_OBJ_TYPE(obj) == ITEM_CONTAINER) ||
+            (GET_OBJ_TYPE(obj) == ITEM_PORTAL)) {
+     if (OBJVAL_FLAGGED(obj, CONT_CLOSED))
+       send_to_char(ch, "It is closed.\r\n");
+     else {
+       send_to_char(ch, "%s", fname(obj->name));
+       switch (bits) {
+       case FIND_OBJ_INV:
+         send_to_char(ch, " (carried): \r\n");
+         break;
+       case FIND_OBJ_ROOM:
+         send_to_char(ch, " (here): \r\n");
+         break;
+       case FIND_OBJ_EQUIP:
+         send_to_char(ch, " (used): \r\n");
+         break;
+       }
 
-	list_obj_to_char(obj->contains, ch, SHOW_OBJ_SHORT, TRUE);
-      }
-    } else {		/* item must be a fountain or drink container */
-      if ((GET_OBJ_VAL(obj, 1) == 0) && (GET_OBJ_VAL(obj, 0) != -1))
-	send_to_char(ch, "It is empty.\r\n");
-      else {
-        if (GET_OBJ_VAL(obj, 0) < 0)
+       list_obj_to_char(obj->contains, ch, SHOW_OBJ_SHORT, TRUE);
+     }
+   } else {            /* item must be a fountain or drink container */
+       if (GET_OBJ_VAL(obj, VAL_DRINKCON_HOWFULL) <= 0)
+          send_to_char(ch, "It is empty.\r\n");
+          else {
+        if (GET_OBJ_VAL(obj, VAL_DRINKCON_CAPACITY) < 0)
         {
-          char buf2[MAX_STRING_LENGTH];
-          sprinttype(GET_OBJ_VAL(obj, 2), color_liquid, buf2, sizeof(buf2));
-          send_to_char(ch, "It's full of a %s liquid.\r\n", buf2);
+         char buf2[MAX_STRING_LENGTH];
+         sprinttype(GET_OBJ_VAL(obj, VAL_DRINKCON_LIQUID), color_liquid, buf2, sizeof(buf2));
+         send_to_char(ch, "It's full of a %s liquid.\r\n", buf2);
         }
-	else if (GET_OBJ_VAL(obj,1)>GET_OBJ_VAL(obj,0))
-          send_to_char(ch, "Its contents seem somewhat murky.\r\n"); /* BUG */
-        else {
+       else if (GET_OBJ_VAL(obj,VAL_DRINKCON_HOWFULL) > GET_OBJ_VAL(obj,VAL_DRINKCON_CAPACITY)) {
+         send_to_char(ch, "Its contents seem somewhat murky.\r\n"); /* BUG */
+       } else {
           char buf2[MAX_STRING_LENGTH];
-	  amt = (GET_OBJ_VAL(obj, 1) * 3) / GET_OBJ_VAL(obj, 0);
-	  sprinttype(GET_OBJ_VAL(obj, 2), color_liquid, buf2, sizeof(buf2));
-	  send_to_char(ch, "It's %sfull of a %s liquid.\r\n", fullness[amt], buf2);
-	}
-      }
-    }
-  }
+          amt = (GET_OBJ_VAL(obj, VAL_DRINKCON_HOWFULL) * 3) / GET_OBJ_VAL(obj, VAL_DRINKCON_CAPACITY);
+          sprinttype(GET_OBJ_VAL(obj, VAL_DRINKCON_LIQUID), color_liquid, buf2, sizeof(buf2));
+          send_to_char(ch, "It's %sfull of a %s liquid.\r\n", fullness[amt], buf2);
+       }
+          }
+   }
 }
 
 char *find_exdesc(char *word, struct extra_descr_data *list)
@@ -621,12 +739,13 @@ char *find_exdesc(char *word, struct extra_descr_data *list)
  * matches the target.  First, see if there is another char in the room with
  * the name.  Then check local objs for exdescs. Thanks to Angus Mezick for
  * the suggested fix to this problem. */
-static void look_at_target(struct char_data *ch, char *arg)
+static void look_at_target(struct char_data *ch, char *arg, int read)
 {
-  int bits, found = FALSE, j, fnum, i = 0;
+  int bits, found = FALSE, j, fnum, i = 0, msg = 1;
   struct char_data *found_char = NULL;
   struct obj_data *obj, *found_obj = NULL;
   char *desc;
+  char number[MAX_STRING_LENGTH];
 
   if (!ch->desc)
     return;
@@ -636,15 +755,54 @@ static void look_at_target(struct char_data *ch, char *arg)
     return;
   }
 
+  if (read) {
+    for (obj = ch->carrying; obj;obj=obj->next_content) {
+      if(GET_OBJ_TYPE(obj) == ITEM_BOARD) {
+  found = TRUE;
+  break;
+      }
+    }
+    if(!obj) {
+      for (obj = world[IN_ROOM(ch)].contents; obj;obj=obj->next_content) {
+  if(GET_OBJ_TYPE(obj) == ITEM_BOARD) {
+    found = TRUE;
+    break;
+  }
+      }
+    }
+    if (obj && found) {
+      arg = one_argument(arg, number);
+      if (!*number) {
+  send_to_char(ch,"Read what?\r\n");
+  return;
+      }
+      
+      /* Okay, here i'm faced with the fact that the person could be
+   entering in something like 'read 5' or 'read 4.mail' .. so, whats the
+   difference between the two?  Well, there's a period in the second,
+   so, we'll just stick with that basic difference */
+      
+      if (isname(number, obj->name)) {
+  show_board(GET_OBJ_VNUM(obj), ch);
+      } else if ((!isdigit(*number) || (!(msg = atoi(number)))) ||
+     (strchr(number,'.'))) {
+  sprintf(arg,"%s %s", number,arg);
+  look_at_target(ch, arg, 0);
+      } else {
+  board_display_msg(GET_OBJ_VNUM(obj), ch, msg);
+      }
+      return;
+      }
+    }
   bits = generic_find(arg, FIND_OBJ_INV | FIND_OBJ_ROOM | FIND_OBJ_EQUIP |
-		      FIND_CHAR_ROOM, ch, &found_char, &found_obj);
+          FIND_CHAR_ROOM, ch, &found_char, &found_obj);
 
   /* Is the target a character? */
   if (found_char != NULL) {
     look_at_char(found_char, ch);
     if (ch != found_char) {
       if (CAN_SEE(found_char, ch))
-	act("$n looks at you.", TRUE, ch, 0, found_char, TO_VICT);
+  act("$n looks at you.", TRUE, ch, 0, found_char, TO_VICT);
       act("$n looks at $N.", TRUE, ch, 0, found_char, TO_NOTVICT);
     }
     return;
@@ -660,22 +818,26 @@ static void look_at_target(struct char_data *ch, char *arg)
   if ((desc = find_exdesc(arg, world[IN_ROOM(ch)].ex_description)) != NULL && ++i == fnum) {
     page_string(ch->desc, desc, FALSE);
     return;
-  }
+  } 
 
   /* Does the argument match an extra desc in the char's equipment? */
   for (j = 0; j < NUM_WEARS && !found; j++)
     if (GET_EQ(ch, j) && CAN_SEE_OBJ(ch, GET_EQ(ch, j)))
       if ((desc = find_exdesc(arg, GET_EQ(ch, j)->ex_description)) != NULL && ++i == fnum) {
-	send_to_char(ch, "%s", desc);
-	found = TRUE;
+  send_to_char(ch, "%s", desc);
+  found = TRUE;
       }
 
   /* Does the argument match an extra desc in the char's inventory? */
   for (obj = ch->carrying; obj && !found; obj = obj->next_content) {
     if (CAN_SEE_OBJ(ch, obj))
       if ((desc = find_exdesc(arg, obj->ex_description)) != NULL && ++i == fnum) {
-	send_to_char(ch, "%s", desc);
-	found = TRUE;
+      if (GET_OBJ_TYPE(obj) == ITEM_BOARD) {
+        show_board(GET_OBJ_VNUM(obj), ch);
+      } else {
+  send_to_char(ch, "%s", desc);
+      }
+  found = TRUE;
       }
   }
 
@@ -683,8 +845,12 @@ static void look_at_target(struct char_data *ch, char *arg)
   for (obj = world[IN_ROOM(ch)].contents; obj && !found; obj = obj->next_content)
     if (CAN_SEE_OBJ(ch, obj))
       if ((desc = find_exdesc(arg, obj->ex_description)) != NULL && ++i == fnum) {
-	send_to_char(ch, "%s", desc);
-	found = TRUE;
+      if (GET_OBJ_TYPE(obj) == ITEM_BOARD) {
+        show_board(GET_OBJ_VNUM(obj), ch);
+      } else {
+  send_to_char(ch, "%s", desc);
+      }
+  found = TRUE;
       }
 
   /* If an object was found back in generic_find */
@@ -692,64 +858,161 @@ static void look_at_target(struct char_data *ch, char *arg)
     if (!found)
       show_obj_to_char(found_obj, ch, SHOW_OBJ_ACTION);
     else {
-      show_obj_modifiers(found_obj, ch);
+      if (show_obj_modifiers(found_obj, ch))
       send_to_char(ch, "\r\n");
     }
   } else if (!found)
     send_to_char(ch, "You do not see that here.\r\n");
 }
 
+static void look_out_window(struct char_data *ch, char *arg)
+{
+  struct obj_data *i, *viewport = NULL, *vehicle = NULL;
+  struct char_data *dummy = NULL;
+  room_rnum target_room = NOWHERE;
+  int bits, door;
+  
+  /* First, lets find something to look out of or through. */
+  if (*arg) {
+    /* Find this object and see if it is a window */
+    if (!(bits = generic_find(arg,
+              FIND_OBJ_ROOM | FIND_OBJ_INV | FIND_OBJ_EQUIP,
+              ch, &dummy, &viewport))) {
+      send_to_char(ch, "You don't see that here.\r\n");
+      return;
+    } else if (GET_OBJ_TYPE(viewport) != ITEM_WINDOW) {
+      send_to_char(ch, "You can't look out that!\r\n");
+    return;
+  }
+  } else if (OUTSIDE(ch)) {
+      /* yeah, sure stupid */
+      send_to_char(ch, "But you are already outside.\r\n");
+    return;
+  } else {
+    /* Look for any old window in the room */
+    for (i = world[IN_ROOM(ch)].contents; i; i = i->next_content)
+      if ((GET_OBJ_TYPE(i) == ITEM_WINDOW) &&
+           isname("window", i->name)) {
+        viewport = i;
+      continue;
+      }
+  }
+  if (!viewport) {
+    /* Nothing suitable to look through */
+    send_to_char(ch, "You don't seem to be able to see outside.\r\n");
+  } else if (OBJVAL_FLAGGED(viewport, CONT_CLOSEABLE) &&
+             OBJVAL_FLAGGED(viewport, CONT_CLOSED)) {
+    /* The window is closed */
+    send_to_char(ch, "It is closed.\r\n");
+  } else {
+    if (GET_OBJ_VAL(viewport, 0) < 0) {
+      /* We are looking out of the room */
+      if (GET_OBJ_VAL(viewport, 3) < 0) {
+        /* Look for the default "outside" room */
+        for (door = 0; door < NUM_OF_DIRS; door++)
+          if (EXIT(ch, door))
+            if (EXIT(ch, door)->to_room != NOWHERE)
+              if (!ROOM_FLAGGED(EXIT(ch, door)->to_room, ROOM_INDOORS)) {
+                target_room = EXIT(ch, door)->to_room;
+                continue;
+              }
+      } else {
+        target_room = real_room(GET_OBJ_VAL(viewport, 3));
+      }
+    } else {
+      /* We are looking out of a vehicle */
+      if ( (vehicle = find_vehicle_by_vnum(GET_OBJ_VAL(viewport, 0))) ) {
+        target_room = IN_ROOM(vehicle);
+      }
+    }
+    if (target_room == NOWHERE) {
+      send_to_char(ch, "You don't seem to be able to see outside.\r\n");
+    } else {
+      if (viewport->action_description)
+        act(viewport->action_description, TRUE, ch, viewport, 0, TO_CHAR);
+      else
+        send_to_char(ch, "You look outside and see:\r\n");
+      look_at_room(target_room, ch, 0);
+    }
+  }
+}
+
 ACMD(do_look)
 {
   int look_type;
-  int found = 0;
-  char tempsave[MAX_INPUT_LENGTH];
 
   if (!ch->desc)
     return;
 
   if (GET_POS(ch) < POS_SLEEPING)
     send_to_char(ch, "You can't see anything but stars!\r\n");
-  else if (AFF_FLAGGED(ch, AFF_BLIND) && GET_LEVEL(ch) < LVL_IMMORT)
+  else if (AFF_FLAGGED(ch, AFF_BLIND))
     send_to_char(ch, "You can't see a damned thing, you're blind!\r\n");
   else if (IS_DARK(IN_ROOM(ch)) && !CAN_SEE_IN_DARK(ch)) {
     send_to_char(ch, "It is pitch black...\r\n");
-    list_char_to_char(world[IN_ROOM(ch)].people, ch);	/* glowing red eyes */
+    list_char_to_char(world[IN_ROOM(ch)].people, ch); /* glowing red eyes */
   } else {
     char arg[MAX_INPUT_LENGTH], arg2[MAX_INPUT_LENGTH];
 
-    half_chop(argument, arg, arg2);
-
     if (subcmd == SCMD_READ) {
+      one_argument(argument, arg);
       if (!*arg)
-	send_to_char(ch, "Read what?\r\n");
+  send_to_char(ch, "Read what?\r\n");
       else
-	look_at_target(ch, strcpy(tempsave, arg));
+  look_at_target(ch, arg, 1);
       return;
     }
-    if (!*arg)			/* "look" alone, without an argument at all */
-      look_at_room(ch, 1);
-    else if (is_abbrev(arg, "in"))
+    argument = any_one_arg(argument, arg);
+    one_argument(argument, arg2);
+    if (!*arg) {
+      if (subcmd == SCMD_SEARCH)
+        send_to_char(ch, "You need to search in a particular direction.\r\n");
+      else
+      look_at_room(IN_ROOM(ch), ch, 1);
+    } else if (is_abbrev(arg, "inside")   && EXIT(ch, INDIR) && !*arg2) {
+      if (subcmd == SCMD_SEARCH)
+        search_in_direction(ch, INDIR);
+      else
+        look_in_direction(ch, INDIR);
+    } else if (is_abbrev(arg, "inside") && (subcmd == SCMD_SEARCH) && !*arg2) {
+      search_in_direction(ch, INDIR);
+    } else if (is_abbrev(arg, "inside")   ||
+               is_abbrev(arg, "into")       )  { 
       look_in_obj(ch, arg2);
-    /* did the char type 'look <direction>?' */
-    else if ((look_type = search_block(arg, dirs, FALSE)) >= 0)
+    } else if ((is_abbrev(arg, "outside") || 
+                is_abbrev(arg, "through") ||
+          is_abbrev(arg, "thru")      ) && 
+               (subcmd == SCMD_LOOK) && *arg2) {
+      look_out_window(ch, arg2);
+    } else if (is_abbrev(arg, "outside") && 
+               (subcmd == SCMD_LOOK) && !EXIT(ch, OUTDIR)) {
+      look_out_window(ch, arg2);
+    } else if ((look_type = search_block(arg, dirs, FALSE)) >= 0 ||
+               (look_type = search_block(arg, abbr_dirs, FALSE)) >= 0) {
+      if (subcmd == SCMD_SEARCH)
+        search_in_direction(ch, look_type);
+      else
       look_in_direction(ch, look_type);
-    else if (is_abbrev(arg, "at"))
-      look_at_target(ch, strcpy(tempsave, arg2));
-    else if (is_abbrev(arg, "around")) {
-      struct extra_descr_data *i;
-
-      for (i = world[IN_ROOM(ch)].ex_description; i; i = i->next) {
-        if (*i->keyword != '.') {
-          send_to_char(ch, "%s%s:\r\n%s",
-          (found ? "\r\n" : ""), i->keyword, i->description);
-          found = 1;
-        }
-      }
-      if (!found)
-         send_to_char(ch, "You couldn't find anything noticeable.\r\n");
-    } else
-      look_at_target(ch, strcpy(tempsave, arg));
+    } else if ((is_abbrev(arg, "towards")) &&
+               ((look_type = search_block(arg2, dirs, FALSE)) >= 0 ||
+                (look_type = search_block(arg2, abbr_dirs, FALSE)) >= 0 )) {
+      if (subcmd == SCMD_SEARCH)
+        search_in_direction(ch, look_type);
+      else
+      look_in_direction(ch, look_type);
+    } else if (is_abbrev(arg, "at")) {
+      if (subcmd == SCMD_SEARCH)
+        send_to_char(ch, "That is not a direction!\r\n");
+      else
+      look_at_target(ch, arg2, 0);
+    } else if (find_exdesc(arg, world[IN_ROOM(ch)].ex_description) != NULL) {
+      look_at_target(ch, arg, 0);
+    } else {
+      if (subcmd == SCMD_SEARCH)
+        send_to_char(ch, "That is not a direction!\r\n");
+    else
+      look_at_target(ch, arg, 0);
+  }
   }
 }
 

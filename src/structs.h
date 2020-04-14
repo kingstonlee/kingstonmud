@@ -62,11 +62,13 @@
 #define NORTHEAST      7 /**< The direction north-east */
 #define SOUTHEAST      8 /**< The direction south-east */
 #define SOUTHWEST      9 /**< The direction south-west */
+#define INDIR         10
+#define OUTDIR        11
 /** Total number of directions available to move in. BEFORE CHANGING THIS, make
 * sure you change every other direction and movement based item that this will
 * impact. */
 
-#define NUM_OF_DIRS 10
+#define NUM_OF_DIRS 12
 
 /* Room flags: used in room_data.room_flags */
 /* WARNING: In the world files, NEVER set the bits marked "R" ("Reserved") */
@@ -87,11 +89,9 @@
 #define ROOM_OLC           14   /**< (R) Modifyable/!compress */
 #define ROOM_BFS_MARK      15   /**< (R) breath-first srch mrk */
 #define ROOM_WORLDMAP      16   /**< World-map style maps here */
-/* Vehicle Patch - Chris Jacobson <fear@athenet.net> */
-/* Modified by Kingston Lee */
 #define ROOM_VEHICLE       17   /** Room Requires Vehicle */
 /** The total number of Room Flags */
-#define NUM_ROOM_FLAGS    17
+#define NUM_ROOM_FLAGS    18
 
 /* Zone info: Used in zone_data.zone_flags */
 #define ZONE_CLOSED       0  /**< Zone is closed - players cannot enter */
@@ -266,8 +266,19 @@
 #define PRF_AUTOKEY      32   /**< Automatically unlock locked doors when opening */
 #define PRF_AUTODOOR     33   /**< Use the next available door */
 #define PRF_ZONERESETS   34
+#define PRF_ROOMFLAGS	 35 /* Can see room flags (ROOM_x)		*/
+#define PRF_FULL_EXIT    36 /* Shows full autoexit details		*/
 /** Total number of available PRF flags */
-#define NUM_PRF_FLAGS    35
+#define NUM_PRF_FLAGS    37
+
+/* Player autoexit levels: used as an index to exitlevels           */
+#define EXIT_OFF        0       /* Autoexit off                     */
+#define EXIT_NORMAL     1       /* Brief display (stock behaviour)  */
+#define EXIT_NA         2       /* Not implemented - do not use     */
+#define EXIT_COMPLETE   3       /* Full display                     */
+
+#define _exitlevel(ch) (!IS_NPC(ch) ? (PRF_FLAGGED((ch),PRF_AUTOEXIT) ? 1 : 0 ) + (PRF_FLAGGED((ch),PRF_FULL_EXIT) ? 2 : 0 ) : 0 )
+#define EXIT_LEV(ch) (_exitlevel(ch))
 
 /* Affect bits: used in char_data.char_specials.saved.affected_by */
 /* WARNING: In the world files, NEVER set the bits marked "R" ("Reserved") */
@@ -387,11 +398,13 @@
 #define ITEM_PEN       21		/**< Item is a pen		*/
 #define ITEM_BOAT      22		/**< Item is a boat		*/
 #define ITEM_FOUNTAIN  23		/**< Item is a fountain		*/
-/* Vehicle Patch - Chris Jacobson <fear@athenet.net> */
-/* Modified by Kingston Lee */
-#define ITEM_VEHICLE   24       /**< Item is a Vehicle    */
-/** Total number of item types.*/
-#define NUM_ITEM_TYPES    25
+#define ITEM_VEHICLE   24               /* Item is a vehicle            */
+#define ITEM_HATCH     25               /* Item is a vehicle hatch      */
+#define ITEM_WINDOW    26               /* Item is a vehicle window     */
+#define ITEM_CONTROL   27               /* Item is a vehicle control    */
+#define ITEM_PORTAL    28               /* Item is a portal	        */
+#define ITEM_BOARD     29               /* Item is a message board */
+#define NUM_ITEM_TYPES    30
 
 /* Take/Wear flags: used by obj_data.obj_flags.wear_flags */
 #define ITEM_WEAR_TAKE      0   /**< Item can be taken */
@@ -677,6 +690,246 @@ struct extra_descr_data
  * more configurability per object type, and shouldn't break anything.
  * DO NOT LOWER from the default value of 4. */
 #define NUM_OBJ_VAL_POSITIONS 4
+
+#define VAL_ALL_HEALTH                4
+#define VAL_ALL_MAXHEALTH             5
+#define VAL_ALL_MATERIAL              7
+/*
+ * Uses for generic object values on specific object types
+ * Please use these instead of numbers to prevent overlaps.
+ */
+#define VAL_LIGHT_UNUSED1             0
+#define VAL_LIGHT_UNUSED2             1
+#define VAL_LIGHT_HOURS               2
+#define VAL_LIGHT_UNUSED4             3
+#define VAL_LIGHT_HEALTH              4
+#define VAL_LIGHT_MAXHEALTH           5
+#define VAL_LIGHT_UNUSED7             6
+#define VAL_LIGHT_MATERIAL            7
+#define VAL_SCROLL_LEVEL              0
+#define VAL_SCROLL_SPELL1             1
+#define VAL_SCROLL_SPELL2             2
+#define VAL_SCROLL_SPELL3             3
+#define VAL_SCROLL_HEALTH             4
+#define VAL_SCROLL_MAXHEALTH          5
+#define VAL_SCROLL_UNUSED7            6
+#define VAL_SCROLL_MATERIAL           7
+#define VAL_WAND_LEVEL                0
+#define VAL_WAND_MAXCHARGES           1
+#define VAL_WAND_CHARGES              2
+#define VAL_WAND_SPELL                3
+#define VAL_WAND_HEALTH               4
+#define VAL_WAND_MAXHEALTH            5
+#define VAL_WAND_UNUSED7              6
+#define VAL_WAND_MATERIAL             7
+#define VAL_STAFF_LEVEL               0
+#define VAL_STAFF_MAXCHARGES          1
+#define VAL_STAFF_CHARGES             2
+#define VAL_STAFF_SPELL               3
+#define VAL_STAFF_HEALTH              4
+#define VAL_STAFF_MAXHEALTH           5
+#define VAL_STAFF_UNUSED7             6
+#define VAL_STAFF_MATERIAL            7
+#define VAL_WEAPON_SKILL              0
+#define VAL_WEAPON_DAMDICE            1
+#define VAL_WEAPON_DAMSIZE            2
+#define VAL_WEAPON_DAMTYPE            3
+#define VAL_WEAPON_HEALTH             4
+#define VAL_WEAPON_MAXHEALTH          5
+#define VAL_WEAPON_UNUSED7            6
+#define VAL_WEAPON_MATERIAL           7
+#define VAL_FIREWEAPON_UNUSED1        0
+#define VAL_FIREWEAPON_UNUSED2        1
+#define VAL_FIREWEAPON_UNUSED3        2
+#define VAL_FIREWEAPON_UNUSED4        3
+#define VAL_FIREWEAPON_HEALTH         4
+#define VAL_FIREWEAPON_MAXHEALTH      5
+#define VAL_FIREWEAPON_UNUSED7        6
+#define VAL_FIREWEAPON_MATERIAL       7
+#define VAL_MISSILE_UNUSED1           0
+#define VAL_MISSILE_UNUSED2           1
+#define VAL_MISSILE_UNUSED3           2
+#define VAL_MISSILE_UNUSED4           3
+#define VAL_MISSILE_HEALTH            4
+#define VAL_MISSILE_MAXHEALTH         5
+#define VAL_MISSILE_UNUSED7           6
+#define VAL_MISSILE_MATERIAL          7
+#define VAL_TREASURE_UNUSED1          0
+#define VAL_TREASURE_UNUSED2          1
+#define VAL_TREASURE_UNUSED3          2
+#define VAL_TREASURE_UNUSED4          3
+#define VAL_TREASURE_HEALTH           4
+#define VAL_TREASURE_MAXHEALTH        5
+#define VAL_TREASURE_UNUSED7          6
+#define VAL_TREASURE_MATERIAL         7
+#define VAL_ARMOR_APPLYAC             0
+#define VAL_ARMOR_UNUSED2             1
+#define VAL_ARMOR_UNUSED3             2
+#define VAL_ARMOR_UNUSED4             3
+#define VAL_ARMOR_HEALTH              4
+#define VAL_ARMOR_MAXHEALTH           5
+#define VAL_ARMOR_UNUSED7             6
+#define VAL_ARMOR_MATERIAL            7
+#define VAL_POTION_LEVEL              0
+#define VAL_POTION_SPELL1             1
+#define VAL_POTION_SPELL2             2
+#define VAL_POTION_SPELL3             3
+#define VAL_POTION_HEALTH             4
+#define VAL_POTION_MAXHEALTH          5
+#define VAL_POTION_UNUSED7            6
+#define VAL_POTION_MATERIAL           7
+#define VAL_WORN_UNUSED1              0
+#define VAL_WORN_UNUSED2              1
+#define VAL_WORN_UNUSED3              2
+#define VAL_WORN_UNUSED4              3
+#define VAL_WORN_HEALTH               4
+#define VAL_WORN_MAXHEALTH            5
+#define VAL_WORN_UNUSED7              6
+#define VAL_WORN_MATERIAL             7
+#define VAL_OTHER_UNUSED1             0
+#define VAL_OTHER_UNUSED2             1
+#define VAL_OTHER_UNUSED3             2
+#define VAL_OTHER_UNUSED4             3
+#define VAL_OTHER_HEALTH              4
+#define VAL_OTHER_MAXHEALTH           5
+#define VAL_OTHER_UNUSED7             6
+#define VAL_OTHER_MATERIAL            7
+#define VAL_TRASH_UNUSED1             0
+#define VAL_TRASH_UNUSED2             1
+#define VAL_TRASH_UNUSED3             2
+#define VAL_TRASH_UNUSED4             3
+#define VAL_TRASH_HEALTH              4
+#define VAL_TRASH_MAXHEALTH           5
+#define VAL_TRASH_UNUSED7             6
+#define VAL_TRASH_MATERIAL            7
+#define VAL_TRAP_SPELL                0
+#define VAL_TRAP_HITPOINTS            1
+#define VAL_TRAP_UNUSED3              2
+#define VAL_TRAP_UNUSED4              3
+#define VAL_TRAP_HEALTH               4
+#define VAL_TRAP_MAXHEALTH            5
+#define VAL_TRAP_UNUSED7              6
+#define VAL_TRAP_MATERIAL             7
+#define VAL_CONTAINER_CAPACITY        0
+#define VAL_CONTAINER_FLAGS           1
+#define VAL_CONTAINER_KEY             2
+#define VAL_CONTAINER_CORPSE          3
+#define VAL_CONTAINER_HEALTH          4
+#define VAL_CONTAINER_MAXHEALTH       5
+#define VAL_CONTAINER_UNUSED7         6
+#define VAL_CONTAINER_MATERIAL        7
+#define VAL_NOTE_LANGUAGE             0
+#define VAL_NOTE_UNUSED2              1
+#define VAL_NOTE_UNUSED3              2
+#define VAL_NOTE_UNUSED4              3
+#define VAL_NOTE_HEALTH               4
+#define VAL_NOTE_MAXHEALTH            5
+#define VAL_NOTE_UNUSED7              6
+#define VAL_NOTE_MATERIAL             7
+#define VAL_DRINKCON_CAPACITY         0
+#define VAL_DRINKCON_HOWFULL          1
+#define VAL_DRINKCON_LIQUID           2
+#define VAL_DRINKCON_POISON           3
+#define VAL_DRINKCON_HEALTH           4
+#define VAL_DRINKCON_MAXHEALTH        5
+#define VAL_DRINKCON_UNUSED7          6
+#define VAL_DRINKCON_MATERIAL         7
+#define VAL_KEY_UNUSED1               0
+#define VAL_KEY_UNUSED2               1
+#define VAL_KEY_KEYCODE               2
+#define VAL_KEY_UNUSED4               3
+#define VAL_KEY_HEALTH                4
+#define VAL_KEY_MAXHEALTH             5
+#define VAL_KEY_UNUSED7               6
+#define VAL_KEY_MATERIAL              7
+#define VAL_FOOD_FOODVAL              0
+#define VAL_FOOD_UNUSED2              1
+#define VAL_FOOD_UNUSED3              2
+#define VAL_FOOD_POISON               3
+#define VAL_FOOD_HEALTH               4
+#define VAL_FOOD_MAXHEALTH            5
+#define VAL_FOOD_UNUSED7              6
+#define VAL_FOOD_MATERIAL             7
+#define VAL_MONEY_SIZE                0
+#define VAL_MONEY_UNUSED2             1
+#define VAL_MONEY_UNUSED3             2
+#define VAL_MONEY_UNUSED4             3
+#define VAL_MONEY_HEALTH              4
+#define VAL_MONEY_MAXHEALTH           5
+#define VAL_MONEY_UNUSED7             6
+#define VAL_MONEY_MATERIAL            7
+#define VAL_PEN_UNUSED1               0
+#define VAL_PEN_UNUSED2               1
+#define VAL_PEN_UNUSED3               2
+#define VAL_PEN_UNUSED4               3
+#define VAL_PEN_HEALTH                4
+#define VAL_PEN_MAXHEALTH             5
+#define VAL_PEN_UNUSED7               6
+#define VAL_PEN_MATERIAL              7
+#define VAL_BOAT_UNUSED1              0
+#define VAL_BOAT_UNUSED2              1
+#define VAL_BOAT_UNUSED3              2
+#define VAL_BOAT_UNUSED4              3
+#define VAL_BOAT_HEALTH               4
+#define VAL_BOAT_MAXHEALTH            5
+#define VAL_BOAT_UNUSED7              6
+#define VAL_BOAT_MATERIAL             7
+#define VAL_FOUNTAIN_CAPACITY         0
+#define VAL_FOUNTAIN_HOWFULL          1
+#define VAL_FOUNTAIN_LIQUID           2
+#define VAL_FOUNTAIN_POISON           3
+#define VAL_FOUNTAIN_HEALTH           4
+#define VAL_FOUNTAIN_MAXHEALTH        5
+#define VAL_FOUNTAIN_UNUSED7          6
+#define VAL_FOUNTAIN_MATERIAL         7
+#define VAL_VEHICLE_ROOM              0
+#define VAL_VEHICLE_UNUSED2           1
+#define VAL_VEHICLE_UNUSED3           2
+#define VAL_VEHICLE_APPEAR            3
+#define VAL_VEHICLE_HEALTH            4
+#define VAL_VEHICLE_MAXHEALTH         5
+#define VAL_VEHICLE_UNUSED7           6
+#define VAL_VEHICLE_MATERIAL          7
+#define VAL_HATCH_DEST                0
+#define VAL_HATCH_FLAGS               1
+#define VAL_HATCH_UNUSED3             2
+#define VAL_HATCH_UNUSED4             3
+#define VAL_HATCH_HEALTH              4
+#define VAL_HATCH_MAXHEALTH           5
+#define VAL_HATCH_UNUSED7             6
+#define VAL_HATCH_MATERIAL            7
+#define VAL_WINDOW_UNUSED1            0
+#define VAL_WINDOW_UNUSED2            1
+#define VAL_WINDOW_UNUSED3            2
+#define VAL_WINDOW_UNUSED4            3
+#define VAL_WINDOW_HEALTH             4
+#define VAL_WINDOW_MAXHEALTH          5
+#define VAL_WINDOW_UNUSED7            6
+#define VAL_WINDOW_MATERIAL           7
+#define VAL_CONTROL_UNUSED1           0
+#define VAL_CONTROL_UNUSED2           1
+#define VAL_CONTROL_UNUSED3           2
+#define VAL_CONTROL_UNUSED4           3
+#define VAL_CONTROL_HEALTH            4
+#define VAL_CONTROL_MAXHEALTH         5
+#define VAL_CONTROL_UNUSED7           6
+#define VAL_CONTROL_MATERIAL          7
+#define VAL_PORTAL_DEST               0
+#define VAL_PORTAL_UNUSED2            1
+#define VAL_PORTAL_UNUSED3            2
+#define VAL_PORTAL_APPEAR             3
+#define VAL_PORTAL_HEALTH             4
+#define VAL_PORTAL_MAXHEALTH          5
+#define VAL_PORTAL_UNUSED7            6
+#define VAL_PORTAL_MATERIAL           7
+#define VAL_BOARD_READ                0
+#define VAL_BOARD_WRITE               1
+#define VAL_BOARD_ERASE               2
+#define VAL_BOARD_UNUSED4             3
+#define VAL_BOARD_HEALTH              4
+#define VAL_BOARD_MAXHEALTH           5
+#define VAL_BOARD_UNUSED7             6
+#define VAL_BOARD_MATERIAL            7
 
 /** object flags used in obj_data. These represent the instance values for
  * a real object, values that can change during gameplay. */

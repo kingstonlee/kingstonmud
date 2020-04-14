@@ -113,7 +113,7 @@ void	stop_follower(struct char_data *ch);
 bool	circle_follow(struct char_data *ch, struct char_data *victim);
 
 /* in act.informative.c */
-void	look_at_room(struct char_data *ch, int mode);
+void	look_at_room(room_rnum target_room, struct char_data *ch, int mode);
 void  add_history(struct char_data *ch, char *msg, int type);
 
 /* in act.movmement.c */

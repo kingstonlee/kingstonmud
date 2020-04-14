@@ -805,7 +805,9 @@ int rev_dir[] =
   SOUTHEAST,
   SOUTHWEST,
   NORTHWEST,
-  NORTHEAST
+  NORTHEAST,
+  OUTDIR,
+  INDIR
 };
 
 /** How much movement is lost moving through a particular sector type. */

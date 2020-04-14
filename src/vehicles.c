@@ -1,573 +1,221 @@
-/* Vehicle Patch - Chris Jacobson <fear@athenet.net> */
+/*************************************************************************
+*  File: vehicles.c                                    Part of CircleMUD *
+*  Usage: Vechicle related code            *
+*                  *
+*  All rights reserved.  See license.doc for complete information.   *
+*                  *
+*  Copyright (C) 1993, 94 by the Trustees of the Johns Hopkins University*
+*  CircleMUD is based on DikuMUD, Copyright (C) 1990, 1991.              *
+*  Vehicle.c written by Chris Jacobson <fear@athenet.net>    *
+*************************************************************************/
 
 #include "conf.h"
-
 #include "sysdep.h"
 
 
 #include "structs.h"
-
 #include "utils.h"
-
 #include "comm.h"
-
 #include "interpreter.h"
-
 #include "handler.h"
-
 #include "db.h"
-
 #include "screen.h"
-
 #include "house.h"
+#include "constants.h"
 
-extern struct room_data * world;
-extern struct char_data * character_list;
-extern struct descriptor_data * descriptor_list;
-extern struct index_data * obj_index;
-extern int rev_dir[];
-extern char * dirs[];
-extern char * room_bits[];
 
-struct obj_data * find_vehicle(int roomNum);
+struct obj_data *get_obj_in_list_type(int type, struct obj_data *list);
+ACMD(do_look);
 
-typedef struct {
+#ifndef EXITN
+#  define EXITN(room, door)   (world[room].dir_option[door])
+#endif
 
-  int dirNum;
-
-  char * dirCmd;
-}
-dirParseStruct;
-
-#define DRIVE_DIRS 4
-#define PILOT_DIRS 6
-
-# ifndef EXITN
-#  define EXITN(room, door) (world[room].dir_option[door])
-# endif
-
-struct obj_data * find_vehicle_by_vnum(int vnum) {
-
+struct obj_data *find_vehicle_by_vnum(int vnum) 
+{
   extern struct obj_data * object_list;
-
   struct obj_data * i;
 
   for (i = object_list; i; i = i->next)
-
     if (GET_OBJ_TYPE(i) == ITEM_VEHICLE)
-
       if (GET_OBJ_VNUM(i) == vnum)
-
         return i;
-
+    
   return 0;
 }
 
-// void auto_exits_by_rnum(struct char_data * ch, int is_in) {
-//   int door;
+/* Search the given list for an object type, and return a ptr to that obj*/
+struct obj_data *get_obj_in_list_type(int type, struct obj_data *list) 
+{
+  struct obj_data * i;
 
-//   * buf = '\0';
+  for (i = list; i; i = i->next_content)
+    if (GET_OBJ_TYPE(i) == type)
+      return i;
 
-//   for (door = 0; door < NUM_OF_DIRS; door++)
-//     if (EXITN(is_in, door) && EXITN(is_in, door) - > to_room != NOWHERE &&
-
-//       !IS_SET(EXITN(is_in, door) - > exit_info, EX_CLOSED))
-//       sprintf(buf, "%s%c ", buf, LOWER( * dirs[door]));
-
-//   sprintf(buf2, "%s[ Exits: %s]%s\r\n", CCCYN(ch, C_NRM),
-
-//     * buf ? buf : "None! ", CCNRM(ch, C_NRM));
-
-//   send_to_char(buf2, ch);
-// }
-
-void view_room_by_rnum(struct char_data * ch, int is_in) {
-
-  if (IS_DARK(is_in) && !CAN_SEE_IN_DARK(ch)) {
-
-    send_to_char("It is pitch black...\r\n", ch);
-
-    return;
-
-  }
-
-  send_to_char(CCCYN(ch, C_NRM), ch);
-
-  if (PRF_FLAGGED(ch, PRF_ROOMFLAGS)) {
-
-    sprintbit((long) ROOM_FLAGS(is_in), room_bits, buf);
-
-    sprintf(buf2, "[%5d] %s [ %s]", world[is_in].number,
-
-      world[is_in].name, buf);
-
-    send_to_char(buf2, ch);
-
-  } else
-
-    send_to_char(world[is_in].name, ch);
-
-  send_to_char(CCNRM(ch, C_NRM), ch);
-
-  send_to_char("\r\n", ch);
-
-  send_to_char(world[is_in].description, ch);
-
-  // /* autoexits */
-
-  // if (PRF_FLAGGED(ch, PRF_AUTOEXIT))
-
-  //   auto_exits_by_rnum(ch, is_in);
-
-  /* now list characters & objects */
-
-  send_to_char(CCGRN(ch, C_NRM), ch);
-
-  list_obj_to_char(world[is_in].contents, ch, 0, FALSE);
-
-  send_to_char(CCYEL(ch, C_NRM), ch);
-
-  list_char_to_char(world[is_in].people, ch);
-
-  send_to_char(CCNRM(ch, C_NRM), ch);
+  return NULL;
 }
 
-ACMD(do_drive) {
+/* Search the player's room, inventory and equipment for a control */
+struct obj_data *find_control(struct char_data *ch)
+{
+  struct obj_data *controls, *obj;
+  int    j;
 
-  int x, dir;
-
-  const dirParseStruct dirParse[6] = {
-    {
-      SCMD_NORTH - 1, "north"
-    },
-    {
-      SCMD_SOUTH - 1,
-      "south"
-    },
-    {
-      SCMD_EAST - 1,
-      "east"
-    },
-    {
-      SCMD_WEST - 1,
-      "west"
-    },
-    {
-      SCMD_UP - 1,
-      "up"
-    },
-    {
-      SCMD_DOWN - 1,
-      "down"
-    }
-  };
-
-  struct obj_data * vehicle, * controls, * vehicle_in_out;
-
-  controls = get_obj_in_list_type(ITEM_V_CONTROLS,
-    world[ch - > in_room].contents);
-
-  if (!controls) {
-    send_to_char("ERROR!  Vehicle controls present yet not present!\r\n",
-      ch);
-    return;
-  }
-
-  vehicle = find_vehicle_by_vnum(GET_OBJ_VAL(controls, 0));
-
-  if (!vehicle) {
-    send_to_char("ERROR!  Vehicle has been lost somehow!\r\n", ch);
-    return;
-  }
-
-  if (IS_AFFECTED(ch, AFF_BLIND)) {
-    /* Blind characters can't drive! */
-    send_to_char("You can't see the controls!\r\n", ch);
-    return;
-  }
-
-  two_arguments(argument, arg, buf2);
-
-  /* Gotta give us a direction... */
-  if (! * arg) {
-    send_to_char("Drive which direction?\r\n", ch);
-    return;
-  }
-
-  /* Driving Into another Vehicle */
-
-  if (is_abbrev(arg, "into")) {
+  controls = get_obj_in_list_type(ITEM_CONTROL, world[IN_ROOM(ch)].contents);
+  if (!controls)
+    for (obj = ch->carrying; obj && !controls; obj = obj->next_content)
+      if (CAN_SEE_OBJ(ch, obj) && GET_OBJ_TYPE(obj) == ITEM_CONTROL)
+        controls = obj;
+  if (!controls)
+    for (j = 0; j < NUM_WEARS && !controls; j++)
+        if (GET_EQ(ch, j) && CAN_SEE_OBJ(ch, GET_EQ(ch, j)) && 
+          GET_OBJ_TYPE(GET_EQ(ch, j)) == ITEM_CONTROL)
+          controls = GET_EQ(ch, j);
+  return controls;
+}
+  
+/* Drive our vehicle into another vehicle */
+ void drive_into_vehicle(struct char_data *ch, struct obj_data *vehicle, char *arg)
+{
+  struct obj_data *vehicle_in_out;
     int was_in, is_in, is_going_to;
-    if (! * buf2) {
-      send_to_char("Drive into what?\r\n", ch);
-      return;
-    }
-    vehicle_in_out = get_obj_in_list_vis(ch, buf2,
-      world[vehicle - > in_room].contents);
-    if (!vehicle_in_out) {
-      send_to_char("Nothing here by that name!\r\n", ch);
-      return;
-    }
-    if (GET_OBJ_TYPE(vehicle_in_out) != ITEM_VEHICLE) {
-      send_to_char("Thats not a vehicle.\r\n", ch);
-      return;
-    }
+  char   buf[MAX_INPUT_LENGTH];
+    
+  if (!*arg) {
+      send_to_char(ch, "Drive into what?\r\n");
+  } else if (!(vehicle_in_out = get_obj_in_list_vis(ch, arg, NULL, world[IN_ROOM(vehicle)].contents)) ) {
+      send_to_char(ch, "Nothing here by that name!\r\n");
+  } else if (GET_OBJ_TYPE(vehicle_in_out) != ITEM_VEHICLE) {
+      send_to_char(ch, "That's not a vehicle.\r\n");
+  } else if (vehicle == vehicle_in_out) {
+      send_to_char(ch, "My, we are in a clever mood today, aren't we.\r\n");
+  } else {
     is_going_to = real_room(GET_OBJ_VAL(vehicle_in_out, 0));
-    if (!IS_SET(ROOM_FLAGS(is_going_to), ROOM_VEHICLE)) {
-      send_to_char("That vehicle can't carry other vehicles.", ch);
+    if (!IS_SET_AR(ROOM_FLAGS(is_going_to), ROOM_VEHICLE)) {
+      send_to_char(ch, "That vehicle can't carry other vehicles.");
+    } else {
+    sprintf(buf, "%s enters %s.\n\r", vehicle->short_description, 
+     vehicle_in_out->short_description);
+    send_to_room(IN_ROOM(vehicle), buf);
 
-      return;
-
-    }
-
-    sprintf(buf, "%s enters %s.\n\r", vehicle - > short_description,
-      vehicle_in_out - > short_description);
-
-    send_to_room(buf, vehicle - > in_room);
-
-    was_in = vehicle - > in_room;
-
+    was_in = IN_ROOM(vehicle);
     obj_from_room(vehicle);
-
     obj_to_room(vehicle, is_going_to);
+    is_in = IN_ROOM(vehicle);
+    if (ch->desc != NULL)
+        look_at_room(is_in, ch, 0);
+    sprintf(buf, "%s enters.\r\n", vehicle->short_description);
+    send_to_room(is_in, buf);
+        }
+        }
+}
+    
+/* Drive our vehicle out of another vehicle */
+void drive_outof_vehicle(struct char_data *ch, struct obj_data *vehicle)
+{
+  struct obj_data *hatch, *vehicle_in_out;
+  char   buf[MAX_INPUT_LENGTH];
 
-    is_in = vehicle - > in_room;
+  if ( !(hatch = get_obj_in_list_type(ITEM_HATCH,world[IN_ROOM(vehicle)].contents)) ) {
+    send_to_char(ch, "Nowhere to drive out of.\r\n");
+  } else if (!(vehicle_in_out = find_vehicle_by_vnum(GET_OBJ_VAL(hatch, 0)))) {
+    send_to_char(ch, "You can't drive out anywhere!\r\n");
+  } else {
+        sprintf(buf, "%s exits %s.\r\n", vehicle->short_description, 
+         vehicle_in_out->short_description);
+        send_to_room(IN_ROOM(vehicle), buf);
+    
+        obj_from_room(vehicle);
+        obj_to_room(vehicle, IN_ROOM(vehicle_in_out));
+    
+        if (ch->desc != NULL)
+          look_at_room(IN_ROOM(vehicle), ch, 0);
+    
+        sprintf(buf, "%s drives out of %s.\r\n", vehicle->short_description,
+         vehicle_in_out->short_description);
+        send_to_room(IN_ROOM(vehicle), buf);
+  }
+}
 
-    if (ch - > desc != NULL)
+/* Drive out vehicle in a certain direction */
+void drive_in_direction(struct char_data *ch, struct obj_data *vehicle, int dir)
+{
+  char   buf[MAX_INPUT_LENGTH];
 
-      view_room_by_rnum(ch, is_in);
+  if (!EXIT(vehicle, dir) || EXIT(vehicle, dir)->to_room == NOWHERE) {
+        /* But there is no exit that way */
+        send_to_char(ch, "Alas, you cannot go that way...\r\n");
+      } else if (IS_SET(EXIT(vehicle, dir)->exit_info, EX_CLOSED)) {
+        /* But the door is closed */
+        if (EXIT(vehicle, dir)->keyword)
+          send_to_char(ch, "The %s seems to be closed.\r\n", fname(EXIT(vehicle,           dir)->keyword));
+        else
+          send_to_char(ch, "It seems to be closed.\r\n");
 
-    sprintf(buf, "%s enters.\r\n", vehicle - > short_description);
-
-    send_to_room(buf, is_in);
-
-    return;
-
-  } else if (is_abbrev(arg, "out")) {
-
-    struct obj_data * hatch;
-
-    hatch = get_obj_in_list_type(ITEM_V_HATCH,
-      world[vehicle - > in_room].contents);
-
-    if (!hatch) {
-
-      send_to_char("Nowhere to drive out of.\r\n", ch);
-
-      return;
-
-    }
-
-    vehicle_in_out = find_vehicle_by_vnum(GET_OBJ_VAL(hatch, 0));
-
-    if (!vehicle_in_out) {
-
-      send_to_char("ERROR!  Vehicle to drive out of doesn't exist!\r\n", ch);
-
-      return;
-
-    }
-
-    sprintf(buf, "%s exits %s.\r\n", vehicle - > short_description,
-
-      vehicle_in_out - > short_description);
-
-    send_to_room(buf, vehicle - > in_room);
-
-    obj_from_room(vehicle);
-
-    obj_to_room(vehicle, vehicle_in_out - > in_room);
-
-    if (ch - > desc != NULL)
-
-      view_room_by_rnum(ch, vehicle - > in_room);
-
-    sprintf(buf, "%s drives out of %s.\r\n", vehicle - > short_description,
-
-      vehicle_in_out - > short_description);
-
-    send_to_room(buf, vehicle - > in_room);
-
-    return;
-
-  } else
-    for (x = 0; x < (GET_OBJ_VAL(vehicle, 1) ? PILOT_DIRS :
-        DRIVE_DIRS); x++)
-
-      /* Drive in a direction... */
-
-      if (is_abbrev(arg, dirParse[x].dirCmd)) {
-
-        dir = dirParse[x].dirNum;
-
-        /* Ok we found the direction! */
-
-        if (ch == NULL || dir < 0 || dir >= NUM_OF_DIRS)
-
-          /* But something is invalid */
-
-          return;
-
-        else if (!EXIT(vehicle, dir) || EXIT(vehicle, dir) - > to_room ==
-          NOWHERE) {
-
-          /* But there is no exit that way */
-
-          send_to_char("Alas, you cannot go that way...\r\n", ch);
-
-          return;
-
-        } else if (IS_SET(EXIT(vehicle, dir) - > exit_info, EX_CLOSED)) {
-
-          /* But the door is closed */
-
-          if (EXIT(vehicle, dir) - > keyword) {
-
-            sprintf(buf2, "The %s seems to be closed.\r\n",
-
-              fname(EXIT(vehicle, dir) - > keyword));
-
-            send_to_char(buf2, ch);
-
-          } else
-
-            send_to_char("It seems to be closed.\r\n", ch);
-
-          return;
-
-        } else if (!IS_SET(ROOM_FLAGS(EXIT(vehicle, dir) - > to_room),
-            ROOM_VEHICLE)) {
-
-          /* But the vehicle can't go that way*/
-
-          send_to_char("The vehicle can't manage that terrain.\r\n", ch);
-
-          return;
-
+      } else if (!IS_SET_AR(ROOM_FLAGS(EXIT(vehicle,dir)->to_room),ROOM_VEHICLE)) {
+        /* But the vehicle can't go that way*/
+        send_to_char(ch, "The vehicle can't manage that terrain.\r\n");
         } else {
-
           /* But nothing!  Let's go that way! */
-
           int was_in, is_in;
 
-          sprintf(buf, "%s leaves %s.\n\r", vehicle - > short_description,
-            dirs[dir]);
+          sprintf(buf, "%s leaves %s.\n\r", vehicle->short_description, dirs[dir]);
+          send_to_room(IN_ROOM(vehicle), buf);
 
-          send_to_room(buf, vehicle - > in_room);
-
-          was_in = vehicle - > in_room;
-
+          was_in = IN_ROOM(vehicle);
           obj_from_room(vehicle);
+          obj_to_room(vehicle, world[was_in].dir_option[dir]->to_room);
 
-          obj_to_room(vehicle, world[was_in].dir_option[dir] - > to_room);
+          is_in = IN_ROOM(vehicle);
 
-          is_in = vehicle - > in_room;
-
-          if (ch - > desc != NULL)
-
-            view_room_by_rnum(ch, is_in);
-
+          if (ch->desc != NULL)
+      look_at_room(is_in, ch, 0);
           sprintf(buf, "%s enters from the %s.\r\n",
-
-            vehicle - > short_description, dirs[rev_dir[dir]]);
-
-          send_to_room(buf, is_in);
-
-          return;
-
-        }
-
+                  vehicle->short_description, dirs[rev_dir[dir]]);
+          send_to_room(is_in, buf);
       }
-
-  send_to_char("Thats not a valid direction.\r\n", ch);
-
-  return;
 }
 
-SPECIAL(vehicle) {
+ACMD(do_drive) 
+{
+  int    dir;
+  struct obj_data *vehicle, *controls;
 
-  struct obj_data * obj;
+  if (GET_POS(ch) < POS_SLEEPING) {
+    send_to_char(ch, "You can't see anything but stars!\r\n");
+  } else if (AFF_FLAGGED(ch, AFF_BLIND)) {
+    send_to_char(ch, "You can't see a damned thing, you're blind!\r\n");
+  } else if (IS_DARK(IN_ROOM(ch)) && !CAN_SEE_IN_DARK(ch)) {
+    send_to_char(ch, "It is pitch black...\r\n");
+  } else if (!(controls = find_control(ch) )) {
+    send_to_char(ch,"You have no idea how to drive anything here.\r\n");
+  } else if (invalid_align(ch, controls) ||
+             invalid_class(ch, controls) ||
+             invalid_race(ch, controls)) {
+    act("You are zapped by $p and instantly step away from it.", FALSE, ch, controls, 0, TO_CHAR);
+    act("$n is zapped by $p and instantly steps away from it.", FALSE, ch, controls, 0, TO_ROOM);
+  } else if (!(vehicle = find_vehicle_by_vnum(GET_OBJ_VAL(controls, 0))) ) {
+    send_to_char(ch, "You can't find anything to drive.\r\n");
+  } else {
+    char   arg[MAX_INPUT_LENGTH], arg2[MAX_INPUT_LENGTH];
 
-  if (CMD_IS("enter")) {
-
-    one_argument(argument, arg);
-
-    if (! * arg) {
-
-      send_to_char("Enter what?\r\n", ch);
-
-      return 1;
-
+    argument = any_one_arg(argument, arg);
+    one_argument(argument, arg2); 
+    if (!*arg) {
+      send_to_char(ch, "Drive, yes, but where?\r\n");
+    } else if (is_abbrev(arg, "into")   ||
+               is_abbrev(arg, "inside") ||
+         is_abbrev(arg, "onto")    )  {
+      /* Driving into another vehicle */
+      drive_into_vehicle(ch, vehicle, arg2);
+    } else if (is_abbrev(arg, "outside") && !EXIT(vehicle, OUTDIR)) {
+      drive_outof_vehicle(ch, vehicle);
+    } else if ((dir = search_block(arg, dirs, FALSE)) >= 0 ) {
+      /* Drive in a direction... */
+      drive_in_direction(ch, vehicle, dir);
+    } else {
+      send_to_char(ch, "Thats not a valid direction.\r\n");
     }
-
-    obj = get_obj_in_list_vis(ch, arg, world[ch - > in_room].contents);
-
-    if (!obj) {
-
-      send_to_char("Nothing by that name is here to enter!\r\n", ch);
-
-      return 1;
-
-    }
-
-    act("You climb into $o.", TRUE, ch, obj, 0, TO_CHAR);
-
-    act("$n climbs into $o", TRUE, ch, obj, 0, TO_ROOM);
-
-    char_from_room(ch);
-
-    char_to_room(ch, real_room(GET_OBJ_VAL(obj, 0)));
-
-    act("$n climbs in.", TRUE, ch, 0, 0, TO_ROOM);
-
-    do_look(ch, "", "", 0);
-
-    return 1;
-
   }
-
-  return 0;
 }
-
-SPECIAL(vehicle_controls) {
-
-  if (CMD_IS("drive") || CMD_IS("pilot")) {
-
-    do_drive(ch, argument, cmd, 0);
-
-    return 1;
-
-  }
-
-  return 0;
-}
-
-SPECIAL(vehicle_hatch) {
-
-  struct obj_data * hatch, * vehicle;
-
-  if (CMD_IS("leave")) {
-
-    hatch = get_obj_in_list_type(ITEM_V_HATCH, world[ch - > in_room].contents);
-
-    if (!hatch) {
-
-      send_to_char("ERROR!  Hatch is there, yet it isn't!\r\n", ch);
-
-      return 1;
-
-    }
-
-    vehicle = find_vehicle_by_vnum(GET_OBJ_VAL(hatch, 0));
-
-    if (!vehicle) {
-
-      send_to_char("ERROR!  Vehicle has been lost somehow!\r\n", ch);
-
-      return 1;
-
-    }
-
-    act("$n leaves $o", TRUE, ch, vehicle, 0, TO_ROOM);
-
-    act("You climb out of $o.", TRUE, ch, vehicle, 0, TO_CHAR);
-
-    char_from_room(ch);
-
-    char_to_room(ch, vehicle - > in_room);
-
-    act("$n climbs out of $o", TRUE, ch, vehicle, 0, TO_ROOM);
-
-    /* Now show them the room */
-
-    do_look(ch, "", "", 0);
-
-    return 1;
-
-  }
-
-  return 0;
-}
-
-SPECIAL(vehicle_window) {
-
-  struct obj_data * viewport, * vehicle;
-
-  if (CMD_IS("look")) {
-
-    one_argument(argument, arg);
-
-    if (is_abbrev(arg, "out")) {
-
-      viewport = get_obj_in_list_type(ITEM_V_WINDOW,
-        world[ch - > in_room].contents);
-
-      if (!viewport) {
-
-        send_to_char("ERROR!  Viewport present, yet not present!\r\n", ch);
-
-        return 1;
-
-      }
-
-      vehicle = find_vehicle_by_vnum(GET_OBJ_VAL(viewport, 0));
-
-      if (!vehicle) {
-
-        send_to_char("ERROR!  Vehicle has been lost somehow!\r\n", ch);
-
-        return 1;
-
-      }
-
-      view_room_by_rnum(ch, vehicle - > in_room);
-
-      return 1;
-
-    }
-
-  }
-
-  return 0;
-}
-
-/* assign special procedures to vehicular objects */
-void assign_vehicles(void) {
-
-    SPECIAL(vehicle_controls);
-
-    SPECIAL(vehicle_window);
-
-    SPECIAL(vehicle_hatch);
-
-    SPECIAL(vehicle);
-
-    /* Assign the generic tank! */
-
-    ASSIGNOBJ(200, vehicle);
-
-    ASSIGNOBJ(201, vehicle_controls);
-
-    ASSIGNOBJ(202, vehicle_hatch);
-
-    ASSIGNOBJ(203, vehicle_window);
-  }
-
-  **
-  * END VEHICLES.C ** *
-
-  Define this in the code(handler.c and handler.h):
-
-  /* Search the given list for an object type, and return a ptr to that obj */
-  struct obj_data * get_obj_in_list_type(int type, struct obj_data * list) {
-
-    struct obj_data * i;
-
-    for (i = list; i; i = i - > next_content)
-
-      if (GET_OBJ_TYPE(i) == type)
-
-        return i;
-
-    return NULL;
-  }

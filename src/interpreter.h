@@ -118,6 +118,11 @@ struct alias_data {
 #define SCMD_OASIS_TLIST       5
 #define SCMD_OASIS_QLIST       6
 
+/* do_look */
+#define SCMD_LOOK 0
+#define SCMD_READ 1
+#define SCMD_SEARCH     2
+
 /* Necessary for CMD_IS macro.  Borland needs the structure defined first
  * so it has been moved down here. */
 
