@@ -24,6 +24,8 @@
 #include "act.h"
 #include "class.h"
 
+int invalid_class(struct char_data *ch, struct obj_data *obj);
+
 /* Names first */
 const char *class_abbrevs[] = {
   "Mu",

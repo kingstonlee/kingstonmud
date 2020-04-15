@@ -1680,7 +1680,8 @@ void nanny(struct descriptor_data *d, char *arg)
 	do_start(d->character);
 	send_to_char(d->character, "%s", CONFIG_START_MESSG);
       }
-      look_at_room(d->character, 0);
+      look_at_room(IN_ROOM(d->character), d->character, 0);
+      
       if (has_mail(GET_IDNUM(d->character)))
 	send_to_char(d->character, "You have mail waiting.\r\n");
       if (load_result == 2) {	/* rented items lost */

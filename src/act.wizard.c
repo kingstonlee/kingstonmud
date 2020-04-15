@@ -285,7 +285,7 @@ ACMD(do_goto)
   snprintf(buf, sizeof(buf), "$n %s", POOFIN(ch) ? POOFIN(ch) : "appears with an ear-splitting bang.");
   act(buf, TRUE, ch, 0, 0, TO_ROOM);
 
-  look_at_room(ch, 0);
+  look_at_room(IN_ROOM(ch), ch, 0);
   enter_wtrigger(&world[IN_ROOM(ch)], ch, -1);
 }
 
@@ -313,7 +313,7 @@ ACMD(do_trans)
       char_to_room(victim, IN_ROOM(ch));
       act("$n arrives from a puff of smoke.", FALSE, victim, 0, 0, TO_ROOM);
       act("$n has transferred you!", FALSE, ch, 0, victim, TO_VICT);
-      look_at_room(victim, 0);
+      look_at_room(IN_ROOM(victim), victim, 0);
 
       enter_wtrigger(&world[IN_ROOM(victim)], victim, -1);
     }
@@ -333,7 +333,7 @@ ACMD(do_trans)
 	char_to_room(victim, IN_ROOM(ch));
 	act("$n arrives from a puff of smoke.", FALSE, victim, 0, 0, TO_ROOM);
 	act("$n has transferred you!", FALSE, ch, 0, victim, TO_VICT);
-	look_at_room(victim, 0);
+	look_at_room(IN_ROOM(victim), victim, 0);
         enter_wtrigger(&world[IN_ROOM(victim)], victim, -1);
       }
     send_to_char(ch, "%s", CONFIG_OK);
@@ -365,7 +365,7 @@ ACMD(do_teleport)
     char_to_room(victim, target);
     act("$n arrives from a puff of smoke.", FALSE, victim, 0, 0, TO_ROOM);
     act("$n has teleported you!", FALSE, ch, 0, (char *) victim, TO_VICT);
-    look_at_room(victim, 0);
+    look_at_room(IN_ROOM(victim), victim, 0);
     enter_wtrigger(&world[IN_ROOM(victim)], victim, -1);
   }
 }

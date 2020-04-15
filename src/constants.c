@@ -47,6 +47,23 @@ const char *dirs[] =
   "\n"
 };
 
+const char *abbr_dirs[] = 
+{
+  "n",
+  "e",
+  "s",
+  "w",
+  "u",
+  "d",
+  "nw",
+  "ne",
+  "se",
+  "sw",
+  "in",
+  "out",
+  "\n"
+};
+
 const char *autoexits[] =
 {
   "n",
@@ -83,6 +100,7 @@ const char *room_bits[] = {
   "OLC",
   "*",				/* The BFS Mark. */
   "WORLDMAP",
+  "VEHICLE",
   "\n"
 };
 
@@ -404,6 +422,11 @@ const char *item_types[] = {
   "PEN",
   "BOAT",
   "FOUNTAIN",
+  "VEHICLE",
+  "HATCH",
+  "WINDOW",
+  "CONTROL",
+  "PORTAL",
   "\n"
 };
 

@@ -68,7 +68,7 @@ ASPELL(spell_recall)
   char_from_room(victim);
   char_to_room(victim, r_mortal_start_room);
   act("$n appears in the middle of the room.", TRUE, victim, 0, 0, TO_ROOM);
-  look_at_room(victim, 0);
+  look_at_room(IN_ROOM(victim), victim, 0);
   entry_memory_mtrigger(victim);
   greet_mtrigger(victim, -1);
   greet_memory_mtrigger(victim);
@@ -97,7 +97,7 @@ ASPELL(spell_teleport)
   char_from_room(victim);
   char_to_room(victim, to_room);
   act("$n slowly fades into existence.", FALSE, victim, 0, 0, TO_ROOM);
-  look_at_room(victim, 0);
+  look_at_room(IN_ROOM(victim), victim, 0);
   entry_memory_mtrigger(victim);
   greet_mtrigger(victim, -1);
   greet_memory_mtrigger(victim);
@@ -155,7 +155,7 @@ ASPELL(spell_summon)
 
   act("$n arrives suddenly.", TRUE, victim, 0, 0, TO_ROOM);
   act("$n has summoned you!", FALSE, ch, 0, victim, TO_VICT);
-  look_at_room(victim, 0);
+  look_at_room(IN_ROOM(victim), victim, 0);
   entry_memory_mtrigger(victim);
   greet_mtrigger(victim, -1);
   greet_memory_mtrigger(victim);
@@ -446,4 +446,50 @@ ASPELL(spell_detect_poison)
       send_to_char(ch, "You sense that it should not be consumed.\r\n");
     }
   }
+}
+
+ASPELL(spell_portal)
+{
+  struct obj_data *portal, *tportal;
+  struct room_data *rm;
+  rm = &world[IN_ROOM(victim)];
+
+  if (ch == NULL || victim == NULL)
+    return;
+
+  if (!can_edit_zone(ch, rm->zone) && ZONE_FLAGGED(rm->zone, ZONE_QUEST)) {
+    send_to_char(ch, "That target is in a quest zone.\r\n");
+    return;
+  }
+
+  if (ZONE_FLAGGED(rm->zone, ZONE_CLOSED) && GET_LEVEL(ch) < LVL_IMMORT) {
+    send_to_char(ch, "That target is in a closed zone.\r\n");
+    return;
+  }
+
+  if (ZONE_FLAGGED(rm->zone, ZONE_NOIMMORT) && GET_REAL_LEVEL(ch) < LVL_GRGOD) {
+    send_to_char(ch, "That target is in a zone closed to all.\r\n");
+    return;
+  }
+
+  /* create the portal */
+  portal = read_object(portal_object, VIRTUAL);
+  GET_OBJ_VAL(portal, VAL_PORTAL_DEST) = GET_ROOM_VNUM(IN_ROOM(victim));
+  GET_OBJ_TIMER(portal) = (int) (GET_LEVEL(ch) / 10);
+  add_unique_id(portal);
+  obj_to_room(portal, ch->in_room);
+  act("$n opens a portal in thin air.",
+       TRUE, ch, 0, 0, TO_ROOM);
+  act("You open a portal out of thin air.",
+       TRUE, ch, 0, 0, TO_CHAR);
+  /* create the portal at the other end */
+  tportal = read_object(portal_object, VIRTUAL);
+  GET_OBJ_VAL(tportal, VAL_PORTAL_DEST) = GET_ROOM_VNUM(IN_ROOM(ch));
+  GET_OBJ_TIMER(tportal) = (int) (GET_LEVEL(ch) / 10);
+  add_unique_id(portal);
+  obj_to_room(tportal, victim->in_room);
+  act("A shimmering portal appears out of thin air.",
+       TRUE, victim, 0, 0, TO_ROOM);
+  act("A shimmering portal opens here for you.",
+       TRUE, victim, 0, 0, TO_CHAR);
 }

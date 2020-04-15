@@ -38,6 +38,7 @@ static void do_auto_exits(room_rnum target_room, struct char_data *ch, int exit_
 static void list_char_to_char(struct char_data *list, struct char_data *ch);
 static void list_one_char(struct char_data *i, struct char_data *ch);
 static void look_at_char(struct char_data *i, struct char_data *ch);
+void look_at_room(room_rnum target_room, struct char_data *ch, int ignore_brief);
 static void look_at_target(struct char_data *ch, char *arg, int read);
 static void look_in_direction(struct char_data *ch, int dir);
 static void look_in_obj(struct char_data *ch, char *arg);
@@ -46,11 +47,12 @@ static void look_out_window(struct char_data *ch, char *arg);
 static void list_obj_to_char(struct obj_data *list, struct char_data *ch, int mode, int show);
 /* do_look, do_equipment, do_examine, do_inventory */
 static void show_obj_to_char(struct obj_data *obj, struct char_data *ch, int mode);
-static void show_obj_modifiers(struct obj_data *obj, struct char_data *ch);
+static int show_obj_modifiers(struct obj_data *obj, struct char_data *ch);
 /* do_where utility functions */
 static void perform_immort_where(struct char_data *ch, char *arg);
 static void perform_mortal_where(struct char_data *ch, char *arg);
 static void print_object_location(int num, struct obj_data *obj, struct char_data *ch, int recur);
+static void search_in_direction(struct char_data * ch, int dir);
 
 /* Subcommands */
 /* For show_obj_to_char 'mode'.	/-- arbitrary */
@@ -163,26 +165,39 @@ static void show_obj_to_char(struct obj_data *obj, struct char_data *ch, int mod
   }
   end:
 
-  show_obj_modifiers(obj, ch);
-  send_to_char(ch, "\r\n");
+  if (show_obj_modifiers(obj, ch))
+    send_to_char(ch, "\r\n");
 }
 
-static void show_obj_modifiers(struct obj_data *obj, struct char_data *ch)
+static int show_obj_modifiers(struct obj_data *obj, struct char_data *ch)
 {
-  if (OBJ_FLAGGED(obj, ITEM_INVISIBLE))
+  int found = FALSE;
+
+  if (OBJ_FLAGGED(obj, ITEM_INVISIBLE)) {
     send_to_char(ch, " (invisible)");
+    found++;
+  }
 
-  if (OBJ_FLAGGED(obj, ITEM_BLESS) && AFF_FLAGGED(ch, AFF_DETECT_ALIGN))
+  if (OBJ_FLAGGED(obj, ITEM_BLESS) && AFF_FLAGGED(ch, AFF_DETECT_ALIGN)) {
     send_to_char(ch, " ..It glows blue!");
+    found++;
+  }
 
-  if (OBJ_FLAGGED(obj, ITEM_MAGIC) && AFF_FLAGGED(ch, AFF_DETECT_MAGIC))
+  if (OBJ_FLAGGED(obj, ITEM_MAGIC) && AFF_FLAGGED(ch, AFF_DETECT_MAGIC)) {
     send_to_char(ch, " ..It glows yellow!");
+    found++;
+  }
 
-  if (OBJ_FLAGGED(obj, ITEM_GLOW))
+  if (OBJ_FLAGGED(obj, ITEM_GLOW)) {
     send_to_char(ch, " ..It has a soft glowing aura!");
+    found++;
+  }
 
-  if (OBJ_FLAGGED(obj, ITEM_HUM))
+  if (OBJ_FLAGGED(obj, ITEM_HUM)) {
     send_to_char(ch, " ..It emits a faint humming sound!");
+    found++;
+  }
+  return(found);
 }
 
 static void list_obj_to_char(struct obj_data *list, struct char_data *ch, int mode, int show)
@@ -741,11 +756,10 @@ char *find_exdesc(char *word, struct extra_descr_data *list)
  * the suggested fix to this problem. */
 static void look_at_target(struct char_data *ch, char *arg, int read)
 {
-  int bits, found = FALSE, j, fnum, i = 0, msg = 1;
+  int bits, found = FALSE, j, fnum, i = 0;
   struct char_data *found_char = NULL;
   struct obj_data *obj, *found_obj = NULL;
   char *desc;
-  char number[MAX_STRING_LENGTH];
 
   if (!ch->desc)
     return;
@@ -755,45 +769,6 @@ static void look_at_target(struct char_data *ch, char *arg, int read)
     return;
   }
 
-  if (read) {
-    for (obj = ch->carrying; obj;obj=obj->next_content) {
-      if(GET_OBJ_TYPE(obj) == ITEM_BOARD) {
-  found = TRUE;
-  break;
-      }
-    }
-    if(!obj) {
-      for (obj = world[IN_ROOM(ch)].contents; obj;obj=obj->next_content) {
-  if(GET_OBJ_TYPE(obj) == ITEM_BOARD) {
-    found = TRUE;
-    break;
-  }
-      }
-    }
-    if (obj && found) {
-      arg = one_argument(arg, number);
-      if (!*number) {
-  send_to_char(ch,"Read what?\r\n");
-  return;
-      }
-      
-      /* Okay, here i'm faced with the fact that the person could be
-   entering in something like 'read 5' or 'read 4.mail' .. so, whats the
-   difference between the two?  Well, there's a period in the second,
-   so, we'll just stick with that basic difference */
-      
-      if (isname(number, obj->name)) {
-  show_board(GET_OBJ_VNUM(obj), ch);
-      } else if ((!isdigit(*number) || (!(msg = atoi(number)))) ||
-     (strchr(number,'.'))) {
-  sprintf(arg,"%s %s", number,arg);
-  look_at_target(ch, arg, 0);
-      } else {
-  board_display_msg(GET_OBJ_VNUM(obj), ch, msg);
-      }
-      return;
-      }
-    }
   bits = generic_find(arg, FIND_OBJ_INV | FIND_OBJ_ROOM | FIND_OBJ_EQUIP |
           FIND_CHAR_ROOM, ch, &found_char, &found_obj);
 
@@ -832,12 +807,8 @@ static void look_at_target(struct char_data *ch, char *arg, int read)
   for (obj = ch->carrying; obj && !found; obj = obj->next_content) {
     if (CAN_SEE_OBJ(ch, obj))
       if ((desc = find_exdesc(arg, obj->ex_description)) != NULL && ++i == fnum) {
-      if (GET_OBJ_TYPE(obj) == ITEM_BOARD) {
-        show_board(GET_OBJ_VNUM(obj), ch);
-      } else {
-  send_to_char(ch, "%s", desc);
-      }
-  found = TRUE;
+        send_to_char(ch, "%s", desc);
+        found = TRUE;
       }
   }
 
@@ -845,12 +816,8 @@ static void look_at_target(struct char_data *ch, char *arg, int read)
   for (obj = world[IN_ROOM(ch)].contents; obj && !found; obj = obj->next_content)
     if (CAN_SEE_OBJ(ch, obj))
       if ((desc = find_exdesc(arg, obj->ex_description)) != NULL && ++i == fnum) {
-      if (GET_OBJ_TYPE(obj) == ITEM_BOARD) {
-        show_board(GET_OBJ_VNUM(obj), ch);
-      } else {
-  send_to_char(ch, "%s", desc);
-      }
-  found = TRUE;
+        send_to_char(ch, "%s", desc);
+        found = TRUE;
       }
 
   /* If an object was found back in generic_find */
@@ -1030,7 +997,7 @@ ACMD(do_examine)
   }
 
   /* look_at_target() eats the number. */
-  look_at_target(ch, strcpy(tempsave, arg));	/* strcpy: OK */
+  look_at_target(ch, strcpy(tempsave, arg),0);	/* strcpy: OK */
 
   generic_find(arg, FIND_OBJ_INV | FIND_OBJ_ROOM | FIND_CHAR_ROOM |
 		      FIND_OBJ_EQUIP, ch, &tmp_char, &tmp_object);
@@ -2911,3 +2878,37 @@ ACMD(do_scan)
     send_to_char(ch, "You don't see anything nearby!\r\n");
   }
 } // end of do_scan
+
+static void search_in_direction(struct char_data * ch, int dir)
+{
+  int check=0,roll;
+
+  send_to_char(ch, "You search for secret doors.\r\n");
+  act("$n searches the area intently.", TRUE, ch, 0, 0, TO_ROOM);
+ 
+  roll=rand_number(1,6);
+
+  if (GET_LEVEL(ch) < LVL_IMMORT) {
+    if (roll == 1) {
+      check=1;
+    }
+  } else
+     check=1;
+
+  if (EXIT(ch, dir)) {
+    if (EXIT(ch, dir)->general_description &&
+        !EXIT_FLAGGED(EXIT(ch, dir), EX_HIDDEN))
+      send_to_char(ch, "%s", EXIT(ch, dir)->general_description);
+    else if (!EXIT_FLAGGED(EXIT(ch, dir), EX_HIDDEN))
+      send_to_char(ch, "There is a normal exit there.\r\n");
+    else if (EXIT_FLAGGED(EXIT(ch, dir), EX_ISDOOR) &&
+        EXIT_FLAGGED(EXIT(ch, dir), EX_HIDDEN) &&
+             EXIT(ch, dir)->keyword && (check == 1)  )
+      send_to_char(ch, "There is a hidden door keyword: '%s' %sthere.\r\n",
+                   fname (EXIT(ch, dir)->keyword),
+                   (EXIT_FLAGGED(EXIT(ch, dir), EX_CLOSED)) ? "" : "open ");
+    else
+      send_to_char(ch, "There is no exit there.\r\n");
+  } else
+    send_to_char(ch, "There is no exit there.\r\n");
+}

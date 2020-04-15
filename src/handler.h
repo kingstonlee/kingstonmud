@@ -36,6 +36,7 @@ void	obj_from_char(struct obj_data *object);
 void	equip_char(struct char_data *ch, struct obj_data *obj, int pos);
 struct obj_data *unequip_char(struct char_data *ch, int pos);
 int	invalid_align(struct char_data *ch, struct obj_data *obj);
+int	invalid_class(struct char_data *ch, struct obj_data *obj);
 
 void	obj_to_room(struct obj_data *object, room_rnum room);
 void	obj_from_room(struct obj_data *object);

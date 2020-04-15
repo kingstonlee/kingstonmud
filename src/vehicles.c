@@ -11,8 +11,6 @@
 
 #include "conf.h"
 #include "sysdep.h"
-
-
 #include "structs.h"
 #include "utils.h"
 #include "comm.h"
@@ -22,6 +20,7 @@
 #include "screen.h"
 #include "house.h"
 #include "constants.h"
+#include "class.h"
 
 
 struct obj_data *get_obj_in_list_type(int type, struct obj_data *list);
@@ -42,18 +41,6 @@ struct obj_data *find_vehicle_by_vnum(int vnum)
         return i;
     
   return 0;
-}
-
-/* Search the given list for an object type, and return a ptr to that obj*/
-struct obj_data *get_obj_in_list_type(int type, struct obj_data *list) 
-{
-  struct obj_data * i;
-
-  for (i = list; i; i = i->next_content)
-    if (GET_OBJ_TYPE(i) == type)
-      return i;
-
-  return NULL;
 }
 
 /* Search the player's room, inventory and equipment for a control */
@@ -97,7 +84,7 @@ struct obj_data *find_control(struct char_data *ch)
     } else {
     sprintf(buf, "%s enters %s.\n\r", vehicle->short_description, 
      vehicle_in_out->short_description);
-    send_to_room(IN_ROOM(vehicle), buf);
+    send_to_room(IN_ROOM(vehicle), "%s", buf);
 
     was_in = IN_ROOM(vehicle);
     obj_from_room(vehicle);
@@ -106,7 +93,7 @@ struct obj_data *find_control(struct char_data *ch)
     if (ch->desc != NULL)
         look_at_room(is_in, ch, 0);
     sprintf(buf, "%s enters.\r\n", vehicle->short_description);
-    send_to_room(is_in, buf);
+    send_to_room(is_in, "%s", buf);
         }
         }
 }
@@ -124,7 +111,7 @@ void drive_outof_vehicle(struct char_data *ch, struct obj_data *vehicle)
   } else {
         sprintf(buf, "%s exits %s.\r\n", vehicle->short_description, 
          vehicle_in_out->short_description);
-        send_to_room(IN_ROOM(vehicle), buf);
+        send_to_room(IN_ROOM(vehicle), "%s", buf);
     
         obj_from_room(vehicle);
         obj_to_room(vehicle, IN_ROOM(vehicle_in_out));
@@ -134,7 +121,7 @@ void drive_outof_vehicle(struct char_data *ch, struct obj_data *vehicle)
     
         sprintf(buf, "%s drives out of %s.\r\n", vehicle->short_description,
          vehicle_in_out->short_description);
-        send_to_room(IN_ROOM(vehicle), buf);
+        send_to_room(IN_ROOM(vehicle), "%s", buf);
   }
 }
 
@@ -161,7 +148,7 @@ void drive_in_direction(struct char_data *ch, struct obj_data *vehicle, int dir)
           int was_in, is_in;
 
           sprintf(buf, "%s leaves %s.\n\r", vehicle->short_description, dirs[dir]);
-          send_to_room(IN_ROOM(vehicle), buf);
+          send_to_room(IN_ROOM(vehicle), "%s", buf);
 
           was_in = IN_ROOM(vehicle);
           obj_from_room(vehicle);
@@ -173,7 +160,7 @@ void drive_in_direction(struct char_data *ch, struct obj_data *vehicle, int dir)
       look_at_room(is_in, ch, 0);
           sprintf(buf, "%s enters from the %s.\r\n",
                   vehicle->short_description, dirs[rev_dir[dir]]);
-          send_to_room(is_in, buf);
+          send_to_room(is_in, "%s", buf);
       }
 }
 
@@ -191,8 +178,7 @@ ACMD(do_drive)
   } else if (!(controls = find_control(ch) )) {
     send_to_char(ch,"You have no idea how to drive anything here.\r\n");
   } else if (invalid_align(ch, controls) ||
-             invalid_class(ch, controls) ||
-             invalid_race(ch, controls)) {
+             invalid_class(ch, controls)) {
     act("You are zapped by $p and instantly step away from it.", FALSE, ch, controls, 0, TO_CHAR);
     act("$n is zapped by $p and instantly steps away from it.", FALSE, ch, controls, 0, TO_ROOM);
   } else if (!(vehicle = find_vehicle_by_vnum(GET_OBJ_VAL(controls, 0))) ) {

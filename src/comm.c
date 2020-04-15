@@ -489,7 +489,7 @@ void copyover_recover()
         GET_LOADROOM(d->character) = NOWHERE;
 
       d->connected = CON_PLAYING;
-      look_at_room(d->character, 0);
+      look_at_room(IN_ROOM(d->character), d->character, 0);
 
       /* Add to the list of 'recent' players (since last reboot) with copyover flag */
       if (AddRecentPlayer(GET_NAME(d->character), d->host, FALSE, TRUE) == FALSE)

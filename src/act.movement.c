@@ -304,7 +304,7 @@ int do_simple_move(struct char_data *ch, int dir, int need_specials_check)
 
   /* ... and the room description to the character. */
   if (ch->desc != NULL)
-    look_at_room(ch, 0);
+    look_at_room(IN_ROOM(ch), ch, 0);
 
   /* ... and Kill the player if the room is a death trap. */
   if (ROOM_FLAGGED(going_to, ROOM_DEATH) && GET_LEVEL(ch) < LVL_IMMORT)
@@ -323,7 +323,7 @@ int do_simple_move(struct char_data *ch, int dir, int need_specials_check)
   {
     char_from_room(ch);
     char_to_room(ch, was_in);
-    look_at_room(ch, 0);
+    look_at_room(IN_ROOM(ch), ch, 0);
     /* Failed move, return a failure */
     return (0);
   }
@@ -673,36 +673,178 @@ ACMD(do_gen_door)
   return;
 }
 
+int do_simple_enter(struct char_data *ch, struct obj_data *obj, int need_specials_check)
+{
+  room_rnum dest_room = real_room(GET_OBJ_VAL(obj, VAL_PORTAL_DEST));
+  room_rnum was_in = IN_ROOM(ch);
+  int need_movement = 0;
+
+  /* charmed? */
+  if (AFF_FLAGGED(ch, AFF_CHARM) && ch->master &&
+      IN_ROOM(ch) == IN_ROOM(ch->master)) {
+    send_to_char(ch, "The thought of leaving your master makes you weep.\r\n");
+    act("$n bursts into tears.", FALSE, ch, 0, 0, TO_ROOM);
+    return (0);
+  }
+
+  /* if this room or the one we're going to needs a boat, check for one */
+  if ((SECT(IN_ROOM(ch)) == SECT_WATER_NOSWIM) ||
+      (SECT(dest_room) == SECT_WATER_NOSWIM)) {
+    if (!has_boat(ch)) {
+      send_to_char(ch, "You need a boat to go there.\r\n");
+      return (0);
+    }
+  }
+
+  /* move points needed is avg. move loss for src and destination sect type */
+  need_movement = (movement_loss[SECT(IN_ROOM(ch))] +
+       movement_loss[SECT(dest_room)]) / 2;
+
+  if (GET_MOVE(ch) < need_movement && !IS_NPC(ch)) {
+    if (need_specials_check && ch->master)
+      send_to_char(ch, "You are too exhausted to follow.\r\n");
+    else
+      send_to_char(ch, "You are too exhausted.\r\n");
+
+    return (0);
+  }
+  if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_ATRIUM)) {
+    if (!House_can_enter(ch, GET_ROOM_VNUM(dest_room))) {
+      send_to_char(ch, "That's private property -- no trespassing!\r\n");
+      return (0);
+    }
+  }
+  if (ROOM_FLAGGED(dest_room, ROOM_TUNNEL) &&
+      num_pc_in_room(&(world[dest_room])) >= CONFIG_TUNNEL_SIZE) {
+    if (CONFIG_TUNNEL_SIZE > 1)
+      send_to_char(ch, "There isn't enough room for you to go there!\r\n");
+    else
+      send_to_char(ch, "There isn't enough room there for more than one person!\r\n");
+    return (0);
+  }
+  /* Mortals and low level gods cannot enter greater god rooms. */
+  if (ROOM_FLAGGED(dest_room, ROOM_GODROOM) &&
+  GET_LEVEL(ch) < LVL_GRGOD) {
+    send_to_char(ch, "You aren't godly enough to use that room!\r\n");
+    return (0);
+  }
+  /* Now we know we're allowed to go into the room. */
+  if (GET_LEVEL(ch) < LVL_IMMORT && !IS_NPC(ch))
+    GET_MOVE(ch) -= need_movement;
+
+  if (!AFF_FLAGGED(ch, AFF_SNEAK))
+   act("$n enters $p.", TRUE, ch, obj, 0, TO_ROOM);
+
+  char_from_room(ch);
+  char_to_room(ch, dest_room);
+
+  /* move them first, then move them back if they aren't allowed to go. */
+  /* see if an entry trigger disallows the move */
+  if (!entry_mtrigger(ch) ) {
+    char_from_room(ch);
+    char_to_room(ch, was_in);
+    return 0;
+  }
+
+  if (!AFF_FLAGGED(ch, AFF_SNEAK)) {
+    if (GET_OBJ_TYPE(obj) == ITEM_PORTAL)
+      act("$n arrives from a puff of smoke.", FALSE, ch, 0, 0, TO_ROOM);
+    else
+      act("$n arrives from outside.", FALSE, ch, 0, 0, TO_ROOM);
+  }
+
+  if (ch->desc != NULL)
+    look_at_room(IN_ROOM(ch), ch, 0);
+
+  if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_DEATH) && GET_LEVEL(ch) < LVL_IMMORT) {
+    log_death_trap(ch);
+    death_cry(ch);
+    extract_char(ch);
+    return 0;
+  }
+
+  entry_memory_mtrigger(ch);
+  greet_memory_mtrigger(ch);
+
+  return 1;
+}
+
+int perform_enter_obj(struct char_data *ch, struct obj_data *obj, int need_specials_check)
+{
+  room_rnum was_in = IN_ROOM(ch);
+  int could_move = FALSE;
+  struct follow_type *k;
+
+  if (GET_OBJ_TYPE(obj) == ITEM_VEHICLE ||
+      GET_OBJ_TYPE(obj) == ITEM_PORTAL) {
+    if (OBJVAL_FLAGGED(obj, CONT_CLOSED)) {
+      send_to_char(ch, "But it's closed!\r\n");
+    } else if ((GET_OBJ_VAL(obj, VAL_PORTAL_DEST)            != NOWHERE) &&
+               (real_room(GET_OBJ_VAL(obj, VAL_PORTAL_DEST)) != NOWHERE)) {
+      if ((could_move = do_simple_enter(ch, obj, need_specials_check)))
+        for (k = ch->followers; k; k = k->next)
+          if ((IN_ROOM(k->follower) == was_in) &&
+              (GET_POS(k->follower) >= POS_STANDING)) {
+      act("You follow $N.\r\n", FALSE, k->follower, 0, ch, TO_CHAR);
+      perform_enter_obj(k->follower, obj, 1);
+          }
+    } else {
+       send_to_char(ch,
+           "It doesn't look like you can enter it at the moment.\r\n");
+    }
+  } else {
+    send_to_char(ch, "You can't enter that!\r\n");
+  }
+  return could_move;
+}
+
 ACMD(do_enter)
 {
+  struct obj_data *obj = NULL;
   char buf[MAX_INPUT_LENGTH];
-  int door;
+  int door, move_dir = -1;
 
   one_argument(argument, buf);
 
-  if (*buf) {			/* an argument was supplied, search for door
-				 * keyword */
-    for (door = 0; door < DIR_COUNT; door++)
-      if (EXIT(ch, door))
-        if (EXIT(ch, door)->keyword)
-          if (!str_cmp(EXIT(ch, door)->keyword, buf)) {
-            perform_move(ch, door, 1);
-            return;
-          }
-    send_to_char(ch, "There is no %s here.\r\n", buf);
-  } else if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_INDOORS))
+  if (*buf) { /* an argument was supplied, search for door keyword */
+    /* Is the object in the room? */
+    obj = get_obj_in_list_vis(ch,buf, NULL, world[IN_ROOM(ch)].contents);
+    /* Is the object in the character's inventory? */
+    if (!obj)
+      obj = get_obj_in_list_vis(ch,buf, NULL, ch->carrying);
+    /* Is the character carrying the object? */
+    if (!obj)
+      obj = get_obj_in_equip_vis(ch, buf, NULL, ch->equipment);
+    /* We have an object to enter */
+    if (obj)
+      perform_enter_obj(ch, obj, 0);
+    /* Is there a door to enter? */
+    else {
+      for (door = 0; door < NUM_OF_DIRS; door++)
+        if (EXIT(ch, door))
+          if (EXIT(ch, door)->keyword)
+            if (isname(buf, EXIT(ch, door)->keyword))
+              move_dir = door;
+      /* Did we find what they wanted to enter. */
+      if (move_dir > -1)
+        perform_move(ch, move_dir, 1);
+      else
+        send_to_char(ch, "There is no %s here.\r\n", buf);
+    }
+  } else if (ROOM_FLAGGED(IN_ROOM(ch), ROOM_INDOORS)) {
     send_to_char(ch, "You are already indoors.\r\n");
-  else {
+  } else {
     /* try to locate an entrance */
-    for (door = 0; door < DIR_COUNT; door++)
+    for (door = 0; door < NUM_OF_DIRS; door++)
       if (EXIT(ch, door))
-	if (EXIT(ch, door)->to_room != NOWHERE)
-	  if (!EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED) &&
-	      ROOM_FLAGGED(EXIT(ch, door)->to_room, ROOM_INDOORS)) {
-	    perform_move(ch, door, 1);
-	    return;
-	  }
-    send_to_char(ch, "You can't seem to find anything to enter.\r\n");
+        if (EXIT(ch, door)->to_room != NOWHERE)
+          if (!EXIT_FLAGGED(EXIT(ch, door), EX_CLOSED) &&
+              ROOM_FLAGGED(EXIT(ch, door)->to_room, ROOM_INDOORS))
+            move_dir = door;
+    if (move_dir > -1)
+      perform_move(ch, move_dir, 1);
+    else
+      send_to_char(ch, "You can't seem to find anything to enter.\r\n");
   }
 }
 

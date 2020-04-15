@@ -70,6 +70,7 @@ void new_affect(struct affected_type *af);
 int get_class_by_name(char *classname);
 char * convert_from_tabs(char * string);
 int count_non_protocol_chars(char * str);
+void log_death_trap(struct char_data *ch);
 
 /* Public functions made available form weather.c */
 void weather_and_time(int mode);
@@ -113,7 +114,7 @@ void	stop_follower(struct char_data *ch);
 bool	circle_follow(struct char_data *ch, struct char_data *victim);
 
 /* in act.informative.c */
-void	look_at_room(room_rnum target_room, struct char_data *ch, int mode);
+void look_at_room(room_rnum target_room, struct char_data *ch, int ignore_brief);
 void  add_history(struct char_data *ch, char *msg, int type);
 
 /* in act.movmement.c */

@@ -58,6 +58,7 @@ int board_write_message(int board_type, struct char_data *ch, char *arg, struct 
 void board_save_board(int board_type);
 void board_load_board(int board_type);
 void board_clear_all(void);
+void show_board(obj_vnum board_vnum, struct char_data *ch);
 
 /* Global variables */
 
