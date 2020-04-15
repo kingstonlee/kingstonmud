@@ -512,6 +512,7 @@ static OCMD(do_dgoload)
 
       /* special handling to make objects able to load on a person/in a container/worn etc. */
       if (!target || !*target) {
+        add_unique_id(object);
         obj_to_room(object, room);
         load_otrigger(object);
         return;
@@ -536,6 +537,7 @@ static OCMD(do_dgoload)
       	return;
       }
       /* neither char nor container found - just dump it in room */
+      add_unique_id(object);
       obj_to_room(object, room);
       load_otrigger(object);
       return;
@@ -791,6 +793,7 @@ static OCMD(do_omove)
       return;
     }
 
+    add_unique_id(object);
     obj_to_room(obj, target);
 }
 

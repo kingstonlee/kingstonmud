@@ -552,6 +552,7 @@ static void shopping_buy(char *arg, struct char_data *ch, struct char_data *keep
       /* Test if producing shop ! */
       if (shop_producing(obj, shop_nr)) {
         obj = read_object(GET_OBJ_RNUM(obj), REAL);
+        add_unique_id(obj);
       } else {
         obj_from_char(obj);
         SHOP_SORT(shop_nr)--;
@@ -577,6 +578,7 @@ static void shopping_buy(char *arg, struct char_data *ch, struct char_data *keep
     /* Test if producing shop ! */
     if (shop_producing(obj, shop_nr))
       obj = read_object(GET_OBJ_RNUM(obj), REAL);
+      add_unique_id(obj);
     else {
       obj_from_char(obj);
       SHOP_SORT(shop_nr)--;

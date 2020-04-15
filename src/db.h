@@ -304,6 +304,9 @@ struct obj_data *read_object(obj_vnum nr, int type);
 int    vnum_object(char *searchname, struct char_data *ch);
 int    vnum_room(char *, struct char_data *);
 int    vnum_trig(char *, struct char_data *);
+void add_unique_id(struct obj_data *obj);
+void check_unique_id(struct obj_data *obj);
+char *sprintuniques(int low, int high);
 
 void setup_dir(FILE *fl, int room, int dir);
 void index_boot(int mode);

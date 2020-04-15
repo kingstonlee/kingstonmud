@@ -292,6 +292,16 @@ int use_autowiz = YES;
  * levels below the level you specify will go on the immlist instead.) */
 int min_wizlist_lev = LVL_GOD;
 
+/* Portal Object */
+
+/*
+ * This should be the VNUM of an object you wish to use as a template
+ * for portal spells when cast. If this object is not in your obj files
+ * you will get a core dump when casting.
+ */
+
+obj_vnum portal_object = 2;
+
 /* To mimic stock behavior set to NO. To allow mortals to see doors in exits
  * set to YES. */
 int display_closed_doors = YES;

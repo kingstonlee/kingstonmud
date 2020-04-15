@@ -985,6 +985,10 @@ struct obj_data
   struct char_data *sitting_here; /**< For furniture, who is sitting in it */
   
   struct list_data *events;      /**< Used for object events */
+
+  long id;                       /* used by DG triggers              */
+  time_t generation;             /* creation time for dupe check     */
+  unsigned long long unique_id;  /* random bits for dupe check       */
 };
 
 /** Instance info for an object that gets saved to disk.

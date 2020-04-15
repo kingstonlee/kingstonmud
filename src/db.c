@@ -674,6 +674,27 @@ void destroy_db(void)
 
 }
 
+/* You can define this to anything you want; 1 would work but it would
+   be very inefficient. I would recommend that it actually be close to
+   your total number of in-game objects if not double or triple it just
+   to minimize collisions. The only O(n) [n=NUM_OBJ_UNIQUE_POOLS]
+   operation is initialization of the hash table, all other operations
+   that have to traverse are O(n) [n=num elements in pool], so more
+   pools are better.
+     - Elie Rosenblum Dec. 12 2003 */
+#define NUM_OBJ_UNIQUE_POOLS 5000
+
+struct obj_unique_hash_elem **obj_unique_hash_pools = NULL;
+
+void init_obj_unique_hash()
+{
+  int i;
+  CREATE(obj_unique_hash_pools, struct obj_unique_hash_elem *, NUM_OBJ_UNIQUE_POOLS);
+  for (i = 0; i < NUM_OBJ_UNIQUE_POOLS; i++) {
+    obj_unique_hash_pools[i] = NULL;
+  }
+}
+
 /* body of the booting system */
 void boot_db(void)
 {
@@ -2467,6 +2488,140 @@ struct char_data *read_mobile(mob_vnum nr, int type) /* and mob_rnum */
   assign_triggers(mob, MOB_TRIGGER);
 
   return (mob);
+}
+
+
+void add_unique_id(struct obj_data *obj)
+{
+  struct obj_unique_hash_elem *elem;
+  int i;
+  if (!obj_unique_hash_pools)
+    init_obj_unique_hash();
+  if (obj->unique_id == -1) {
+    if (sizeof(long long) > sizeof(long))
+      obj->unique_id = (((long long)circle_random()) << (sizeof(long long) * 4)) +
+                       circle_random();
+    else
+      obj->unique_id = circle_random();
+  }
+  if (CONFIG_ALL_ITEMS_UNIQUE) {
+    if (!IS_SET_AR(GET_OBJ_EXTRA(obj), ITEM_UNIQUE_SAVE))
+      SET_BIT_AR(GET_OBJ_EXTRA(obj), ITEM_UNIQUE_SAVE);
+  }
+  CREATE(elem, struct obj_unique_hash_elem, 1);
+  elem->generation = obj->generation;
+  elem->unique_id = obj->unique_id;
+  elem->obj = obj;
+  i = obj->unique_id % NUM_OBJ_UNIQUE_POOLS;
+  elem->next_e = obj_unique_hash_pools[i];
+  obj_unique_hash_pools[i] = elem;
+}
+
+void remove_unique_id(struct obj_data *obj)
+{
+  struct obj_unique_hash_elem *elem, **ptr, *tmp;
+
+  ptr = obj_unique_hash_pools + (obj->unique_id % NUM_OBJ_UNIQUE_POOLS);
+
+  if (!(ptr && *ptr))
+    return;
+
+  elem = *ptr;
+
+  while (elem) {
+      tmp = elem->next_e;
+    if (elem->obj == obj) {
+      free(elem);
+      *ptr = tmp;
+    } else {
+    ptr = &(elem->next_e);
+    } 
+    elem = tmp;
+  }
+}
+
+void log_dupe_objects(struct obj_data *obj1, struct obj_data *obj2)
+{
+  mudlog(BRF, LVL_GOD, TRUE, "DUPE: Dupe object found: %s [%d] [%ld:%lld]", 
+        obj1->short_description ? obj1->short_description : "<No name>",
+        GET_OBJ_VNUM(obj1), obj1->generation, obj1->unique_id);
+  mudlog(BRF, LVL_GOD, TRUE, "DUPE: First: In room: %d (%s), "
+                             "In object: %s, Carried by: %s, Worn by: %s",
+        GET_ROOM_VNUM(IN_ROOM(obj1)),
+        IN_ROOM(obj1) == NOWHERE ? "Nowhere" : world[IN_ROOM(obj1)].name,
+        obj1->in_obj ? obj1->in_obj->short_description : "None",
+        obj1->carried_by ? GET_NAME(obj1->carried_by) : "Nobody",
+        obj1->worn_by ? GET_NAME(obj1->worn_by) : "Nobody");
+  mudlog(BRF, LVL_GOD, TRUE, "DUPE: Newer: In room: %d (%s), "
+                             "In object: %s, Carried by: %s, Worn by: %s",
+        GET_ROOM_VNUM(IN_ROOM(obj2)),
+        IN_ROOM(obj2) == NOWHERE ? "Nowhere" : world[IN_ROOM(obj2)].name,
+        obj2->in_obj ? obj2->in_obj->short_description : "None",
+        obj2->carried_by ? GET_NAME(obj2->carried_by) : "Nobody",
+        obj2->worn_by ? GET_NAME(obj2->worn_by) : "Nobody");
+}
+
+void check_unique_id(struct obj_data *obj)
+{
+  struct obj_unique_hash_elem *elem;
+  if (obj->unique_id == -1)
+    return;
+  elem = obj_unique_hash_pools[obj->unique_id % NUM_OBJ_UNIQUE_POOLS];
+  while (elem) {
+    if (elem->obj == obj) {
+      log("SYSERR: check_unique_id checking for existing object?!");
+    }
+    if (elem->generation == obj->generation && elem->unique_id == obj->unique_id)
+      log_dupe_objects(elem->obj, obj);
+    elem = elem->next_e;
+  }
+}
+
+char *sprintuniques(int low, int high)
+{
+  int i, count = 0, remain, header;
+  struct obj_unique_hash_elem *q;
+  char *str, *ptr;
+  remain = 40;
+  for (i = 0; i < NUM_OBJ_UNIQUE_POOLS; i++) {
+    q = obj_unique_hash_pools[i];
+    remain += 40;
+    while (q) {
+      count++;
+      remain += 80 + (q->obj->short_description ? strlen(q->obj->short_description) : 20);
+      q = q->next_e;
+    }
+  }
+  if (count < 1) {
+    return strdup("No objects in unique hash.\r\n");
+  }
+  CREATE(str, char, remain + 1);
+  ptr = str;
+  count = snprintf(ptr, remain, "Unique object hashes (vnums %d - %d)\r\n",
+                low, high);
+  ptr += count;
+  remain -= count;
+  for (i = 0; i < NUM_OBJ_UNIQUE_POOLS; i++) {
+    header = 0;
+    q = obj_unique_hash_pools[i];
+    while (q) {
+      if (GET_OBJ_VNUM(q->obj) >= low && GET_OBJ_VNUM(q->obj) <= high) {
+        if (!header) {
+          header = 1;
+          count = snprintf(ptr, remain, "|-Hash %d\r\n", i);
+          ptr += count;
+          remain -= count;
+        }
+        count = snprintf(ptr, remain, "| |- [@g%6d@n] - [@y%10ld:%-19lld@n] - %s\r\n",
+                GET_OBJ_VNUM(q->obj), q->generation, q->unique_id,
+                q->obj->short_description ? q->obj->short_description : "<Unknown>");
+        ptr += count;
+        remain -= count;
+      }
+      q = q->next_e;
+    }
+  }
+  return str;
 }
 
 /* create an object, and add it to the object list */

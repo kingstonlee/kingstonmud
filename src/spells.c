@@ -21,8 +21,9 @@
 #include "dg_scripts.h"
 #include "act.h"
 #include "fight.h"
+#include "oasis.h"
 
-
+extern obj_vnum portal_object;
 
 
 /* Special spells appear below. */

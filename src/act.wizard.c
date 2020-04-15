@@ -1348,6 +1348,7 @@ ACMD(do_load)
     }
     for (i=0; i < n; i++) {
       obj = read_object(r_num, REAL);
+      add_unique_id(obj);
       if (CONFIG_LOAD_INVENTORY)
         obj_to_char(obj, ch);
       else
