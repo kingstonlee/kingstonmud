@@ -135,6 +135,10 @@ D2
 ~
 ~
 0 0 40507
+D3
+~
+~
+0 0 40513
 S
 #40509
 Big Thunder Trail~
@@ -155,6 +159,10 @@ Big Thunder Trail at Imperial Road~
 This unfinished room was created by Kingston.
 ~
 405 0 0 0 0 0
+D0
+~
+~
+0 0 40900
 D1
 ~
 ~
@@ -191,5 +199,19 @@ D2
 ~
 ~
 0 0 40600
+S
+#40513
+Big Thunder Trail~
+This unfinished room was created by Kingston.
+~
+405 0 0 0 0 0
+D0
+~
+~
+0 0 40904
+D1
+~
+~
+0 0 40508
 S
 $~

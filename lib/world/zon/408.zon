@@ -2,8 +2,12 @@
 None~
 New Zone~
 40800 40899 30 2
+M 0 40805 1 40819 	(	GPeter Pan	n)
+M 0 40802 1 40811 	(Princess Tiger Lily)
 M 0 40801 20 40817 	(a pirate from the Jolly Roger)
 E 1 40802 50 6 	(a red bandana)
 E 1 40803 50 16 	(a sharp cutlass)
+M 0 40803 1 40817 	(Captain Hook)
+M 0 40804 1 40817 	(Smee)
 S
 $

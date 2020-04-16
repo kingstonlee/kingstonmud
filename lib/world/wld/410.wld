@@ -1,0 +1,235 @@
+#41000
+Boarding Ramp~
+You are in an unfinished room.
+~
+410 0 0 0 0 0
+D4
+~
+~
+0 0 41001
+D5
+~
+~
+0 0 40925
+S
+#41001
+Main Corridor~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41004
+D1
+~
+~
+0 0 41002
+D2
+~
+~
+0 0 41007
+D3
+~
+~
+0 0 41005
+D5
+~
+~
+0 0 41000
+S
+#41002
+Cockpit Access Corridor~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41003
+D3
+~
+~
+0 0 41001
+S
+#41003
+Cockpit~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D2
+~
+~
+0 0 41002
+S
+#41004
+Main Hold~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41008
+D2
+~
+~
+0 0 41001
+D3
+~
+~
+0 0 41009
+S
+#41005
+Main Weapon Corridor~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D1
+~
+~
+0 0 41001
+D5
+~
+~
+0 0 41006
+S
+#41006
+Heavy Laser Turret~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D4
+~
+~
+0 0 41005
+S
+#41007
+Number Three Hold~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41001
+S
+#41008
+Number Two Hold~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D2
+~
+~
+0 0 41004
+S
+#41009
+Port Corridor~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41011
+D1
+~
+~
+0 0 41004
+D2
+~
+~
+0 0 41012
+D3
+~
+~
+0 0 41010
+S
+#41010
+Docking Bay~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D1
+~
+~
+0 0 41009
+S
+#41011
+Circuitry Bay~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D2
+~
+~
+0 0 41009
+S
+#41012
+Inner Corridor~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41009
+D1
+~
+~
+0 0 41013
+D2
+~
+~
+0 0 41014
+D3
+~
+~
+0 0 41015
+S
+#41013
+Refresher Room~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D3
+~
+~
+0 0 41012
+S
+#41014
+Engine Room~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41012
+S
+#41015
+Crew Quarters~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D1
+~
+~
+0 0 41012
+D2
+~
+~
+0 0 41016
+S
+#41016
+Walk-in Closet~
+This unfinished room was created by Kingston.
+~
+410 0 0 0 0 0
+D0
+~
+~
+0 0 41015
+S
+$~

@@ -1,0 +1,419 @@
+#40900
+Imperial Square~
+You are in an unfinished room.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40901
+D2
+~
+~
+0 0 40510
+D3
+~
+~
+0 0 40902
+S
+#40901
+First Order TIE Echelon~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D3
+~
+~
+0 0 40900
+S
+#40902
+Milk Stand~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40927
+D1
+~
+~
+0 0 40900
+D2
+~
+~
+0 0 40903
+S
+#40903
+Droid Junkyard~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40902
+D3
+~
+~
+0 0 40904
+S
+#40904
+Droid Courtyard~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40903
+D2
+~
+~
+0 0 40513
+D3
+~
+~
+0 0 40905
+S
+#40905
+Vehicle Depot~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40906
+D1
+~
+~
+0 0 40904
+S
+#40906
+Shady Sidestreet~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40923
+D1
+~
+~
+0 0 40907
+D2
+~
+~
+0 0 40905
+D3
+~
+~
+0 0 40908
+S
+#40907
+Savi's Workshop~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D3
+~
+~
+0 0 40906
+S
+#40908
+Ronto's Roasters~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40906
+D3
+~
+~
+0 0 40909
+S
+#40909
+Blackspire Outpost~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40910
+D1
+~
+~
+0 0 40908
+D2
+~
+~
+0 0 40911
+D3
+~
+~
+0 0 40912
+S
+#40910
+Kat Saka's Kettle~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40909
+S
+#40911
+Jewel's of Bith~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40909
+S
+#40912
+Black Spire Outpost~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40913
+D1
+~
+~
+0 0 40909
+D3
+~
+~
+0 0 40914
+S
+#40913
+Black Spire Outfitters~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40912
+S
+#40914
+Black Spire Outpost~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40915
+D1
+~
+~
+0 0 40912
+D2
+~
+~
+0 0 40916
+D3
+~
+~
+0 0 40917
+S
+#40915
+Toydarian Toymakers~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40914
+S
+#40916
+Creature Stall~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40914
+S
+#40917
+Black Spire Outpost~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40914
+D3
+~
+~
+0 0 40918
+S
+#40918
+Resistance Road~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40917
+D3
+~
+~
+0 0 40919
+S
+#40919
+Resistance Supply~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40918
+D2
+~
+~
+0 0 40920
+D3
+~
+~
+0 0 40921
+S
+#40920
+Hidden Resistance Landing Zone~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40919
+S
+#40921
+Resistance Camp~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40919
+D3
+~
+~
+0 0 40922
+S
+#40922
+Hidden Pathway~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40921
+S
+#40923
+Shady Sidestreet~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40926
+D1
+~
+~
+0 0 40925
+D2
+~
+~
+0 0 40906
+D3
+~
+~
+0 0 40924
+S
+#40924
+Docking Bay 7~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D1
+~
+~
+0 0 40923
+S
+#40925
+Docking Bay 12~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40927
+D3
+~
+~
+0 0 40923
+D4
+~
+~
+0 0 41000
+S
+#40926
+Dok Ondar's Den of Antiquities~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40923
+S
+#40927
+Black Spire Outpost~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40925
+D1
+~
+~
+0 0 40928
+D2
+~
+~
+0 0 40902
+S
+#40928
+Oga's Cantina~
+This unfinished room was created by Kingston.
+~
+409 0 0 0 0 0
+D3
+~
+~
+0 0 40927
+S
+$~
