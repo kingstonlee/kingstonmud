@@ -36,6 +36,11 @@ const char *trade_letters[] = {
         "Cleric",
         "Thief",
         "Warrior",
+        "Humanoid",		/* And finally the race based ones */
+        "Elf",
+        "Gnome",
+        "Dwarf",
+        "Halfling",
         "\n"
 };
 
@@ -134,6 +139,16 @@ static int is_ok_char(struct char_data *keeper, struct char_data *ch, int shop_n
     do_tell(keeper, buf, cmd_tell, 0);
     return (FALSE);
   }
+
+  if ((IS_HUMANOID(ch) && NOTRADE_HUMANOID(shop_nr)) ||
+      (IS_ELF(ch) && NOTRADE_ELF(shop_nr)) ||
+      (IS_GNOME(ch) && NOTRADE_GNOME(shop_nr)) ||
+      (IS_DWARF(ch) && NOTRADE_DWARF(shop_nr)) ||
+      (IS_HALFLING(ch) && NOTRADE_HALFLING(shop_nr))) {
+    snprintf(buf, sizeof(buf), "%s %s", GET_NAME(ch), MSG_NO_SELL_RACE);
+    do_tell(keeper, buf, cmd_tell, 0);
+    return (FALSE);
+    }
   return (TRUE);
 }
 
