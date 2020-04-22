@@ -1,12 +1,16 @@
 #41000
-Boarding Ramp~
-You are in an unfinished room.
+@WBoarding Ramp@n~
+@W
+Millennium Falcon.  It has definitely seen some wear and tear.  There are
+noticeable mixes of scuff and blaster marks littering the floor.  @n
+@n
 ~
-410 0 0 0 0 0
+410 0 0 0 0 1
 D4
+The entrance to the Main Hold of the Millennium Falcon
 ~
-~
-0 0 41001
+Airlock~
+2 -1 41001
 D5
 ~
 ~
@@ -14,7 +18,7 @@ D5
 S
 #41001
 Main Corridor~
-This unfinished room was created by Kingston.
+@DThis is a curved hallway with entrances to different parts of the ship.  @n
 ~
 410 0 0 0 0 0
 D0
