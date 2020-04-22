@@ -1,6 +1,10 @@
 #40000
 Downtown Disney - Parking Tram Exit ~
-The Parking Tram stop is busy with tourists getting off the trams to get into the parks.  Across from the tram the La Brea Bakery Express is open to guests looking for some pre-park carbo-loading and coffee. To the east is the Disneyland Ticket Counter.  To the west is the rest of Downtown Disney with all the hotels, shops and restaurants.
+The Parking Tram stop is busy with tourists getting off the trams to get into the parks.  
+
+To the south, across from the tram the La Brea Bakery Express is open to guests looking for some pre-park carbo-loading and coffee. 
+To the east, you see a path leading to the Disneyland Ticket Counter.  
+To the west is the Churro Cart and the entrance to the World of Disney Store.  Beyond that is the rest of Downtown Disney.
 ~
 400 0 0 0 0 1
 D1
@@ -18,14 +22,13 @@ D3
 0 0 40001
 S
 #40001
-Downtown Disney Way East - Churro~
-The road is crowded with parents pushing their strollers.  To the north is the Churro Cart.  To the south is the entrance to the World of Disney Store.
+California Churro Company Food Car~
+The smell of churros fills the air. On the side of the walkway, there sits a small food cart.  
+
+To the south is the entrance to the World of Disney Store.
+Downtown Disney continues in the east and west.
 ~
 400 8 0 0 0 1
-D0
-~
-~
-0 0 40051
 D1
 ~
 ~
@@ -38,7 +41,10 @@ S
 T 1200
 #40002
 Downtown Drive East at Starbucks~
-The road is crowded with parents pushing their strollers.  To the south you see a Starbucks.
+The road is crowded with parents pushing their strollers.  
+
+To the south you see a Starbucks.
+Downtown Disney continues in the east and west.
 ~
 400 8 0 0 0 1
 D1
@@ -391,16 +397,6 @@ D0
 ~
 exit~
 1 0 40000
-S
-#40051
-California Churro Company Food Car~
-The smell of churros fills the air.
-~
-400 0 0 0 0 0
-D2
-~
-exit~
-1 0 40001
 S
 #40052
 Starbucks~

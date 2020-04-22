@@ -1075,7 +1075,7 @@ D3
 S
 #40163
 Disneyland Train~
-This unfinished room was created by Kingston.
+You are looking at a train that has five car attached. Each train is colored in Red with accents of Black.  
 ~
 401 0 0 0 0 0
 D0
@@ -1084,14 +1084,3 @@ D0
 0 0 40111
 S
 T 40101
-#40164
-New BuildWalk Room~
-This unfinished room was created by Kingston.
-~
-401 0 0 0 0 0
-D2
-~
-~
-0 0 40163
-S
-$~
