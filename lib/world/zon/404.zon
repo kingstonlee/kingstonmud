@@ -2,5 +2,24 @@
 None~
 Tomorrowland~
 40400 40499 30 2
+* Buzz Lightyear Astro Blasters (40412)
+M 0 40400 1 40412 	(Buzz Lightyear)
+O 0 40400 2 40412 	(a toy laser blaster)
+* Alien Pizza Planet (40409)
+M 0 40401 3 40409 	(a little green alien)
+O 0 40402 5 40409 	(a slice of alien pizza)
+* Star Tours (40413)
+M 0 40402 1 40413 	(a Star Tours pilot droid)
+* Space Mountain (40410)
+M 0 40403 1 40410 	(a malfunctioning security robot)
+* Galactic Grill (40405)
+M 0 40404 1 40405 	(a Galactic Grill vendor)
+* Star Wars Launch Bay (40406)
+M 0 40405 2 40406 	(an astromech mechanic)
+O 0 40403 3 40406 	(a glowing meteorite)
+* Monorail Station (40400)
+M 0 40406 1 40400 	(a monorail conductor)
+O 0 40401 2 40400 	(a space helmet)
+O 0 40404 5 40400 	(an Astro Blasters ticket)
 S
 $

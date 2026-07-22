@@ -1,6 +1,28 @@
 #410
 None~
-New Zone~
+The Millennium Falcon~
 41000 41099 30 2
+* --- Cockpit (41003): Han Solo ---
+M 0 41000 1 41003 	(Han Solo)
+E 1 41000 1 16 	(a DL-44 blaster pistol)
+* --- Main Hold (41004): Chewbacca, training remote, sabacc deck ---
+M 0 41001 1 41004 	(Chewbacca)
+E 1 41001 1 16 	(a Wookiee bowcaster)
+M 0 41002 2 41004 	(a training remote)
+O 0 41004 1 41004 	(a sabacc deck)
+O 0 41002 2 41004 	(a smuggler's vest)
+* --- Boarding Ramp (41000): First Order boarding party ---
+M 0 41003 3 41000 	(a First Order boarding trooper)
+E 1 40900 20 5 	(a suit of stormtrooper armor)
+E 1 40901 20 16 	(an E-11 blaster rifle)
+* --- Docking Bay (41010): Kanjiklub enforcer ---
+M 0 41005 2 41010 	(a Kanjiklub enforcer)
+* --- Number Two Hold (41008): spice smuggler ---
+M 0 41006 2 41008 	(a spice smuggler)
+O 0 41003 2 41008 	(a hydrospanner)
+* --- Crew Quarters (41015): rations ---
+O 0 41005 5 41015 	(a ration pack)
+* --- Inner Corridor (41012): mouse droid ---
+M 0 41004 3 41012 	(a mouse droid)
 S
 $

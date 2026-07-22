@@ -2,5 +2,14 @@
 None~
 Adventureland~
 40600 40699 30 2
+M 0 40600 1 40601 	(Tarzan)
+M 0 40601 1 40602 	(a Jungle Cruise skipper)
+M 0 40602 2 40605 	(a tropical tiki bird)
+M 0 40603 1 40600 	(a prowling jungle panther)
+M 0 40604 1 40603 	(an intrepid archaeologist)
+E 1 40600 1 16 	(a coiled bullwhip)
+E 1 40601 1 6 	(a pith helmet)
+O 0 40602 1 40605 	(a golden idol)
+O 0 40603 5 40602 	(a Dole Whip)
 S
 $

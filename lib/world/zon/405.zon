@@ -2,5 +2,17 @@
 None~
 Frontierland~
 40500 40599 30 2
+M 0 40500 1 40506 	(a grizzled prospector)
+O 0 40503 2 40506 	(a gold nugget)
+M 0 40501 1 40502 	(a saloon gunslinger)
+E 1 40500 5 16 	(a six-shooter revolver)
+E 1 40501 5 6 	(a cowboy hat)
+M 0 40502 1 40505 	(a riverboat captain)
+M 0 40503 1 40501 	(a shooting gallery operator)
+M 0 40504 1 40500 	(a frontier sheriff)
+E 1 40502 1 12 	(a tin sheriff's badge)
+M 0 40505 1 40504 	(a churro vendor)
+O 0 40504 5 40504 	(a bag of kettle corn)
+M 0 40506 2 40508 	(a wild burro)
 S
 $

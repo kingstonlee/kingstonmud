@@ -2,6 +2,32 @@
 Kingston~
 Disneyland Main Street~
 40100 40199 30 2
-M 0 40001 25 40147 	(a cast member)
+* --- Guest services at City Hall (40147) ---
+M 0 40101 1 40147 	(a Disneyland cast member)
+O 0 40107 2 40147 	(a cast member name tag)
+* --- Mickey & Minnie at the Partners Statue (40137) ---
+M 0 40102 1 40137 	(Mickey Mouse)
+M 0 40103 1 40137 	(Minnie Mouse)
+O 0 40101 5 40137 	(a pair of Mickey ears)
+* --- Balloon vendor on Main Street (40109) ---
+M 0 40104 1 40109 	(a balloon vendor)
+O 0 40104 5 40109 	(a Mickey balloon)
+* --- Churro vendor at Refreshment Corner (40124) ---
+M 0 40105 1 40124 	(a churro cart vendor)
+O 0 40102 5 40124 	(a churro)
+O 0 40106 5 40124 	(a box of popcorn)
+* --- Streetcar horse on Main Street (40110) ---
+M 0 40106 1 40110 	(a streetcar horse)
+* --- Park guests wandering (40109) ---
+M 0 40107 4 40109 	(a cheerful park guest)
+* --- Barbershop quartet at the Cinema (40117) ---
+M 0 40108 2 40117 	(a barbershop quartet singer)
+* --- Pickpocket in the Alley (40127) ---
+M 0 40109 1 40127 	(a sticky-fingered pickpocket)
+* --- Security guard at the Ticket Gate (40100) ---
+M 0 40110 1 40100 	(a Disneyland security guard)
+* --- Scattered souvenirs ---
+O 0 40103 5 40101 	(a Disneyland park map)
+O 0 40105 3 40118 	(a pressed penny)
 S
 $

@@ -1,1 +1,92 @@
+#40500
+prospector grizzled miner~
+a grizzled prospector~
+A @ygrizzled prospector@n pans for gold along Big Thunder Trail here.
+~
+Weathered and bewhiskered, he swears there's still color in these hills if
+a body's stubborn enough to find it.
+~
+72 0 0 0 0 0 0 0 100 E
+6 14 7 1d6+40 1d4+0
+40 1500
+8 8 1
+E
+#40501
+gunslinger outlaw~
+a saloon gunslinger~
+A steely-eyed @rgunslinger@n leans in a doorway, spoiling for a duel here.
+~
+Twin revolvers on his hips and a chip on his shoulder, this outlaw figures
+the town isn't big enough for the both of you.
+~
+104 0 0 0 0 0 0 0 -300 E
+8 12 5 2d4+60 1d8+1
+90 3000
+8 8 1
+E
+#40502
+riverboat captain~
+a riverboat captain~
+A dapper @briverboat captain@n oversees the Mark Twain landing here.
+~
+Brass buttons and a booming voice, he's piloted these waters more years
+than he'll admit and knows every bend of the river.
+~
+74 0 0 0 0 0 0 0 200 E
+7 13 6 2d4+50 1d6+1
+60 2000
+8 8 1
+E
+#40503
+shooting gallery operator~
+a shooting gallery operator~
+A grinning @Yoperator@n racks up targets at the shooting gallery here.
+~
+"Step right up, test your aim!" he calls, resetting the tin coyotes and
+cactuses for the next sharpshooter.
+~
+74 0 0 0 0 0 0 0 0 E
+5 15 8 1d4+30 1d3+0
+20 700
+8 8 1
+E
+#40504
+frontier sheriff~
+a frontier sheriff~
+A steady-eyed @bsheriff@n keeps order at the edge of town here.
+~
+Tin star on his vest and a fair but iron sense of justice, he aims to see
+Frontierland stays peaceable.
+~
+72 0 0 0 0 0 0 0 400 E
+9 11 5 2d6+70 1d8+1
+50 3500
+8 8 1
+E
+#40505
+churro vendor frontier~
+a churro vendor~
+A @ychurro vendor@n serves cinnamon churros from a cart here.
+~
+Working the Frontierland crowd, this vendor keeps a steady supply of warm
+churros for weary trailblazers.
+~
+74 0 0 0 0 0 0 0 0 E
+4 16 8 1d4+25 1d2+0
+30 700
+8 8 2
+E
+#40506
+wild burro mule~
+a wild burro~
+A shaggy @ywild burro@n flicks its ears along the trail here.
+~
+A stubborn little pack animal, more likely to bite than to budge when it
+doesn't feel like moving.
+~
+72 0 0 0 0 0 0 0 0 E
+4 16 7 1d6+25 1d4+0
+0 500
+8 8 0
+E
 $

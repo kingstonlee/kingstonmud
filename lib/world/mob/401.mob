@@ -1,1 +1,131 @@
+#40101
+cast member guest services~
+a Disneyland cast member~
+A cheerful @Ccast member@n stands ready to help guests here.
+~
+Immaculately groomed and endlessly upbeat, this cast member can point you
+toward any attraction in the park with a smile.
+~
+74 0 0 0 0 0 0 0 400 E
+5 15 8 1d4+30 1d3+0
+20 800
+8 8 2
+E
+#40102
+mickey mouse~
+Mickey Mouse~
+@RMickey Mouse@n waves happily to everyone passing by.
+~
+The most famous mouse in the world greets guests with white gloves and an
+irrepressible grin. Ha-ha!
+~
+74 0 0 0 0 0 0 0 500 E
+12 8 4 3d6+110 1d6+2
+0 10000
+8 8 1
+E
+#40103
+minnie mouse~
+Minnie Mouse~
+@RMinnie Mouse@n curtsies sweetly in her polka-dot dress.
+~
+Bright-eyed and gracious in a red bow, Minnie blows kisses to the children
+gathered around her.
+~
+74 0 0 0 0 0 0 0 500 E
+12 8 4 3d6+110 1d6+2
+0 10000
+8 8 2
+E
+#40104
+balloon vendor~
+a balloon vendor~
+A @Yballoon vendor@n hawks a bobbing bouquet of Mickey balloons here.
+~
+Clutching a great cluster of colorful balloons, the vendor calls out to
+every child who passes.
+~
+74 0 0 0 0 0 0 0 0 E
+4 16 8 1d4+25 1d2+0
+30 700
+8 8 1
+E
+#40105
+churro vendor cart~
+a churro cart vendor~
+A @ychurro cart vendor@n dusts fresh churros with cinnamon sugar here.
+~
+The sweet smell of warm churros draws a steady line of hungry guests to
+this little cart.
+~
+74 0 0 0 0 0 0 0 0 E
+4 16 8 1d4+25 1d2+0
+30 700
+8 8 2
+E
+#40106
+streetcar horse~
+a streetcar horse~
+A patient @ystreetcar horse@n waits in harness, swishing its tail.
+~
+A gentle draft horse that pulls the Main Street trolley up and down the
+avenue all day long.
+~
+72 0 0 0 0 0 0 0 0 E
+6 15 7 2d4+40 1d4+0
+0 500
+8 8 0
+E
+#40107
+park guest tourist~
+a cheerful park guest~
+A @Wcheerful park guest@n snaps photos of everything in sight.
+~
+Camera around the neck, mouse ears on the head, and a map clutched in one
+hand -- clearly having the best day ever.
+~
+72 0 0 0 0 0 0 0 100 E
+2 18 9 1d4+10 1d2+0
+15 200
+8 8 0
+E
+#40108
+barbershop quartet singer~
+a barbershop quartet singer~
+A straw-hatted @Wsinger@n harmonizes with his quartet here.
+~
+Striped vest, handlebar mustache, and a rich tenor voice raised in
+close four-part harmony.
+~
+72 0 0 0 0 0 0 0 200 E
+5 15 8 1d4+30 1d3+0
+20 600
+8 8 1
+E
+#40109
+pickpocket thief~
+a sticky-fingered pickpocket~
+A shifty @rpickpocket@n eyes the crowd's wallets from the alley here.
+~
+Working the distracted crowds, this thief has light fingers and a fast
+escape route always in mind.
+~
+104 0 0 0 0 0 0 0 -300 E
+5 15 7 1d6+35 1d4+1
+80 1500
+8 8 1
+E
+#40110
+security guard~
+a Disneyland security guard~
+A watchful @bsecurity guard@n keeps the peace at the gate here.
+~
+Polite but firm, this guard makes sure everyone has a magical -- and
+orderly -- day.
+~
+72 0 0 0 0 0 0 0 300 E
+9 11 5 2d6+70 1d8+1
+50 3500
+8 8 1
+E
 $

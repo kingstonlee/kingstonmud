@@ -2,5 +2,17 @@
 None~
 New Orleans Square~
 40700 40799 30 2
+M 0 40700 1 40700 	(a swashbuckling pirate captain)
+E 1 40700 1 16 	(a pirate cutlass)
+E 1 40701 1 6 	(a plumed pirate hat)
+M 0 40701 1 40702 	(a street jazz musician)
+M 0 40702 1 40710 	(the ghostly host)
+O 0 40702 2 40710 	(a ghostly lantern)
+M 0 40703 1 40701 	(a saucy pirate wench)
+O 0 40703 2 40701 	(a bag of doubloons)
+M 0 40704 2 40703 	(a marauding pirate)
+E 1 40700 3 16 	(a pirate cutlass)
+M 0 40705 1 40704 	(a beignet vendor)
+O 0 40704 5 40704 	(a powdered beignet)
 S
 $
