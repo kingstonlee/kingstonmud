@@ -58,4 +58,66 @@ cheers~
 %send% %actor% You raise a mug and shout a toast to the Outer Rim!
 %echoaround% %actor% %actor.name% raises a mug and shouts a toast to the Outer Rim!
 ~
+#40905
+Bounty Hunter Fights~
+0 k 12
+~
+switch %random.2%
+  case 1
+    say You're worth more to me dead, it seems.
+    break
+  case 2
+    emote fires a bolt from a hidden wrist blaster!
+    break
+done
+~
+#40906
+Bounty Hunter Death~
+0 f 100
+~
+say Should have... named a higher price...
+~
+#40907
+Dok-Ondar Fights~
+0 k 12
+~
+switch %random.2%
+  case 1
+    say You will not plunder MY collection, thief!
+    break
+  case 2
+    emote levels an ancient relic blaster and squeezes off a searing shot!
+    break
+done
+~
+#40908
+Dok-Ondar Death~
+0 f 100
+~
+say My treasures... scattered... to the winds...
+emote curls his long neck downward and goes still.
+~
+#40909
+Oga Garra Fights~
+0 k 15
+~
+switch %random.3%
+  case 1
+    say You picked the WRONG cantina, spice-brain.
+    break
+  case 2
+    emote snarls and signals her enforcers with a jerk of her head.
+    break
+  case 3
+    say Nobody crosses Oga Garra and walks out!
+    break
+done
+~
+#40910
+Oga Garra Death~
+0 f 100
+~
+say This... isn't over... the Syndicate will hear of this...
+emote slumps across the bar with a final, rattling breath.
+~
 $~

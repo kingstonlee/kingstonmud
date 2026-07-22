@@ -140,4 +140,56 @@ A gleaming @Ygold medallion@n engraved with a castle rests here.~
 2 2000 200 0 0
 A
 13 10
+#40043
+circlet woodland elven elf~
+a woodland circlet~
+A delicate @gwoodland circlet@n woven of living vines rests here.~
+~
+9 agsuvw 0 0 0 ae 0 0 0 0 0 0 0
+2 0 0 0
+1 3000 300 0 0
+A
+2 2
+#40044
+helm deep-forged dwarven dwarf~
+a deep-forged helm~
+A heavy @cdeep-forged dwarven helm@n sits here, dented from old battles.~
+~
+9 agstuw 0 0 0 ae 0 0 0 0 0 0 0
+3 0 0 0
+6 3000 300 0 0
+A
+5 2
+#40045
+goggles tinkerer gnome gnomish~
+a pair of tinkerer's goggles~
+A pair of brass @Ytinkerer's goggles@n glints here.~
+~
+9 agstvw 0 0 0 ae 0 0 0 0 0 0 0
+1 0 0 0
+1 3000 300 0 0
+A
+3 2
+#40046
+cloak lucky traveler halfling~
+a lucky traveler's cloak~
+A patched @mlucky traveler's cloak@n lies here, softer than it looks.~
+~
+9 agstuv 0 0 0 ak 0 0 0 0 0 0 0
+2 0 0 0
+2 3000 300 0 0
+A
+2 1
+A
+17 -5
+#40047
+medallion champion humanoid~
+a champion's medallion~
+A polished @Wchampion's medallion@n hangs here on a leather cord.~
+~
+9 agtuvw 0 0 0 ac 0 0 0 0 0 0 0
+1 0 0 0
+1 3000 300 0 0
+A
+18 2
 $~

@@ -104,6 +104,8 @@ patient stare of someone who always collects.
 150 15125
 8 8 1
 E
+T 40905
+T 40906
 #40908
 handler creature stall keeper~
 a creature handler~
@@ -169,6 +171,8 @@ guards a hoard of the rarest artifacts in the galaxy and suffers no thieves.
 500 32000
 8 8 1
 E
+T 40907
+T 40908
 #40913
 oga garra blutopian gangster~
 Oga Garra~
@@ -183,6 +187,8 @@ in Black Spire Outpost and answers challenges with violence.
 8 8 2
 E
 T 40902
+T 40909
+T 40910
 #40914
 dj rex droid r-3x pilot~
 DJ R-3X~

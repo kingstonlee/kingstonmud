@@ -21,4 +21,30 @@ if %actor.is_pc%
   emote flashes a lopsided grin and checks his blaster.
 end
 ~
+#41002
+Han Solo Fights~
+0 k 12
+~
+switch %random.2%
+  case 1
+    say Look, I'm a nice guy -- but you're really pushing it.
+    break
+  case 2
+    emote fires his DL-44 from the hip, and shoots first.
+    break
+done
+~
+#41003
+Chewbacca Fights~
+0 k 12
+~
+switch %random.2%
+  case 1
+    emote throws back his head with a deafening roar and swings a massive fist!
+    break
+  case 2
+    emote fires his bowcaster with a furious growl.
+    break
+done
+~
 $~

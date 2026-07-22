@@ -21,4 +21,27 @@ switch %random.2%
     break
 done
 ~
+#40702
+Pirate Captain Fights~
+0 k 12
+~
+switch %random.3%
+  case 1
+    say Ye'll not take me alive, ye bilge rat!
+    break
+  case 2
+    emote swings from a rigging rope and slashes wildly!
+    break
+  case 3
+    say Dead men tell no tales -- and neither shall you!
+    break
+done
+~
+#40703
+Pirate Captain Death~
+0 f 100
+~
+say Blast ye... the sea... claims another...
+emote topples over with a final, rum-soaked groan.
+~
 $~
