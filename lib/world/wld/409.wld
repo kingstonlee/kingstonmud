@@ -352,13 +352,19 @@ D3
 S
 #40924
 Docking Bay 7~
-This unfinished room was created by Kingston.
+This unfinished room was created by Kingston.  A battered First Order shuttle
+sits on the pad, its boarding ramp lowered -- it will ferry the bold (or
+foolish) up to the Star Destroyer looming in orbit above Batuu.
 ~
 409 0 0 0 0 0
 D1
 ~
 ~
 0 0 40923
+D4
+board shuttle ramp~
+~
+0 0 40930
 S
 #40925
 Docking Bay 12~
@@ -417,4 +423,185 @@ D3
 0 0 40927
 S
 T 40904
+#40930
+@RImperial Shuttle Hangar@n~
+The shuttle's ramp opens into a cavernous hangar aboard the Star Destroyer.
+Rows of TIE fighters hang from overhead racks, and the black-and-grey deck
+stretches away to the north.  The shuttle waits below to return you to Batuu.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40931
+D5
+~
+~
+0 0 40924
+S
+#40931
+@RHangar Deck@n~
+Deck crews would once have swarmed here; now only patrols remain.  Corridors
+lead deeper into the ship to the north, and a trooper barracks lies east.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40932
+D1
+~
+~
+0 0 40933
+D2
+~
+~
+0 0 40930
+S
+#40932
+@RMain Corridor@n~
+A long grey corridor, ribbed with structural arches and lit in cold white.
+It runs north deeper into the ship and south back toward the hangar.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40934
+D2
+~
+~
+0 0 40931
+S
+#40933
+@RTrooper Barracks@n~
+Bunks are stacked three high along the walls of this cramped barracks, and a
+rack of spare armor stands ready by the door back west.
+~
+409 0 0 0 0 0
+D3
+~
+~
+0 0 40931
+S
+#40934
+@RCorridor Junction@n~
+Corridors meet here in a cross.  The way north leads to a turbolift, a
+detention block lies east, and the main corridor runs south.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40935
+D1
+~
+~
+0 0 40936
+D2
+~
+~
+0 0 40932
+S
+#40935
+@RTurbolift Landing@n~
+A turbolift shaft rises through the heart of the ship from here.  The lift
+climbs to the command decks above; the junction lies back to the south.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40934
+D4
+~
+~
+0 0 40937
+S
+#40936
+@RDetention Block@n~
+Rows of sealed cells line this grim block.  Most stand empty and dark, but
+one still holds a prisoner.  The junction lies back to the west.
+~
+409 0 0 0 0 0
+D3
+~
+~
+0 0 40934
+S
+#40937
+@RCommand Deck Corridor@n~
+The corridors up here are cleaner, sterner, patrolled by the ship's elite.
+The turbolift descends below; the bridge lies to the north.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40938
+D5
+~
+~
+0 0 40935
+S
+#40938
+@RThe Bridge@n~
+Viewports curve across the front of the bridge, Batuu turning slowly far
+below.  Command consoles line a central walkway.  A sealed corridor leads
+north, deeper still, toward the ship's dark heart.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40939
+D2
+~
+~
+0 0 40937
+S
+#40939
+@RSanctum Corridor@n~
+The lights dim to a bloody red here, the air heavy and cold.  Whatever waits
+north is not part of the First Order's chain of command.  The bridge lies
+back to the south.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40940
+D2
+~
+~
+0 0 40938
+S
+#40940
+@RSith Meditation Chamber@n~
+A spherical chamber of black glass, silent but for a low hum.  Ancient
+Sith relics rest in alcoves along the walls.  A throne room lies north;
+the corridor returns south.
+~
+409 0 0 0 0 0
+D0
+~
+~
+0 0 40941
+D2
+~
+~
+0 0 40939
+S
+#40941
+@RThe Dark Throne Room@n~
+A vast, shadowed hall crowned by a jagged throne of black metal.  Red light
+bleeds from cracks in the walls, and the cold weight of the dark side
+presses down on everything here.  The meditation chamber lies back south.
+~
+409 0 0 0 0 0
+D2
+~
+~
+0 0 40940
+S
 $~

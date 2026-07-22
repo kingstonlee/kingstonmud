@@ -86,4 +86,54 @@ A white @wmedpac@n stamped with the Resistance crest lies here.~
 8 0 0 0 0 a 0 0 0 0 0 0 0
 0 0 0 0
 1 200 20 0 0
+#40911
+crystal kyber crimson red~
+a crimson kyber crystal~
+A @Rcrimson kyber crystal@n pulses with an angry red light here.~
+~
+8 a 0 0 0 ao 0 0 0 0 0 0 0
+0 0 0 0
+1 3000 300 0 0
+#40912
+lightsaber crossguard crimson saber~
+a crossguard lightsaber~
+A menacing @Rcrossguard lightsaber@n lies here, its crossguard vents hissing.~
+~
+5 ag 0 0 0 an 0 0 0 0 0 0 0
+0 4 6 3
+4 12000 1200 0 0
+A
+18 2
+#40913
+plating dark trooper armor phase~
+a suit of dark trooper plating~
+A hulking suit of @cdark trooper plating@n stands here.~
+~
+9 0 0 0 0 ad 0 0 0 0 0 0 0
+7 0 0 0
+20 4000 400 0 0
+#40914
+holocron sith pyramid~
+a Sith holocron~
+A black @rSith holocron@n hums with forbidden knowledge here.~
+~
+8 abg 0 0 0 ao 0 0 0 0 0 0 0
+0 0 0 0
+2 15000 1500 0 0
+#40915
+cap officer imperial peaked~
+an Imperial officer's cap~
+A grey @wImperial officer's cap@n rests here.~
+~
+9 0 0 0 0 ae 0 0 0 0 0 0 0
+2 0 0 0
+2 500 50 0 0
+#40916
+blaster commander first order heavy~
+a First Order commander's blaster~
+A sleek @wFirst Order commander's blaster@n lies here.~
+~
+5 0 0 0 0 an 0 0 0 0 0 0 0
+0 2 5 12
+6 2000 200 0 0
 $~

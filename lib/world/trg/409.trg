@@ -154,4 +154,42 @@ if %actor.is_pc%
   end
 end
 ~
+#40913
+Sith Lord Fights~
+0 k 15
+~
+switch %random.3%
+  case 1
+    say Your feeble skills are no match for the power of the dark side!
+    break
+  case 2
+    emote thrusts out a hand and hurls crackling dark lightning!
+    break
+  case 3
+    say Strike me down and your journey to the dark side will be complete!
+    break
+done
+~
+#40914
+Sith Lord Death~
+0 f 100
+~
+say Impossible... the dark side... cannot... fall...
+emote collapses, the crimson blade guttering out as shadow drains away.
+~
+#40915
+Sith Lord Greets~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.class% == Sorcerer
+    say I sense the Force in you. Kneel, and I will teach you true power.
+  elseif %actor.class% == Knight
+    say A hero comes to die. How predictable. Ignite your courage -- it will not save you.
+  else
+    say You should not have come here. This throne room will be your tomb.
+  end
+end
+~
 $~
