@@ -23,14 +23,16 @@ M 0 40904 3 40904 	(an astromech droid)
 * --- Shady Sidestreet (40906) ---
 M 0 40906 2 40906 	(a Black Spire smuggler)
 E 1 40901 20 16 	(an E-11 blaster rifle)
-* --- Savi's Workshop (40907): build a lightsaber ---
+* --- Savi's Workshop (40907): the Gatherer offers the lightsaber quest ---
 M 0 40905 1 40907 	(a Gatherer of Savi's Workshop)
-O 0 40902 1 40907 	(a lightsaber)
 O 0 40903 3 40907 	(a kyber crystal)
 * --- Ronto's Roasters (40908) ---
 O 0 40908 10 40908 	(a Ronto wrap)
-* --- Black Spire Outfitters (40913) ---
+* --- Black Spire Outfitters (40913): shopkeeper ---
+M 0 40915 1 40913 	(a Black Spire outfitter)
 O 0 40905 3 40913 	(a Black Spire robe)
+* --- Vehicle Depot (40905): arms dealer ---
+M 0 40916 1 40905 	(a Rodian arms dealer)
 * --- Black Spire Outpost (40912): bounty hunter ---
 M 0 40907 2 40912 	(a Weequay bounty hunter)
 E 1 40906 2 6 	(a bounty hunter's helmet)

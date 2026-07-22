@@ -11,6 +11,7 @@ rifle and scans the outpost for signs of Resistance activity.
 50 3000
 8 8 1
 E
+T 40901
 #40901
 officer first order commander~
 a First Order officer~
@@ -76,6 +77,7 @@ their own lightsabers in secret, away from First Order eyes.
 60 2500
 8 8 2
 E
+T 40903
 #40906
 smuggler black spire spacer~
 a Black Spire smuggler~
@@ -180,6 +182,7 @@ in Black Spire Outpost and answers challenges with violence.
 800 40000
 8 8 2
 E
+T 40902
 #40914
 dj rex droid r-3x pilot~
 DJ R-3X~
@@ -192,5 +195,32 @@ cantina's enthusiastic disc jockey, bobbing to its own beats.
 3 17 8 1d4+15 1d2+0
 0 300
 8 8 0
+E
+T 40900
+#40915
+outfitter black spire zabrak vendor~
+a Black Spire outfitter~
+A @yZabrak outfitter@n arranges racks of gear for sale here.
+~
+Horned and tattooed, this Zabrak merchant deals in armor and clothing
+suited to life on the frontier world of Batuu.
+~
+74 0 0 0 0 0 0 0 0 E
+10 13 7 1d6+80 1d4+1
+100 3000
+8 8 1
+E
+#40916
+dealer rodian arms weapons vendor~
+a Rodian arms dealer~
+A green-skinned @gRodian arms dealer@n polishes a blaster behind the counter here.
+~
+Large-eyed and soft-spoken, this Rodian sells weapons of every make to
+anyone with the credits to pay for them.
+~
+74 0 0 0 0 0 0 0 -100 E
+10 13 7 1d6+80 1d4+1
+100 3000
+8 8 1
 E
 $
