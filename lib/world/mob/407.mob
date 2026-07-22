@@ -1,1 +1,79 @@
+#40700
+pirate captain swashbuckler~
+a swashbuckling pirate captain~
+A flamboyant @Rpirate captain@n swaggers across the square here.
+~
+Beads in his braided beard and a sword at his hip, he's equal parts charm,
+cunning, and rum-soaked bravado.
+~
+74 0 0 0 0 0 0 0 -200 E
+12 8 3 3d8+120 2d4+2
+300 10000
+8 8 1
+E
+#40701
+jazz musician trumpeter~
+a street jazz musician~
+A soulful @Yjazz musician@n blows a lazy trumpet line on Royal Street here.
+~
+Eyes closed, foot tapping, coaxing warm brassy notes into the New Orleans
+evening air.
+~
+72 0 0 0 0 0 0 0 100 E
+5 15 8 1d4+30 1d3+0
+20 700
+8 8 1
+E
+#40702
+ghost host haunted~
+the ghostly host~
+A translucent @Cghostly host@n welcomes you to his mansion here.
+~
+"Welcome, foolish mortals," he intones with ghoulish delight, gesturing to
+the nine hundred and ninety-nine happy haunts within.
+~
+72 0 0 0 0 0 0 0 -100 E
+11 9 3 3d6+100 2d4+1
+0 8000
+8 8 1
+E
+#40703
+pirate wench~
+a saucy pirate wench~
+A sharp-tongued @rpirate wench@n counts her plunder here.
+~
+Quick with a dagger and quicker with an insult, she's survived a dozen
+mutinies and started half of them.
+~
+72 0 0 0 0 0 0 0 -100 E
+6 14 7 1d6+40 1d4+1
+40 1800
+8 8 2
+E
+#40704
+marauding pirate raider~
+a marauding pirate~
+A snarling @rpirate@n brandishes a cutlass, spoiling for plunder here.
+~
+Scarred and salt-crusted, this raider would sooner rob you than look at
+you, and he isn't much for looking.
+~
+104 0 0 0 0 0 0 0 -400 E
+8 12 5 2d4+60 1d8+1
+80 3000
+8 8 1
+E
+#40705
+beignet vendor~
+a beignet vendor~
+A friendly @Wbeignet vendor@n dusts fresh beignets with sugar here.
+~
+Clouds of powdered sugar drift from the fryer as the vendor serves up warm
+beignets by the dozen.
+~
+74 0 0 0 0 0 0 0 0 E
+4 16 8 1d4+25 1d2+0
+30 700
+8 8 2
+E
 $

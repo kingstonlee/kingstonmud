@@ -1,1 +1,49 @@
-$
+#41000
+blaster dl-44 pistol heavy~
+a DL-44 blaster pistol~
+A well-worn @YDL-44 heavy blaster pistol@n lies here.~
+~
+5 0 0 0 0 an 0 0 0 0 0 0 0
+0 2 5 12
+3 1200 120 0 0
+#41001
+bowcaster crossbow wookiee~
+a Wookiee bowcaster~
+A massive @ybowcaster@n rests against the bulkhead here.~
+~
+5 0 0 0 0 an 0 0 0 0 0 0 0
+0 3 4 12
+12 1500 150 0 0
+#41002
+vest smuggler leather~
+a smuggler's vest~
+A scuffed @ysmuggler's vest@n has been tossed here.~
+~
+9 0 0 0 0 ad 0 0 0 0 0 0 0
+4 0 0 0
+5 400 40 0 0
+#41003
+hydrospanner tool wrench~
+a hydrospanner~
+A greasy @whydrospanner@n has been left on the deck here.~
+~
+12 0 0 0 0 ao 0 0 0 0 0 0 0
+0 0 0 0
+3 80 8 0 0
+#41004
+sabacc deck cards~
+a sabacc deck~
+A worn @Wsabacc deck@n -- the cards that won this ship -- sits here.~
+~
+12 0 0 0 0 ao 0 0 0 0 0 0 0
+0 0 0 0
+1 500 50 0 0
+#41005
+ration pack rations food~
+a ration pack~
+A sealed @gration pack@n sits here.~
+~
+19 0 0 0 0 a 0 0 0 0 0 0 0
+24 0 0 0
+1 20 2 0 0
+$~

@@ -1,1 +1,92 @@
+#40400
+buzz lightyear~
+Buzz Lightyear~
+@bBuzz Lightyear@n strikes a heroic pose near the Astro Blasters here.
+~
+Space Ranger of the Galactic Alliance, chin held high, ready to defend the
+galaxy from the Evil Emperor Zurg. To infinity and beyond!
+~
+74 0 0 0 0 0 0 0 400 E
+12 8 3 3d8+120 2d4+2
+0 10000
+8 8 1
+E
+#40401
+little green alien~
+a little green alien~
+A @glittle green alien@n gazes up in wonder, chanting softly here.
+~
+Three-eyed and squeaky, it points skyward and coos, "oooOOOooh, the
+claaaaw!"
+~
+72 0 0 0 0 0 0 0 0 E
+3 17 8 1d4+15 1d2+0
+0 400
+8 8 0
+E
+#40402
+star tours pilot droid rex~
+a Star Tours pilot droid~
+A nervous @cpilot droid@n runs pre-flight checks at Star Tours here.
+~
+A rickety piloting droid whose confidence does not quite match its
+programming, forever hoping this flight goes smoothly.
+~
+72 0 0 0 0 0 0 0 0 E
+5 15 6 1d6+30 1d4+0
+0 1000
+8 8 0
+E
+#40403
+malfunctioning security robot~
+a malfunctioning security robot~
+A sparking @Rsecurity robot@n lurches through Space Mountain here.
+~
+Its targeting sensors have gone haywire, and it now regards every guest as
+an intruder to be neutralized.
+~
+104 0 0 0 0 0 0 0 -200 E
+9 11 3 2d6+80 1d8+2
+0 4500
+8 8 0
+E
+#40404
+galactic grill vendor~
+a Galactic Grill vendor~
+A @Ygrill vendor@n flips space-age burgers at the Galactic Grill here.
+~
+Cheerful behind a chrome counter, this vendor serves up cosmic cheeseburgers
+to hungry time-travelers.
+~
+74 0 0 0 0 0 0 0 0 E
+4 16 8 1d4+25 1d2+0
+30 700
+8 8 2
+E
+#40405
+astromech mechanic droid~
+an astromech mechanic~
+An @castromech droid@n welds a panel in the Launch Bay here.
+~
+Beeping busily, this utility droid keeps the Launch Bay's starships in
+flying condition.
+~
+72 0 0 0 0 0 0 0 0 E
+4 16 6 1d6+25 1d4+0
+0 1000
+8 8 0
+E
+#40406
+monorail conductor~
+a monorail conductor~
+A crisp @bmonorail conductor@n announces the next departure here.
+~
+"Please stand clear of the doors," the conductor intones, keeping the
+sleek monorail running on schedule.
+~
+74 0 0 0 0 0 0 0 200 E
+5 15 7 1d4+30 1d3+0
+20 800
+8 8 1
+E
 $

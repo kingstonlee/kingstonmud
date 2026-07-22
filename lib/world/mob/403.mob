@@ -1,1 +1,105 @@
+#40300
+princess fairy-tale~
+a fairy-tale princess~
+A radiant @Mprincess@n greets her guests in the Royal Hall.
+~
+Gowned in shimmering silk with a gentle smile, she poses for photographs
+and grants wishes with a wave of her gloved hand.
+~
+74 0 0 0 0 0 0 0 500 E
+10 10 5 3d6+80 1d6+1
+0 6000
+8 8 2
+E
+#40301
+white rabbit~
+the White Rabbit~
+The @WWhite Rabbit@n dashes past, fretting over his pocket watch.
+~
+"I'm late, I'm late, for a very important date!" he mutters, forever
+hurrying somewhere he'll never quite reach on time.
+~
+72 0 0 0 0 0 0 0 100 E
+3 17 8 1d4+15 1d3+0
+20 400
+8 8 1
+E
+#40302
+king arthur~
+King Arthur~
+@YKing Arthur@n stands proudly beside the Sword in the Stone.
+~
+Once a humble squire, now the rightful king, he watches to see who else
+might prove worthy to draw the blade.
+~
+74 0 0 0 0 0 0 0 600 E
+12 8 3 3d8+120 2d4+2
+200 10000
+8 8 1
+E
+#40303
+minstrel faire~
+a Fantasy Faire minstrel~
+A @gminstrel@n plucks a lute and sings of far-off kingdoms here.
+~
+Feathered cap and merry tune, this wandering musician spins tales of
+dragons and derring-do for a few coins.
+~
+72 0 0 0 0 0 0 0 200 E
+5 15 8 1d4+30 1d3+0
+20 700
+8 8 1
+E
+#40304
+tinker bell fairy pixie~
+Tinker Bell~
+@GTinker Bell@n flits about in a shower of pixie dust here.
+~
+A tiny, quick-tempered fairy trailing sparkling dust, no bigger than your
+hand and twice as spirited.
+~
+72 0 0 0 0 0 0 0 300 E
+8 12 3 2d4+40 1d4+0
+0 4000
+8 8 2
+E
+#40305
+evil queen witch~
+the Evil Queen~
+The @rEvil Queen@n gazes into her mirror, seething with envy here.
+~
+Cold and beautiful and cruel, she will suffer no one fairer than herself
+to live -- and she has a poisoned apple ready.
+~
+104 0 0 0 0 0 0 0 -800 E
+11 9 3 3d6+100 2d4+2
+300 9000
+8 8 2
+E
+#40306
+carousel attendant~
+a carousel attendant~
+A cheerful @battendant@n helps riders onto King Arthur's Carousel here.
+~
+Bedecked in a vest and cap, this attendant keeps the painted horses turning
+to a cheerful calliope tune.
+~
+74 0 0 0 0 0 0 0 200 E
+5 15 8 1d4+30 1d3+0
+20 700
+8 8 1
+E
+#40307
+maurice inventor~
+Maurice the inventor~
+@YMaurice@n tinkers with a half-built contraption at his stand here.
+~
+An eccentric old inventor with wild grey hair and ink-stained fingers,
+always one gear away from his next great invention.
+~
+74 0 0 0 0 0 0 0 300 E
+6 14 7 1d6+40 1d4+0
+30 1500
+8 8 1
+E
 $

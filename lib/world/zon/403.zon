@@ -2,6 +2,27 @@
 None~
 Fantasyland~
 40300 40399 30 2
-O 0 40800 100 40325 	(a handful of pixie dust)
+* Royal Hall (40304)
+M 0 40300 1 40304 	(a fairy-tale princess)
+O 0 40301 2 40304 	(a jeweled tiara)
+* White Rabbit (40300)
+M 0 40301 1 40300 	(the White Rabbit)
+* Sword in the Stone (40309)
+M 0 40302 1 40309 	(King Arthur)
+O 0 40300 1 40309 	(an enchanted sword)
+* Fantasy Faire (40303)
+M 0 40303 1 40303 	(a Fantasy Faire minstrel)
+* Pixie Hollow (40325)
+M 0 40304 1 40325 	(Tinker Bell)
+O 0 40303 3 40325 	(a pouch of pixie dust)
+* Snow White's Wishing Well (40319)
+M 0 40305 1 40319 	(the Evil Queen)
+O 0 40302 1 40319 	(a magic mirror)
+O 0 40304 3 40319 	(a poisoned apple)
+* King Arthur's Carousel (40316)
+M 0 40306 1 40316 	(a carousel attendant)
+* Maurice's Treats (40308)
+M 0 40307 1 40308 	(Maurice the inventor)
+O 0 40305 5 40308 	(a giant turkey leg)
 S
 $
