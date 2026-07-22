@@ -30,6 +30,7 @@ const char *class_abbrevs[] = {
   "Sh",
   "Sc",
   "Kn",
+  "Gu",
   "\n"
 };
 
@@ -38,6 +39,7 @@ const char *pc_class_types[] = {
   "Shaman",
   "Scoundrel",
   "Knight",
+  "Guest",
   "\n"
 };
 
@@ -49,7 +51,8 @@ const char *class_menu[] = {
 "  [\t(S\t)]orcerer\r\n",
 "  S[\t(h\t)]aman\r\n",
 "  S[\t(c\t)]oundrel\r\n",
-"  [\t(K\t)]night\r\n"
+"  [\t(K\t)]night\r\n",
+"  [\t(G\t)]uest\r\n"
 };
 
 /* The code to interpret a class letter -- used in interpreter.c when a new
@@ -63,6 +66,7 @@ int parse_class(char arg)
   case 'h': return CLASS_CLERIC;      /* Shaman */
   case 'c': return CLASS_THIEF;       /* Scoundrel */
   case 'k': return CLASS_WARRIOR;     /* Knight */
+  case 'g': return CLASS_GUEST;       /* Guest */
   default:  return CLASS_UNDEFINED;
   }
 }
@@ -108,11 +112,11 @@ bitvector_t find_class_bitvector(const char *arg)
 /* #define PRAC_TYPE		3  should it say 'spell' or 'skill'?	*/
 
 int prac_params[4][NUM_CLASSES] = {
-  /* MAG	CLE	THE	WAR */
-  { 95,		95,	85,	80	},	/* learned level */
-  { 100,	100,	12,	12	},	/* max per practice */
-  { 25,		25,	0,	0	},	/* min per practice */
-  { SPELL,	SPELL,	SKILL,	SKILL	},	/* prac name */
+  /* MAG	CLE	THE	WAR	GUE */
+  { 95,		95,	85,	80,	85	},	/* learned level */
+  { 100,	100,	12,	12,	40	},	/* max per practice */
+  { 25,		25,	0,	0,	10	},	/* min per practice */
+  { SPELL,	SPELL,	SKILL,	SKILL,	SKILL	},	/* prac name */
 };
 
 /* The appropriate rooms for each guildmaster/guildguard; controls which types
@@ -385,6 +389,7 @@ byte saving_throws(int class_num, int type, int level)
       break;
     }
     break;
+  case CLASS_GUEST:	/* Guest shares the Shaman (cleric) saving throws */
   case CLASS_CLERIC:
     switch (type) {
     case SAVING_PARA:	/* Paralyzation */
@@ -1213,6 +1218,7 @@ int thaco(int class_num, int level)
     default:
       log("SYSERR: Missing level for mage thac0.");
     }
+  case CLASS_GUEST:	/* Guest shares the Shaman (cleric) THAC0 curve */
   case CLASS_CLERIC:
     switch (level) {
     case  0: return 100;
@@ -1407,6 +1413,19 @@ void roll_real_abils(struct char_data *ch)
     if (ch->real_abils.str == 18)
       ch->real_abils.str_add = rand_number(0, 100);
     break;
+  case CLASS_GUEST:
+    /* True everyman: an even spread with no dominant prime stat. */
+    {
+      int avg = (table[0] + table[1] + table[2] + table[3] +
+                 table[4] + table[5]) / 6;
+      ch->real_abils.str = avg;
+      ch->real_abils.intel = avg;
+      ch->real_abils.wis = avg;
+      ch->real_abils.dex = avg;
+      ch->real_abils.con = avg;
+      ch->real_abils.cha = avg;
+    }
+    break;
   }
 
   switch (GET_RACE(ch)) {
@@ -1514,6 +1533,14 @@ void advance_level(struct char_data *ch)
   case CLASS_WARRIOR:
     add_hp += rand_number(10, 15);
     add_mana = 0;
+    add_move = rand_number(1, 3);
+    break;
+
+  case CLASS_GUEST:
+    /* True everyman: medium hit points, a little mana for basic spells. */
+    add_hp += rand_number(6, 11);
+    add_mana = rand_number(GET_LEVEL(ch) / 2, GET_LEVEL(ch));
+    add_mana = MIN(add_mana, 8);
     add_move = rand_number(1, 3);
     break;
   }
@@ -1658,6 +1685,16 @@ void init_spell_levels(void)
   spell_level(SKILL_TRACK, CLASS_WARRIOR, 9);
   spell_level(SKILL_BASH, CLASS_WARRIOR, 12);
   spell_level(SKILL_WHIRLWIND, CLASS_WARRIOR, 16);
+
+  /* Guest: a true everyman -- a handful of basic, helpful skills and spells. */
+  spell_level(SKILL_BANDAGE, CLASS_GUEST, 1);
+  spell_level(SKILL_SNEAK, CLASS_GUEST, 4);
+  spell_level(SKILL_TRACK, CLASS_GUEST, 6);
+  spell_level(SPELL_CURE_LIGHT, CLASS_GUEST, 3);
+  spell_level(SPELL_ARMOR, CLASS_GUEST, 5);
+  spell_level(SPELL_DETECT_MAGIC, CLASS_GUEST, 7);
+  spell_level(SPELL_CREATE_FOOD, CLASS_GUEST, 8);
+  spell_level(SPELL_CREATE_WATER, CLASS_GUEST, 8);
 }
 
 /* This is the exp given to implementors -- it must always be greater than the
@@ -1719,6 +1756,7 @@ int level_exp(int chclass, int level)
     }
     break;
 
+    case CLASS_GUEST:	/* Guest shares the Shaman (cleric) exp curve */
     case CLASS_CLERIC:
     switch (level) {
       case  0: return 0;
@@ -1850,6 +1888,9 @@ const char *title_male(int chclass, int level)
     return "the Implementor";
 
   switch (chclass) {
+
+    case CLASS_GUEST:
+      return "the Guest";
 
     case CLASS_MAGIC_USER:
     switch (level) {
@@ -1990,6 +2031,9 @@ const char *title_female(int chclass, int level)
     return "the Implementress";
 
   switch (chclass) {
+
+    case CLASS_GUEST:
+      return "the Guest";
 
     case CLASS_MAGIC_USER:
     switch (level) {

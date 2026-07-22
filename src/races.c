@@ -59,12 +59,12 @@ const char *race_menu =
 /** Check if the class & race combo is allowed.
  *  Columns follow the class enum order: Sorcerer, Shaman, Scoundrel, Knight. */
 int classRaceAllowed[NUM_RACES][NUM_CLASSES] = {
-  /*  So   Sh   Sc   Kn                 */
-    { YES, YES, YES, YES }, /* Human    */
-    { YES, YES, YES, YES }, /* Fae      */
-    { NO,  YES, YES, YES }, /* Wookiee  */
-    { YES, YES, YES, YES }, /* Dwarf    */
-    { NO,  YES, YES, YES }  /* Na'vi    */
+  /*  So   Sh   Sc   Kn   Gu            */
+    { YES, YES, YES, YES, YES }, /* Human    */
+    { YES, YES, YES, YES, YES }, /* Fae      */
+    { NO,  YES, YES, YES, YES }, /* Wookiee  */
+    { YES, YES, YES, YES, YES }, /* Dwarf    */
+    { NO,  YES, YES, YES, YES }  /* Na'vi    */
 };
 
 /* The code to interpret a race letter -- used in interpreter.c when a new

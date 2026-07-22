@@ -149,9 +149,10 @@
 #define CLASS_MAGIC_USER  0    /**< PC Class Magic User */
 #define CLASS_CLERIC      1    /**< PC Class Cleric */
 #define CLASS_THIEF       2    /**< PC Class Thief */
-#define CLASS_WARRIOR     3    /**< PC Class Warrior */
+#define CLASS_WARRIOR     3    /**< PC Class Warrior (themed: Knight) */
+#define CLASS_GUEST       4    /**< PC Class Guest (true everyman) */
 /** Total number of available PC Classes */
-#define NUM_CLASSES	  4
+#define NUM_CLASSES	  5
 
 /* PC Races */
 #define RACE_UNDEFINED	  (-1) /**< PC race undefined */
