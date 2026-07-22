@@ -231,4 +231,111 @@ anyone with the credits to pay for them.
 100 10000
 8 8 1
 E
+#40917
+imperial stormtrooper trooper~
+an Imperial stormtrooper~
+An @wImperial stormtrooper@n stands guard aboard the Star Destroyer here.
+~
+Fresh from the ship's own garrison, this trooper is better drilled and far
+less forgiving than the patrols down on Batuu.
+~
+104 0 0 0 0 0 0 0 -800 E
+10 10 5 2d8+90 1d8+1
+60 10000
+8 8 1
+E
+#40918
+stormtrooper sergeant squad leader~
+a stormtrooper sergeant~
+A @wstormtrooper sergeant@n barks orders and levels a blaster here.
+~
+A pauldron marks this trooper as a squad leader, hardened by a dozen
+boarding actions.
+~
+104 0 0 0 0 0 0 0 -800 E
+12 8 4 3d8+108 2d4+2
+120 14400
+8 8 1
+E
+#40919
+first order gunner crewman~
+a First Order gunner~
+A @wFirst Order gunner@n mans a weapons console here.
+~
+Sealed in a black gunnery suit, the crewman would sooner vaporize an
+intruder than sound an alarm.
+~
+104 0 0 0 0 0 0 0 -800 E
+11 9 5 2d8+92 1d10+1
+70 12100
+8 8 1
+E
+#40920
+imperial officer commander~
+an Imperial officer~
+A grey-clad @wImperial officer@n surveys the bridge with cold disdain here.
+~
+Rank cylinders gleam on the officer's chest; command of this deck is theirs,
+and they suffer no intruders.
+~
+104 0 0 0 0 0 0 0 -900 E
+13 7 3 3d8+118 2d4+3
+200 16900
+8 8 1
+E
+#40921
+dark trooper droid heavy~
+a dark trooper~
+A towering black @cdark trooper@n droid stomps forward here.
+~
+Phase-armored and relentless, this combat droid was built for one purpose:
+to end whatever it is pointed at.
+~
+104 0 0 0 0 0 0 0 0 E
+15 5 2 4d8+132 2d6+3
+150 22500
+8 8 0
+E
+#40922
+sith acolyte dark~
+a Sith acolyte~
+A robed @rSith acolyte@n ignites a crimson blade at your approach here.
+~
+An apprentice of the dark side, eyes yellowed with hate, eager to prove
+themselves upon an intruder.
+~
+104 0 0 0 0 0 0 0 -1000 E
+16 4 2 4d8+142 2d6+4
+250 25600
+8 8 1
+E
+#40923
+resistance prisoner captive~
+a captured Resistance fighter~
+A battered @bResistance fighter@n slumps in a detention cell here.
+~
+Bruised but unbroken, the prisoner looks up with sudden hope at the sight of
+a friendly face.
+~
+72 0 0 0 0 0 0 0 700 E
+5 15 8 1d6+35 1d4+0
+0 2500
+8 8 2
+E
+#40925
+sith lord supreme leader boss~
+the Sith Lord~
+@RThe Sith Lord@n rises from a throne of black metal, blade blazing crimson.
+~
+Wrapped in shadow and cold fury, this master of the dark side rules the
+Star Destroyer -- and intends this throne room to be your grave.
+~
+106 0 0 0 0 0 0 0 -1000 E
+22 1 0 6d10+280 4d6+6
+2000 60500
+8 8 1
+E
+T 40913
+T 40914
+T 40915
 $

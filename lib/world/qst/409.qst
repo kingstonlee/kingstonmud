@@ -50,4 +50,23 @@ You have chosen not to cross Oga Garra.  Wise, perhaps.  But no reward.
 150 0 12 40 -1 -1 1
 15000 30000 40907
 S
+#40903
+Assault on the Star Destroyer~
+destroyer~
+   This is the big one. The First Order's Star Destroyer hangs in orbit over
+Batuu, and at its heart sits a Sith Lord directing the whole occupation.
+Board the shuttle at Docking Bay 7, fight your way up to the throne room, and
+end that darkness for good. Do this, and Batuu is free. Bring proof -- bring
+me victory.
+~
+   You did it. The Sith Lord is dead and the Star Destroyer is in chaos.
+Batuu owes you its freedom. Take this blade -- torn from the dark, may it
+serve the light in your hands.
+~
+The shadow over Batuu remains.
+~
+3 40911 0 40925 -1 -1 -1
+200 0 15 40 -1 -1 1
+20000 40000 40912
+S
 $~
