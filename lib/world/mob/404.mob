@@ -7,8 +7,8 @@ Space Ranger of the Galactic Alliance, chin held high, ready to defend the
 galaxy from the Evil Emperor Zurg. To infinity and beyond!
 ~
 74 0 0 0 0 0 0 0 400 E
-12 8 3 3d8+120 2d4+2
-0 10000
+12 8 3 3d8+154 2d4+2
+0 18000
 8 8 1
 E
 T 40400
@@ -21,8 +21,8 @@ Three-eyed and squeaky, it points skyward and coos, "oooOOOooh, the
 claaaaw!"
 ~
 72 0 0 0 0 0 0 0 0 E
-3 17 8 1d4+15 1d2+0
-0 400
+3 17 8 1d4+28 1d2+0
+0 900
 8 8 0
 E
 T 40401
@@ -35,8 +35,8 @@ A rickety piloting droid whose confidence does not quite match its
 programming, forever hoping this flight goes smoothly.
 ~
 72 0 0 0 0 0 0 0 0 E
-5 15 6 1d6+30 1d4+0
-0 1000
+5 15 6 1d6+46 1d4+0
+0 2500
 8 8 0
 E
 #40403
@@ -48,8 +48,8 @@ Its targeting sensors have gone haywire, and it now regards every guest as
 an intruder to be neutralized.
 ~
 104 0 0 0 0 0 0 0 -200 E
-9 11 3 2d6+80 1d8+2
-0 4500
+9 11 3 2d6+83 1d8+0
+0 8100
 8 8 0
 E
 #40404
@@ -61,8 +61,8 @@ Cheerful behind a chrome counter, this vendor serves up cosmic cheeseburgers
 to hungry time-travelers.
 ~
 74 0 0 0 0 0 0 0 0 E
-4 16 8 1d4+25 1d2+0
-30 700
+4 16 8 1d4+38 1d2+0
+30 1600
 8 8 2
 E
 #40405
@@ -74,8 +74,8 @@ Beeping busily, this utility droid keeps the Launch Bay's starships in
 flying condition.
 ~
 72 0 0 0 0 0 0 0 0 E
-4 16 6 1d6+25 1d4+0
-0 1000
+4 16 6 1d6+36 1d4+0
+0 1600
 8 8 0
 E
 #40406
@@ -87,8 +87,8 @@ A crisp @bmonorail conductor@n announces the next departure here.
 sleek monorail running on schedule.
 ~
 74 0 0 0 0 0 0 0 200 E
-5 15 7 1d4+30 1d3+0
-20 800
+5 15 7 1d4+48 1d3+0
+20 2500
 8 8 1
 E
 $

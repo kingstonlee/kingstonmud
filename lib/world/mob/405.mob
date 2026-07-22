@@ -7,8 +7,8 @@ Weathered and bewhiskered, he swears there's still color in these hills if
 a body's stubborn enough to find it.
 ~
 72 0 0 0 0 0 0 0 100 E
-6 14 7 1d6+40 1d4+0
-40 1500
+6 14 7 1d6+56 1d4+0
+40 3600
 8 8 1
 E
 #40501
@@ -20,8 +20,8 @@ Twin revolvers on his hips and a chip on his shoulder, this outlaw figures
 the town isn't big enough for the both of you.
 ~
 104 0 0 0 0 0 0 0 -300 E
-8 12 5 2d4+60 1d8+1
-90 3000
+8 12 5 2d4+75 1d8+0
+90 6400
 8 8 1
 E
 T 40500
@@ -34,8 +34,8 @@ Brass buttons and a booming voice, he's piloted these waters more years
 than he'll admit and knows every bend of the river.
 ~
 74 0 0 0 0 0 0 0 200 E
-7 13 6 2d4+50 1d6+1
-60 2000
+7 13 6 2d4+65 1d6+0
+60 4900
 8 8 1
 E
 #40503
@@ -47,8 +47,8 @@ A grinning @Yoperator@n racks up targets at the shooting gallery here.
 cactuses for the next sharpshooter.
 ~
 74 0 0 0 0 0 0 0 0 E
-5 15 8 1d4+30 1d3+0
-20 700
+5 15 8 1d4+48 1d3+0
+20 2500
 8 8 1
 E
 #40504
@@ -60,8 +60,8 @@ Tin star on his vest and a fair but iron sense of justice, he aims to see
 Frontierland stays peaceable.
 ~
 72 0 0 0 0 0 0 0 400 E
-9 11 5 2d6+70 1d8+1
-50 3500
+9 11 5 2d6+83 1d8+0
+50 8100
 8 8 1
 E
 #40505
@@ -73,8 +73,8 @@ Working the Frontierland crowd, this vendor keeps a steady supply of warm
 churros for weary trailblazers.
 ~
 74 0 0 0 0 0 0 0 0 E
-4 16 8 1d4+25 1d2+0
-30 700
+4 16 8 1d4+38 1d2+0
+30 1600
 8 8 2
 E
 #40506
@@ -86,8 +86,8 @@ A stubborn little pack animal, more likely to bite than to budge when it
 doesn't feel like moving.
 ~
 72 0 0 0 0 0 0 0 0 E
-4 16 7 1d6+25 1d4+0
-0 500
+4 16 7 1d6+36 1d4+0
+0 1600
 8 8 0
 E
 $

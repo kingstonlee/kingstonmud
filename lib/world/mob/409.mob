@@ -7,8 +7,8 @@ Clad head to toe in gleaming white armor, this trooper cradles a blaster
 rifle and scans the outpost for signs of Resistance activity.
 ~
 104 0 0 0 0 0 0 0 -750 E
-8 12 5 2d4+60 1d6+2
-50 3000
+8 12 5 2d4+75 1d6+1
+50 6400
 8 8 1
 E
 T 40901
@@ -21,8 +21,8 @@ Immaculate in a pressed grey uniform and peaked cap, this officer clearly
 expects to be obeyed without question.
 ~
 106 0 0 0 0 0 0 0 -900 E
-12 8 3 3d6+120 2d4+3
-200 9000
+12 8 3 3d6+158 2d4+3
+200 18000
 8 8 1
 E
 #40902
@@ -34,8 +34,8 @@ The pilot's sealed helmet hides any expression, but the blaster on the hip
 is unmistakable.
 ~
 104 0 0 0 0 0 0 0 -700 E
-9 11 4 2d5+70 1d8+2
-80 4000
+9 11 4 2d5+84 1d8+0
+80 8100
 8 8 1
 E
 #40903
@@ -47,8 +47,8 @@ A wrinkled old spacer with a knowing grin, Bib ladles out cups of thick,
 sweet milk to anyone with a few credits.
 ~
 74 0 0 0 0 0 0 0 0 E
-5 15 8 1d4+30 1d3+0
-40 1500
+5 15 8 1d4+48 1d3+0
+40 2500
 8 8 1
 E
 #40904
@@ -60,8 +60,8 @@ A dome-topped utility droid covered in scuffs and dents, whistling a
 stream of electronic chatter at passers-by.
 ~
 72 0 0 0 0 0 0 0 0 E
-4 16 6 1d6+25 1d4+0
-0 1000
+4 16 6 1d6+36 1d4+0
+0 1600
 8 8 0
 E
 #40905
@@ -73,8 +73,8 @@ One of the mysterious Gatherers, this artisan helps travelers assemble
 their own lightsabers in secret, away from First Order eyes.
 ~
 74 0 0 0 0 0 0 0 500 E
-7 13 6 1d8+45 1d4+1
-60 2500
+7 13 6 1d8+66 1d4+1
+60 4900
 8 8 2
 E
 T 40903
@@ -87,8 +87,8 @@ Blaster slung low and eyes always moving, this spacer would sell their own
 grandmother for the right price.
 ~
 104 0 0 0 0 0 0 0 -200 E
-6 14 6 2d4+40 1d6+1
-70 2200
+6 14 6 2d4+55 1d6+1
+70 3600
 8 8 1
 E
 #40907
@@ -100,8 +100,8 @@ Weathered skin like cured hide, a bandolier of exotic weapons, and the
 patient stare of someone who always collects.
 ~
 104 0 0 0 0 0 0 0 -500 E
-11 9 3 3d5+100 2d4+2
-150 8000
+11 9 3 3d5+145 2d4+2
+150 15125
 8 8 1
 E
 #40908
@@ -113,8 +113,8 @@ Surrounded by cages and pens, this handler speaks softly to a menagerie of
 strange animals from across the galaxy.
 ~
 74 0 0 0 0 0 0 0 0 E
-5 15 7 1d6+35 1d4+0
-30 1200
+5 15 7 1d6+46 1d4+0
+30 2500
 8 8 2
 E
 #40909
@@ -126,8 +126,8 @@ Sleek and quick with tufted ears, the loth-cat watches everything with
 bright, calculating eyes.
 ~
 72 0 0 0 0 0 0 0 0 E
-2 18 8 1d4+10 1d3+0
-0 200
+2 18 8 1d4+18 1d3+0
+0 400
 8 8 0
 E
 #40910
@@ -139,8 +139,8 @@ Dressed in practical fatigues with the Resistance crest on one shoulder,
 this soldier is ready to defend the outpost.
 ~
 72 0 0 0 0 0 0 0 700 E
-7 13 5 2d4+50 1d6+1
-60 2500
+7 13 5 2d4+65 1d6+0
+60 4900
 8 8 1
 E
 #40911
@@ -152,8 +152,8 @@ Sharp-eyed and quick-witted, Vi Moradi coordinates the Resistance presence
 on Batuu from the shadows of Black Spire Outpost.
 ~
 74 0 0 0 0 0 0 0 900 E
-13 7 2 4d6+130 2d5+3
-250 12000
+13 7 2 4d6+168 2d5+3
+250 21125
 8 8 2
 E
 #40912
@@ -165,8 +165,8 @@ An ancient Ithorian with a curved neck and hammer-shaped head, Dok-Ondar
 guards a hoard of the rarest artifacts in the galaxy and suffers no thieves.
 ~
 74 0 0 0 0 0 0 0 0 E
-16 4 1 5d8+180 2d6+4
-500 25000
+16 4 1 5d8+202 2d6+4
+500 32000
 8 8 1
 E
 #40913
@@ -178,8 +178,8 @@ Squat, ill-tempered, and utterly ruthless, Oga Garra runs every shady deal
 in Black Spire Outpost and answers challenges with violence.
 ~
 74 0 0 0 0 0 0 0 -600 E
-18 2 0 6d8+220 3d5+5
-800 40000
+18 2 0 6d8+225 3d5+5
+800 40500
 8 8 2
 E
 T 40902
@@ -192,8 +192,8 @@ Once a StarSpeeder pilot, this reprogrammed droid now serves as the
 cantina's enthusiastic disc jockey, bobbing to its own beats.
 ~
 74 0 0 0 0 0 0 0 0 E
-3 17 8 1d4+15 1d2+0
-0 300
+3 17 8 1d4+28 1d2+0
+0 900
 8 8 0
 E
 T 40900
@@ -206,8 +206,8 @@ Horned and tattooed, this Zabrak merchant deals in armor and clothing
 suited to life on the frontier world of Batuu.
 ~
 74 0 0 0 0 0 0 0 0 E
-10 13 7 1d6+80 1d4+1
-100 3000
+10 13 7 1d6+96 1d4+1
+100 10000
 8 8 1
 E
 #40916
@@ -219,8 +219,8 @@ Large-eyed and soft-spoken, this Rodian sells weapons of every make to
 anyone with the credits to pay for them.
 ~
 74 0 0 0 0 0 0 0 -100 E
-10 13 7 1d6+80 1d4+1
-100 3000
+10 13 7 1d6+96 1d4+1
+100 10000
 8 8 1
 E
 $

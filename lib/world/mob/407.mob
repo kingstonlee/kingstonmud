@@ -7,8 +7,8 @@ Beads in his braided beard and a sword at his hip, he's equal parts charm,
 cunning, and rum-soaked bravado.
 ~
 74 0 0 0 0 0 0 0 -200 E
-12 8 3 3d8+120 2d4+2
-300 10000
+12 8 3 3d8+154 2d4+2
+300 18000
 8 8 1
 E
 #40701
@@ -20,8 +20,8 @@ Eyes closed, foot tapping, coaxing warm brassy notes into the New Orleans
 evening air.
 ~
 72 0 0 0 0 0 0 0 100 E
-5 15 8 1d4+30 1d3+0
-20 700
+5 15 8 1d4+48 1d3+0
+20 2500
 8 8 1
 E
 T 40701
@@ -34,8 +34,8 @@ A translucent @Cghostly host@n welcomes you to his mansion here.
 the nine hundred and ninety-nine happy haunts within.
 ~
 72 0 0 0 0 0 0 0 -100 E
-11 9 3 3d6+100 2d4+1
-0 8000
+11 9 3 3d6+144 2d4+1
+0 15125
 8 8 1
 E
 T 40700
@@ -48,8 +48,8 @@ Quick with a dagger and quicker with an insult, she's survived a dozen
 mutinies and started half of them.
 ~
 72 0 0 0 0 0 0 0 -100 E
-6 14 7 1d6+40 1d4+1
-40 1800
+6 14 7 1d6+56 1d4+1
+40 3600
 8 8 2
 E
 #40704
@@ -61,8 +61,8 @@ Scarred and salt-crusted, this raider would sooner rob you than look at
 you, and he isn't much for looking.
 ~
 104 0 0 0 0 0 0 0 -400 E
-8 12 5 2d4+60 1d8+1
-80 3000
+8 12 5 2d4+75 1d8+0
+80 6400
 8 8 1
 E
 #40705
@@ -74,8 +74,8 @@ Clouds of powdered sugar drift from the fryer as the vendor serves up warm
 beignets by the dozen.
 ~
 74 0 0 0 0 0 0 0 0 E
-4 16 8 1d4+25 1d2+0
-30 700
+4 16 8 1d4+38 1d2+0
+30 1600
 8 8 2
 E
 $
