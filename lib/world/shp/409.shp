@@ -1,1 +1,78 @@
+CircleMUD v3.0 Shop File~
+#40900~
+40909
+40908
+-1
+1.20
+0.40
+19
+-1
+%s I'm all out of that, friend.~
+%s You don't seem to have that.~
+%s I only deal in food and drink here.~
+%s That's too rich for my stand!~
+%s You can't afford that, spacer.~
+%s That'll be %d credits, please.~
+%s Here's %d credits for it.~
+0
+0
+40903
+0
+40902
+-1
+0
+28
+0
+0
+#40901~
+40905
+40900
+40904
+40906
+-1
+1.25
+0.35
+9
+-1
+%s I'm fresh out of that piece.~
+%s You're not carrying that.~
+%s I only buy armor and clothing.~
+%s I can't pay that much!~
+%s You haven't the credits for that.~
+%s That comes to %d credits.~
+%s I'll give you %d credits for it.~
+0
+0
+40915
+0
+40913
+-1
+0
+28
+0
+0
+#40902~
+40901
+-1
+1.30
+0.30
+5
+-1
+%s That model's sold out, I'm afraid.~
+%s You don't have that on you.~
+%s I only deal in weapons.~
+%s Too expensive for my till!~
+%s You can't afford that hardware.~
+%s That's %d credits.~
+%s I'll offer you %d credits for it.~
+0
+0
+40916
+0
+40905
+-1
+0
+28
+0
+0
 $~

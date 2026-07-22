@@ -1,1 +1,53 @@
+#40900
+Sabotage the First Order~
+sabotage~
+   The First Order thinks it can march into Black Spire Outpost and cow us
+into silence.  I aim to prove them wrong.  Thin out their patrols -- take
+down five of their stormtroopers -- and the people here will see that the
+occupiers can bleed.  Do this, and the Resistance won't forget it.
+~
+   Five troopers down.  You fight like someone the Resistance could use.
+Take this medpac -- and my thanks.
+~
+You slip back into the crowd, the mission unfinished.
+~
+3 40911 0 40900 -1 -1 -1
+50 0 5 40 -1 -1 5
+3000 8000 40910
+S
+#40901
+A Lightsaber of Your Own~
+lightsaber~
+   So you wish to carry a lightsaber.  A blade is not given; it is earned.
+There is a Weequay bounty hunter stalking Black Spire who has spilled more
+innocent blood than I care to count.  Face that hunter and prevail, and you
+will have proven the discipline a saber demands.  Then I will help you build
+your own.
+~
+   The hunter is dead, and you still stand.  You are ready.  Take this blade,
+assembled around a kyber crystal chosen for you.  May it serve the light.
+~
+You are not yet ready to walk this path.
+~
+3 40905 0 40907 -1 -1 -1
+75 0 8 40 -1 -1 1
+2000 6000 40902
+S
+#40902
+The Collector's Vengeance~
+vengeance~
+   Oga Garra.  That gangster's thugs raided my den and made off with an
+artifact older than the Republic itself.  Oga rules the cantina and thinks
+herself untouchable.  Prove her wrong.  End her, and I will reward you from
+the deepest vault in my collection.
+~
+   Oga Garra will steal from Dok-Ondar no more.  As promised -- an ancient
+Jedi holocron, one of the rarest treasures in the galaxy.  Guard it well.
+~
+You have chosen not to cross Oga Garra.  Wise, perhaps.  But no reward.
+~
+3 40912 0 40913 -1 -1 -1
+150 0 12 40 -1 -1 1
+15000 30000 40907
+S
 $~

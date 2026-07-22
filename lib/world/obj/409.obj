@@ -1,1 +1,89 @@
-$
+#40900
+armor stormtrooper white suit~
+a suit of stormtrooper armor~
+A discarded suit of @wstormtrooper armor@n lies here.~
+~
+9 0 0 0 0 ad 0 0 0 0 0 0 0
+5 0 0 0
+15 500 50 0 0
+#40901
+blaster rifle e-11 e11~
+an E-11 blaster rifle~
+An @wE-11 blaster rifle@n has been dropped here.~
+~
+5 0 0 0 0 an 0 0 0 0 0 0 0
+0 2 4 12
+8 800 80 0 0
+#40902
+lightsaber saber sword~
+a lightsaber~
+A humming @Glightsaber@n rests on the workbench here.~
+~
+5 ag 0 0 0 an 0 0 0 0 0 0 0
+0 3 6 3
+3 5000 500 0 0
+#40903
+crystal kyber~
+a kyber crystal~
+A glowing @Ckyber crystal@n hums softly here.~
+~
+8 a 0 0 0 ao 0 0 0 0 0 0 0
+0 0 0 0
+1 2000 200 0 0
+#40904
+cap officer first order peaked~
+a First Order officer's cap~
+A grey @wofficer's cap@n bearing the First Order crest lies here.~
+~
+9 0 0 0 0 ae 0 0 0 0 0 0 0
+2 0 0 0
+2 300 30 0 0
+#40905
+robe black spire brown~
+a Black Spire robe~
+A rough brown @yrobe@n has been left here.~
+~
+9 0 0 0 0 ak 0 0 0 0 0 0 0
+3 0 0 0
+4 250 25 0 0
+#40906
+helmet bounty hunter weequay~
+a bounty hunter's helmet~
+A battered @rbounty hunter's helmet@n rests here.~
+~
+9 0 0 0 0 ae 0 0 0 0 0 0 0
+3 0 0 0
+3 400 40 0 0
+#40907
+holocron jedi ancient~
+an ancient Jedi holocron~
+An @Yancient Jedi holocron@n pulses with hidden knowledge here.~
+~
+8 abg 0 0 0 ao 0 0 0 0 0 0 0
+0 0 0 0
+2 10000 1000 0 0
+#40908
+wrap ronto food~
+a Ronto wrap~
+A savory @yRonto wrap@n sits here, still warm.~
+~
+19 0 0 0 0 a 0 0 0 0 0 0 0
+24 0 0 0
+1 15 2 0 0
+#40909
+milk blue glass~
+a glass of blue milk~
+A frosty @Cglass of blue milk@n sweats here.~
+~
+19 0 0 0 0 a 0 0 0 0 0 0 0
+12 0 0 0
+1 10 1 0 0
+#40910
+medpac resistance kit~
+a Resistance medpac~
+A white @wmedpac@n stamped with the Resistance crest lies here.~
+~
+8 0 0 0 0 a 0 0 0 0 0 0 0
+0 0 0 0
+1 200 20 0 0
+$~
