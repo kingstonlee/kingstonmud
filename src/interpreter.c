@@ -1615,10 +1615,10 @@ void nanny(struct descriptor_data *d, char *arg)
     } else
       GET_CLASS(d->character) = load_result;
 
-      if (d->olc) {
-        free(d->olc);
-        d->olc = NULL;
-      }
+    if (d->olc) {
+      free(d->olc);
+      d->olc = NULL;
+    }
       if (GET_PFILEPOS(d->character) < 0)
       GET_PFILEPOS(d->character) = create_entry(GET_PC_NAME(d->character));
     /* Now GET_NAME() will work properly. */
