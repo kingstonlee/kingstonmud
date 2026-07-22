@@ -47,4 +47,36 @@ Evil Queen Death~
 say No... it cannot be... I was the FAIREST!
 emote crumbles into a heap of black robes and bitter dust.
 ~
+#40304
+King Arthur Hails Newcomers~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.class% == Knight
+    say Well met, fellow Knight! Rise, and be welcome at my court.
+  elseif %actor.class% == Sorcerer
+    say A wielder of the arcane... Merlin himself would welcome you.
+  elseif %actor.race% == Fae
+    say The fair folk grace my hall. You honor Camelot.
+  else
+    say Welcome, traveller, to the court of the once and future king.
+  end
+end
+~
+#40305
+Tinker Bell Sizes You Up~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.race% == Fae
+    emote jingles with delight and flutters a happy circle around a fellow fae!
+  elseif %actor.race% == Na'vi
+    emote hovers close, entranced by a kindred child of the wild.
+  else
+    emote folds her arms, jingles once, and dusts you with a wary little sparkle.
+  end
+end
+~
 $~
