@@ -141,9 +141,9 @@ A gleaming @Ygold medallion@n engraved with a castle rests here.~
 A
 13 10
 #40043
-circlet woodland elven elf~
-a woodland circlet~
-A delicate @gwoodland circlet@n woven of living vines rests here.~
+circlet starlight fae faerie~
+a circlet of starlight~
+A delicate @gcirclet of starlight@n, wrought by Fae hands, rests here.~
 ~
 9 agsuvw 0 0 0 ae 0 0 0 0 0 0 0
 2 0 0 0
@@ -161,25 +161,25 @@ A heavy @cdeep-forged dwarven helm@n sits here, dented from old battles.~
 A
 5 2
 #40045
-goggles tinkerer gnome gnomish~
-a pair of tinkerer's goggles~
-A pair of brass @Ytinkerer's goggles@n glints here.~
+bandolier wookiee harness braided~
+a Wookiee bandolier~
+A sturdy @ybraided Wookiee bandolier@n lies here.~
 ~
-9 agstvw 0 0 0 ae 0 0 0 0 0 0 0
-1 0 0 0
-1 3000 300 0 0
+9 agstvw 0 0 0 ak 0 0 0 0 0 0 0
+3 0 0 0
+6 3000 300 0 0
 A
-3 2
+1 2
 #40046
-cloak lucky traveler halfling~
-a lucky traveler's cloak~
-A patched @mlucky traveler's cloak@n lies here, softer than it looks.~
+cloak navi woven hunter~
+a woven Na'vi cloak~
+A @gwoven Na'vi cloak@n, patterned like Pandoran leaves, lies here.~
 ~
 9 agstuv 0 0 0 ak 0 0 0 0 0 0 0
 2 0 0 0
 2 3000 300 0 0
 A
-2 1
+4 2
 A
 17 -5
 #40047

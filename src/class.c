@@ -26,29 +26,30 @@
 
 /* Names first */
 const char *class_abbrevs[] = {
-  "Mu",
-  "Cl",
-  "Th",
-  "Wa",
+  "So",
+  "Sh",
+  "Sc",
+  "Kn",
   "\n"
 };
 
 const char *pc_class_types[] = {
-  "Magic User",
-  "Cleric",
-  "Thief",
-  "Warrior",
+  "Sorcerer",
+  "Shaman",
+  "Scoundrel",
+  "Knight",
   "\n"
 };
 
 /* The menu for choosing a class in interpreter.c: */
+/* One entry per class, in class-enum order (Sorcerer, Shaman, Scoundrel,
+ * Knight). interpreter.c prints class_menu[i] for each race-allowed class,
+ * so this must be a proper per-class array, not one concatenated string. */
 const char *class_menu[] = {
-"\r\n"
-"Select a class:\r\n"
-"  [\t(C\t)]leric\r\n"
-"  [\t(T\t)]hief\r\n"
-"  [\t(W\t)]arrior\r\n"
-"  [\t(M\t)]agic-user\r\n"
+"  [\t(S\t)]orcerer\r\n",
+"  S[\t(h\t)]aman\r\n",
+"  S[\t(c\t)]oundrel\r\n",
+"  [\t(K\t)]night\r\n"
 };
 
 /* The code to interpret a class letter -- used in interpreter.c when a new
@@ -58,10 +59,10 @@ int parse_class(char arg)
   arg = LOWER(arg);
 
   switch (arg) {
-  case 'm': return CLASS_MAGIC_USER;
-  case 'c': return CLASS_CLERIC;
-  case 't': return CLASS_THIEF;
-  case 'w': return CLASS_WARRIOR;
+  case 's': return CLASS_MAGIC_USER;  /* Sorcerer */
+  case 'h': return CLASS_CLERIC;      /* Shaman */
+  case 'c': return CLASS_THIEF;       /* Scoundrel */
+  case 'k': return CLASS_WARRIOR;     /* Knight */
   default:  return CLASS_UNDEFINED;
   }
 }
@@ -1409,23 +1410,23 @@ void roll_real_abils(struct char_data *ch)
   }
 
   switch (GET_RACE(ch)) {
-  case RACE_HUMANOID:
+  case RACE_HUMAN:
     break;
-  case RACE_ELF:
+  case RACE_FAE:
     ch->real_abils.dex += 1;
     ch->real_abils.con -= 1;
     break;
-  case RACE_GNOME:
-    ch->real_abils.intel += 1;
-    ch->real_abils.wis -= 1;
+  case RACE_WOOKIEE:
+    ch->real_abils.str += 1;
+    ch->real_abils.dex -= 1;
     break;
   case RACE_DWARF:
     ch->real_abils.con += 1;
     ch->real_abils.cha -= 1;
     break;
-  case RACE_HALFLING:
-    ch->real_abils.dex += 1;
-    ch->real_abils.str -= 1;
+  case RACE_NAVI:
+    ch->real_abils.wis += 1;
+    ch->real_abils.intel -= 1;
     break;
   }
 

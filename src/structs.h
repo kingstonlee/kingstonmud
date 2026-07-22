@@ -155,11 +155,11 @@
 
 /* PC Races */
 #define RACE_UNDEFINED	  (-1) /**< PC race undefined */
-#define RACE_HUMANOID	  0    /**< PC race 'H' */
-#define RACE_ELF	  1    /**< PC race 'E' */
-#define RACE_GNOME	  2    /**< PC race 'G' */
-#define RACE_DWARF	  3    /**< PC race 'W' */
-#define RACE_HALFLING	  4    /**< PC race 'L' */
+#define RACE_HUMAN	  0    /**< PC race 'H' */
+#define RACE_FAE	  1    /**< PC race 'F' */
+#define RACE_WOOKIEE	  2    /**< PC race 'W' */
+#define RACE_DWARF	  3    /**< PC race 'D' */
+#define RACE_NAVI	  4    /**< PC race 'N' */
 /** Total number of available PC Races */
 #define NUM_RACES	  5
 
@@ -428,11 +428,11 @@
 #define ITEM_ANTI_WARRIOR     15   /**< Not usable by warriors */
 #define ITEM_NOSELL           16   /**< Shopkeepers won't touch it */
 #define ITEM_QUEST            17   /**< Item is a quest item         */
-#define ITEM_ANTI_HUMANOID    18   /**< Item can't be worn by humanoids */
-#define ITEM_ANTI_ELF         19   /**< Item can't be worn by elfs */
-#define ITEM_ANTI_GNOME       20   /**< Item can't be worn by gnomes */
+#define ITEM_ANTI_HUMAN    18   /**< Item can't be worn by humans */
+#define ITEM_ANTI_FAE         19   /**< Item can't be worn by the Fae */
+#define ITEM_ANTI_WOOKIEE       20   /**< Item can't be worn by Wookiees */
 #define ITEM_ANTI_DWARF       21   /**< Item can't be worn by dwarfs */
-#define ITEM_ANTI_HALFLING    22   /**< Item can't be worn by halflings */
+#define ITEM_ANTI_NAVI    22   /**< Item can't be worn by the Na'vi */
 /** Total number of item flags */
 #define NUM_ITEM_FLAGS    23
 

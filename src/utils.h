@@ -868,20 +868,20 @@ do                                                              \
 /** Return the race abbreviation for ch. */
 #define RACE_ABBR(ch) (IS_NPC(ch) ? "---" : race_abbrevs[(int)GET_RACE(ch)])
 /** 1 if ch is humanoid class, 0 if not. */
-#define IS_HUMANOID(ch)		(!IS_NPC(ch) && \
-	(GET_RACE(ch) == RACE_HUMANOID))
+#define IS_HUMAN(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_HUMAN))
 /** 1 if ch is elf race, 0 if not. */
-#define IS_ELF(ch)		(!IS_NPC(ch) && \
-	(GET_RACE(ch) == RACE_ELF))
+#define IS_FAE(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_FAE))
 /** 1 if ch is gnome race, 0 if not. */
-#define IS_GNOME(ch)		(!IS_NPC(ch) && \
-	(GET_RACE(ch) == RACE_GNOME))
+#define IS_WOOKIEE(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_WOOKIEE))
 /** 1 if ch is dwarf race, 0 if not. */
 #define IS_DWARF(ch)		(!IS_NPC(ch) && \
 	(GET_RACE(ch) == RACE_DWARF))
 /** 1 if ch is warrior race, 0 if not. */
-#define IS_HALFLING(ch)	(!IS_NPC(ch) && \
-	(GET_RACE(ch) == RACE_HALFLING))
+#define IS_NAVI(ch)	(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_NAVI))
 
 /** Defines if ch is outdoors or not. */
 #define OUTSIDE(ch) (!ROOM_FLAGGED(IN_ROOM(ch), ROOM_INDOORS))
