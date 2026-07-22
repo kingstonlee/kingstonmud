@@ -181,6 +181,10 @@ Downtown Disney Way at The Lego Store~
 To the north you see Disney's Pin Traders. To the south The Lego Store.
 ~
 400 0 0 0 0 0
+D0
+~
+~
+0 0 40027
 D1
 ~
 ~
@@ -381,6 +385,20 @@ D0
 ~
 ~
 0 0 40024
+S
+#40027
+Disney's Pin Traders~
+   Glass cases and felt-lined boards cover every wall of this bright little
+shop, each one crowded with collectible pins that glint under the lights.
+Guests gather at a central counter where a cast member will trade pins with
+anyone who asks, and a cart of shiny new pins waits by the door for
+beginning collectors.  The Lego Store lies back to the south.
+~
+400 0 0 0 0 0
+D2
+~
+~
+0 0 40011
 S
 #40050
 La Brea Express Bakery~
