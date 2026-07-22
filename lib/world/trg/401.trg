@@ -213,4 +213,25 @@ if %actor.is_pc%
   say Welcome to Disneyland! Have a magical day.
 end
 ~
+#40105
+Cast Member Personal Welcome~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.class% == Guest
+    say Welcome, Guest! Here to take it all in? You've come to the right place!
+  elseif %actor.race% == Wookiee
+    say A Wookiee! Mind the teacups, big fella -- and welcome!
+  elseif %actor.race% == Fae
+    say Ooh, one of the fair folk! Welcome to the happiest place on earth!
+  elseif %actor.race% == Na'vi
+    say All the way from Pandora? Welcome, welcome!
+  elseif %actor.race% == Dwarf
+    say Right this way, mind the step! Welcome to the park!
+  else
+    say Welcome to Disneyland! Have a magical day!
+  end
+end
+~
 $~

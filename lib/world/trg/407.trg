@@ -44,4 +44,21 @@ Pirate Captain Death~
 say Blast ye... the sea... claims another...
 emote topples over with a final, rum-soaked groan.
 ~
+#40704
+Pirate Captain Sizes the Crew~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.class% == Scoundrel
+    say A fellow rogue! There's a share o' the plunder for the likes o' ye.
+  elseif %actor.class% == Knight
+    say A Knight, eh? Too honest by half for New Orleans Square.
+  elseif %actor.race% == Wookiee
+    say Blimey, a Wookiee! Could use those arms haulin' cargo.
+  else
+    say Welcome to the square, landlubber. Keep a hand on yer purse.
+  end
+end
+~
 $~

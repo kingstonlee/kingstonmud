@@ -120,4 +120,38 @@ Oga Garra Death~
 say This... isn't over... the Syndicate will hear of this...
 emote slumps across the bar with a final, rattling breath.
 ~
+#40911
+Vi Moradi Assesses Recruits~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.class% == Knight
+    say A Knight! The Resistance needs blades like yours against the First Order.
+  elseif %actor.class% == Scoundrel
+    say A smuggler's skills, hm? We pay well for discretion.
+  elseif %actor.class% == Sorcerer
+    say The Force runs strong in you. Careful -- the First Order hunts your kind.
+  elseif %actor.race% == Wookiee
+    say A Wookiee ally! Chewbacca speaks well of your people.
+  else
+    say Keep your voice down. The First Order has ears everywhere, friend.
+  end
+end
+~
+#40912
+Gatherer Senses Potential~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  if %actor.class% == Sorcerer
+    say You already touch the Force. A kyber blade would but focus it.
+  elseif %actor.race% == Fae
+    say The Fae carry starlight within. A kyber crystal would sing for you.
+  else
+    say Speak of lightsabers, and I will show you what the Gatherers guard.
+  end
+end
+~
 $~
