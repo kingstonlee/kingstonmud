@@ -8,5 +8,11 @@ M 0 40002 1 40052 	(Chad, the Starbucks barista manager)
 O 1 3101 100 40052 	(a cup)
 M 0 40001 10 40007 	(a cast member)
 M 0 40001 10 40000 	(a cast member)
+M 0 40030 1 40027 	(a Disney pin trader)
+M 0 40031 1 40027 	(a pin cart vendor)
+O 0 40040 3 40027 	(a Disney pin lanyard)
+O 0 40031 1 40027 	(a Castle pin)
+O 0 40030 2 40013 	(a Mickey Mouse pin)
+O 0 40037 1 40008 	(a Jack Sparrow pin)
+O 0 40034 1 40006 	(a Tinker Bell pin)
 S
-$

@@ -52,4 +52,32 @@ SavingPetri: 2
 SavingBreath: 2
 SavingSpell: 2
 E
+#40030
+pin trader cast member~
+a Disney pin trader~
+A friendly @Cpin trader@n stands behind a counter covered in pins.
+~
+Wearing a lanyard heavy with collectible pins, this cast member happily
+trades pins with any guest -- that is the rule: if you offer, they must trade!
+~
+74 0 0 0 0 0 0 0 300 E
+8 12 7 2d4+75 1d4+0
+0 6400
+8 8 2
+E
+T 40030
+T 40031
+#40031
+pin cart vendor merchant~
+a pin cart vendor~
+A cheery @Yvendor@n sells starter pins from a little cart here.
+~
+Stacks of shiny new pins gleam on the cart, ready for guests just beginning
+their collections.
+~
+74 0 0 0 0 0 0 0 0 E
+5 15 8 1d4+48 1d3+0
+30 2500
+8 8 1
+E
 $
