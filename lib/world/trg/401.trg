@@ -188,4 +188,29 @@ while %i% < 4
   wait 5 s
 done
 ~
+#40103
+Mickey Says Hello~
+0 b 20
+~
+switch %random.3%
+  case 1
+    say Ha-ha! Hiya, pal! Welcome to Disneyland!
+    break
+  case 2
+    emote waves a white-gloved hand and strikes a cheerful pose.
+    break
+  case 3
+    say Gosh, it sure is swell to see ya!
+    break
+done
+~
+#40104
+Guard Welcome~
+0 g 100
+~
+if %actor.is_pc%
+  wait 1 s
+  say Welcome to Disneyland! Have a magical day.
+end
+~
 $~

@@ -1,1 +1,17 @@
+#40400
+System Malfunction~
+robot~
+   Space Ranger, we have a situation! A security robot inside Space Mountain
+has malfunctioned and is targeting innocent guests. Shut it down before
+someone gets hurt. This looks like a job for a hero!
+~
+   Crisis averted, Space Ranger! The mountain is safe once more. Take this --
+you've earned it. To infinity and beyond!
+~
+The malfunction continues unchecked.
+~
+3 40400 0 40403 -1 -1 -1
+40 0 6 40 -1 -1 1
+3000 4500 40400
+S
 $~

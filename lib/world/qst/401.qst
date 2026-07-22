@@ -1,1 +1,17 @@
+#40100
+Catch the Pickpocket~
+pickpocket~
+   We've got a sticky-fingered thief working the crowds down in the alley,
+lifting wallets from good families trying to enjoy their day. Track the
+pickpocket down and put a stop to it, and there'll be a little something in
+it for you.
+~
+   Nicely done! The alley's safe again. Here -- a souvenir on the house.
+~
+You let the thief slip away into the crowd.
+~
+3 40110 0 40109 -1 -1 -1
+25 0 3 40 -1 -1 1
+800 1500 40101
+S
 $~

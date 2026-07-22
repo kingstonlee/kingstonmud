@@ -1,1 +1,52 @@
+CircleMUD v3.0 Shop File~
+#40100~
+40104
+40103
+-1
+1.25
+0.30
+12
+-1
+%s Sorry, I'm all out of that.~
+%s You don't seem to have that.~
+%s I don't deal in such things.~
+%s That's too rich for me!~
+%s You can't afford that.~
+%s That'll be %d credits.~
+%s I'll give you %d credits for it.~
+0
+0
+40104
+0
+40109
+-1
+0
+28
+0
+0
+#40101~
+40102
+40106
+-1
+1.20
+0.30
+19
+-1
+%s Sorry, I'm all out of that.~
+%s You don't seem to have that.~
+%s I don't deal in such things.~
+%s That's too rich for me!~
+%s You can't afford that.~
+%s That'll be %d credits.~
+%s I'll give you %d credits for it.~
+0
+0
+40105
+0
+40124
+-1
+0
+28
+0
+0
 $~

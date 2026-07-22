@@ -1,1 +1,17 @@
+#41000
+Repel Boarders~
+boarders~
+   We've got a First Order boarding party crawling all over my ship, and I've
+got better things to do than get arrested. Clear three of those buckets off
+the Falcon and I'll cut you in. Trust me -- I'm a professional.
+~
+   Not bad, kid. The Falcon's ours again. Here -- you've earned this. Don't
+tell Chewie I gave away my spare blaster.
+~
+You back off, and the troopers keep coming.
+~
+3 41000 0 41003 -1 -1 -1
+60 0 8 40 -1 -1 3
+5000 8000 41000
+S
 $~
