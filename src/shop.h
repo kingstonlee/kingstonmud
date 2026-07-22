@@ -81,11 +81,11 @@ struct shop_data {
 #define TRADE_NOCLERIC     (1 << 4)
 #define TRADE_NOTHIEF      (1 << 5)
 #define TRADE_NOWARRIOR    (1 << 6)
-#define TRADE_NOHUMANOID   (1 << 7)
-#define TRADE_NOELF        (1 << 8)
-#define TRADE_NOGNOME	   (1 << 9)
+#define TRADE_NOHUMAN   (1 << 7)
+#define TRADE_NOFAE        (1 << 8)
+#define TRADE_NOWOOKIEE	   (1 << 9)
 #define TRADE_NODWARF	   (1 << 10)
-#define TRADE_NOHALFLING   (1 << 11)
+#define TRADE_NONAVI   (1 << 11)
 /** Total number of trade types */
 #define NUM_TRADERS     12
 
@@ -132,11 +132,11 @@ struct stack_data {
 #define NOTRADE_THIEF(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOTHIEF))
 #define NOTRADE_WARRIOR(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOWARRIOR))
 
-#define NOTRADE_HUMANOID(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOHUMANOID))
-#define NOTRADE_ELF(i)		(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOELF))
-#define NOTRADE_GNOME(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOGNOME))
+#define NOTRADE_HUMAN(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOHUMAN))
+#define NOTRADE_FAE(i)		(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOFAE))
+#define NOTRADE_WOOKIEE(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOWOOKIEE))
 #define NOTRADE_DWARF(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NODWARF))
-#define NOTRADE_HALFLING(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOHALFLING))
+#define NOTRADE_NAVI(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NONAVI))
 
 /* Shop flags */
 #define WILL_START_FIGHT    (1 << 0)

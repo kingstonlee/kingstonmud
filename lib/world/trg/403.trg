@@ -24,4 +24,27 @@ if %actor.is_pc%
   emote offers you a gleaming red apple with a cold, thin smile.
 end
 ~
+#40302
+Evil Queen Enraged~
+0 k 12
+~
+switch %random.3%
+  case 1
+    say You DARE raise a hand to me? I am the fairest of them all!
+    break
+  case 2
+    emote hurls a cursed apple that bursts in a cloud of green smoke!
+    break
+  case 3
+    say Mirror, mirror -- strike this insolent fool down!
+    break
+done
+~
+#40303
+Evil Queen Death~
+0 f 100
+~
+say No... it cannot be... I was the FAIREST!
+emote crumbles into a heap of black robes and bitter dust.
+~
 $~

@@ -32,15 +32,15 @@ const char *trade_letters[] = {
         "Good",                 /* First, the alignment based ones */
         "Evil",
         "Neutral",
-        "Magic User",           /* Then the class based ones */
-        "Cleric",
-        "Thief",
-        "Warrior",
-        "Humanoid",		/* And finally the race based ones */
-        "Elf",
-        "Gnome",
+        "Sorcerer",             /* Then the class based ones */
+        "Shaman",
+        "Scoundrel",
+        "Knight",
+        "Human",		/* And finally the race based ones */
+        "Fae",
+        "Wookiee",
         "Dwarf",
-        "Halfling",
+        "Na'vi",
         "\n"
 };
 
@@ -140,11 +140,11 @@ static int is_ok_char(struct char_data *keeper, struct char_data *ch, int shop_n
     return (FALSE);
   }
 
-  if ((IS_HUMANOID(ch) && NOTRADE_HUMANOID(shop_nr)) ||
-      (IS_ELF(ch) && NOTRADE_ELF(shop_nr)) ||
-      (IS_GNOME(ch) && NOTRADE_GNOME(shop_nr)) ||
+  if ((IS_HUMAN(ch) && NOTRADE_HUMAN(shop_nr)) ||
+      (IS_FAE(ch) && NOTRADE_FAE(shop_nr)) ||
+      (IS_WOOKIEE(ch) && NOTRADE_WOOKIEE(shop_nr)) ||
       (IS_DWARF(ch) && NOTRADE_DWARF(shop_nr)) ||
-      (IS_HALFLING(ch) && NOTRADE_HALFLING(shop_nr))) {
+      (IS_NAVI(ch) && NOTRADE_NAVI(shop_nr))) {
     snprintf(buf, sizeof(buf), "%s %s", GET_NAME(ch), MSG_NO_SELL_RACE);
     do_tell(keeper, buf, cmd_tell, 0);
     return (FALSE);

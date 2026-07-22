@@ -29,20 +29,20 @@
 /* Names first */
 const char *race_abbrevs[] = {
     "Hum",
-    "Elf",
-    "Gno",
+    "Fae",
+    "Woo",
     "Dwa",
-    "Hlf",
+    "Nav",
     "\n"
 };
 
 
 const char *pc_race_types[] = {
-    "Humanoid",
-    "Elf",
-    "Gnome",
+    "Human",
+    "Fae",
+    "Wookiee",
     "Dwarf",
-    "Halfling",
+    "Na'vi",
     "\n"
 };
 
@@ -50,20 +50,21 @@ const char *pc_race_types[] = {
 const char *race_menu =
     "\r\n"
     "Select a race:\r\n"
-    "  [H] - Humanoid\r\n"
-    "  [E] - Elf\r\n"
-    "  [G] - Gnome\r\n"
-    "  [W] - Dwarf\r\n"
-    "  [L] - Halfling\r\n";
+    "  [H] - Human\r\n"
+    "  [F] - Fae\r\n"
+    "  [W] - Wookiee\r\n"
+    "  [D] - Dwarf\r\n"
+    "  [N] - Na'vi\r\n";
 
-/** Check if the class & race combo is allowed. */
+/** Check if the class & race combo is allowed.
+ *  Columns follow the class enum order: Sorcerer, Shaman, Scoundrel, Knight. */
 int classRaceAllowed[NUM_RACES][NUM_CLASSES] = {
-  /*  M    C    T    W                  */
-    { YES, YES, YES, YES }, /* Humanoid */
-    { YES, YES, YES, YES }, /* Elf      */
-    { YES, YES, NO,  YES }, /* Gnome    */
-    { NO,  YES, NO,  YES }, /* Dwarf    */
-    { NO,  YES, YES, YES }  /* Halfling */
+  /*  So   Sh   Sc   Kn                 */
+    { YES, YES, YES, YES }, /* Human    */
+    { YES, YES, YES, YES }, /* Fae      */
+    { NO,  YES, YES, YES }, /* Wookiee  */
+    { YES, YES, YES, YES }, /* Dwarf    */
+    { NO,  YES, YES, YES }  /* Na'vi    */
 };
 
 /* The code to interpret a race letter -- used in interpreter.c when a new
@@ -74,11 +75,11 @@ int parse_race(char arg)
 
     switch (arg)
     {
-    case 'h': return RACE_HUMANOID;
-    case 'e': return RACE_ELF;
-    case 'g': return RACE_GNOME;
-    case 'w': return RACE_DWARF;
-    case 'l': return RACE_HALFLING;
+    case 'h': return RACE_HUMAN;
+    case 'f': return RACE_FAE;
+    case 'w': return RACE_WOOKIEE;
+    case 'd': return RACE_DWARF;
+    case 'n': return RACE_NAVI;
     default: return RACE_UNDEFINED;
     }
 }
@@ -101,15 +102,15 @@ bitvector_t find_race_bitvector(const char *arg)
  * usable by a particular race, based on the ITEM_ANTI_{race} bitvectors. */
 int invalid_race(struct char_data *ch, struct obj_data *obj)
 {
-    if (OBJ_FLAGGED(obj, ITEM_ANTI_HUMANOID) && IS_HUMANOID(ch))
+    if (OBJ_FLAGGED(obj, ITEM_ANTI_HUMAN) && IS_HUMAN(ch))
         return TRUE;
-    if (OBJ_FLAGGED(obj, ITEM_ANTI_ELF) && IS_ELF(ch))
+    if (OBJ_FLAGGED(obj, ITEM_ANTI_FAE) && IS_FAE(ch))
         return TRUE;
-    if (OBJ_FLAGGED(obj, ITEM_ANTI_GNOME) && IS_GNOME(ch))
+    if (OBJ_FLAGGED(obj, ITEM_ANTI_WOOKIEE) && IS_WOOKIEE(ch))
         return TRUE;
     if (OBJ_FLAGGED(obj, ITEM_ANTI_DWARF) && IS_DWARF(ch))
         return TRUE;
-    if (OBJ_FLAGGED(obj, ITEM_ANTI_HALFLING) && IS_HALFLING(ch))
+    if (OBJ_FLAGGED(obj, ITEM_ANTI_NAVI) && IS_NAVI(ch))
         return TRUE;
 
     return FALSE;

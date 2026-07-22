@@ -452,11 +452,11 @@ const char *extra_bits[] = {
   "ANTI_WARRIOR",
   "NO_SELL",
   "QUEST_ITEM",
-  "ANTI_HUMANOID",
-  "ANTI_ELF",
-  "ANTI_GNOME",
+  "ANTI_HUMAN",
+  "ANTI_FAE",
+  "ANTI_WOOKIEE",
   "ANTI_DWARF",
-  "ANTI_HALFLING",
+  "ANTI_NAVI",
   "\n"
 };
 

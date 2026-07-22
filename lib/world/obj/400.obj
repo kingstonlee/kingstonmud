@@ -140,4 +140,56 @@ A gleaming @Ygold medallion@n engraved with a castle rests here.~
 2 2000 200 0 0
 A
 13 10
+#40043
+circlet starlight fae faerie~
+a circlet of starlight~
+A delicate @gcirclet of starlight@n, wrought by Fae hands, rests here.~
+~
+9 agsuvw 0 0 0 ae 0 0 0 0 0 0 0
+2 0 0 0
+1 3000 300 0 0
+A
+2 2
+#40044
+helm deep-forged dwarven dwarf~
+a deep-forged helm~
+A heavy @cdeep-forged dwarven helm@n sits here, dented from old battles.~
+~
+9 agstuw 0 0 0 ae 0 0 0 0 0 0 0
+3 0 0 0
+6 3000 300 0 0
+A
+5 2
+#40045
+bandolier wookiee harness braided~
+a Wookiee bandolier~
+A sturdy @ybraided Wookiee bandolier@n lies here.~
+~
+9 agstvw 0 0 0 ak 0 0 0 0 0 0 0
+3 0 0 0
+6 3000 300 0 0
+A
+1 2
+#40046
+cloak navi woven hunter~
+a woven Na'vi cloak~
+A @gwoven Na'vi cloak@n, patterned like Pandoran leaves, lies here.~
+~
+9 agstuv 0 0 0 ak 0 0 0 0 0 0 0
+2 0 0 0
+2 3000 300 0 0
+A
+4 2
+A
+17 -5
+#40047
+medallion champion humanoid~
+a champion's medallion~
+A polished @Wchampion's medallion@n hangs here on a leather cord.~
+~
+9 agtuvw 0 0 0 ac 0 0 0 0 0 0 0
+1 0 0 0
+1 3000 300 0 0
+A
+18 2
 $~
