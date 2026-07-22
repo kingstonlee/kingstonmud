@@ -28,7 +28,10 @@ int main(int argc, char **argv)
   snprintf(buf, sizeof(buf),
     "lynx -accept_all_cookies -source http://www.thefreedictionary.com/%s"
     " >webster.html", argv[1]);
-  system(buf);
+  if (system(buf) == -1) {
+    fprintf(stderr, "webster: failed to execute lookup command\n");
+    return (1);
+  }
 
   parse_webster_html(argv[1]);
 
@@ -153,8 +156,9 @@ int get_line(FILE * fl, char *buf)
   char temp[MEM_USE];
 
   do {
-    fgets(temp, MEM_USE, fl);
-    if (*temp)
+    if (!fgets(temp, MEM_USE, fl))
+      *temp = '\0';
+    else if (*temp)
       temp[strlen(temp) - 1] = '\0';
   } while (!feof(fl) && !*temp);
 

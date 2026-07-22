@@ -107,16 +107,16 @@ void do_string(FILE * shop_f, FILE * newshop_f, char *msg)
 
 static int boot_the_shops_conv(FILE * shop_f, FILE * newshop_f, char *filename)
 {
-  char *buf, buf2[150];
+  char *buf, buf2[320];
   int temp, count;
 
-  sprintf(buf2, "beginning of shop file %s", filename);
+  snprintf(buf2, sizeof(buf2), "beginning of shop file %s", filename);
   fprintf(newshop_f, "CircleMUD %s Shop File~\n", VERSION3_TAG);
   for (;;) {
     buf = fread_string(shop_f, buf2);
     if (*buf == '#') {		/* New shop */
       sscanf(buf, "#%d\n", &temp);
-      sprintf(buf2, "shop #%d in shop file %s", temp, filename);
+      snprintf(buf2, sizeof(buf2), "shop #%d in shop file %s", temp, filename);
       fprintf(newshop_f, "#%d~\n", temp);
       free(buf);		/* Plug memory leak! */
       printf("   #%d\n", temp);
@@ -155,7 +155,7 @@ static int boot_the_shops_conv(FILE * shop_f, FILE * newshop_f, char *filename)
 int main(int argc, char *argv[])
 {
   FILE *sfp, *nsfp;
-  char fn[256], part[256];
+  char fn[256], part[600];
   int result, index, i;
 
   if (argc < 2) {
@@ -163,10 +163,10 @@ int main(int argc, char *argv[])
     exit(1);
   }
   for (index = 1; index < argc; index++) {
-    sprintf(fn, "%s", argv[index]);
-    sprintf(part, "mv %s %s.tmp", fn, fn);
+    snprintf(fn, sizeof(fn), "%s", argv[index]);
+    snprintf(part, sizeof(part), "mv %s %s.tmp", fn, fn);
     i = system(part);
-    sprintf(part, "%s.tmp", fn);
+    snprintf(part, sizeof(part), "%s.tmp", fn);
     sfp = fopen(part, "r");
     if (sfp == NULL) {
       strcat(fn, " could not be opened");
@@ -181,10 +181,10 @@ int main(int argc, char *argv[])
       fclose(nsfp);
       fclose(sfp);
       if (result) {
-	sprintf(part, "mv %s.tmp %s", fn, fn);
+	snprintf(part, sizeof(part), "mv %s.tmp %s", fn, fn);
 	i = system(part);
       } else {
-	sprintf(part, "mv %s.tmp %s.bak", fn, fn);
+	snprintf(part, sizeof(part), "mv %s.tmp %s.bak", fn, fn);
 	i = system(part);
 	printf("Done!\n");
       }

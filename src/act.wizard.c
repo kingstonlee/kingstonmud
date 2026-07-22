@@ -2395,8 +2395,12 @@ ACMD(do_wizutil)
       send_to_char(ch, "Thawed.\r\n");
       act("A sudden fireball conjured from nowhere thaws $n!", FALSE, vict, 0, 0, TO_ROOM);
       break;
-    case SCMD_UNAFFECT:
-      if (vict->affected || AFF_FLAGS(vict)) {
+    case SCMD_UNAFFECT: {
+      bool has_aff = (vict->affected != NULL);
+      for (taeller = 0; !has_aff && taeller < AF_ARRAY_MAX; taeller++)
+	if (AFF_FLAGS(vict)[taeller])
+	  has_aff = TRUE;
+      if (has_aff) {
 	while (vict->affected)
 	  affect_remove(vict, vict->affected);
     for(taeller=0; taeller < AF_ARRAY_MAX; taeller++)
@@ -2408,6 +2412,7 @@ ACMD(do_wizutil)
 	return;
       }
       break;
+    }
     default:
       log("SYSERR: Unknown subcmd %d passed to do_wizutil (%s)", subcmd, __FILE__);
       /*  SYSERR_DESC: This is the same as the unhandled case in do_gen_ps(),
