@@ -1,1 +1,96 @@
+#40060
+Pinnacle Collector~
+pinnacle~
+   You've clearly caught the pin-trading bug! There's one pin every serious
+collector dreams of: the rare Walt and Mickey pin. Trade enough pins and it
+will turn up eventually. Bring that pin back to me and you'll have earned a
+place among the great collectors -- and a trophy to prove it.
+~
+   The rare Walt and Mickey pin! I knew you had it in you. This trophy is
+yours, pin-master -- wear it with pride.
+~
+You set the dream aside for another day.
+~
+5 40030 0 40039 -1 -1 -1
+100 0 5 40 -1 40030 1
+5000 8000 40041
+S
+#40061
+The Grand Circle Tour~
+tour~
+   Welcome to the happiest place on earth! First-timer? Let me send you on
+the Grand Circle Tour -- a walk through every corner of the park. Start by
+heading into Fantasyland and finding the Sword in the Stone. Off you go!
+~
+   Fantasyland, checked off! Speak with King Arthur there to continue the
+tour.
+~
+The tour can wait.
+~
+1 40101 0 40309 -1 40062 -1
+10 0 3 40 -1 -1 1
+500 1000 -1
+S
+#40062
+The Grand Circle Tour: Frontierland~
+tour~
+   Ah, a tour-taker! The trail leads on. Make your way out to Frontierland
+and find its entrance, where the sheriff keeps watch. Adventure awaits!
+~
+   Frontierland reached! Find the sheriff there to keep going.
+~
+The trail grows cold.
+~
+1 40302 0 40500 40061 40063 -1
+10 0 3 40 -1 -1 1
+500 1000 -1
+S
+#40063
+The Grand Circle Tour: New Orleans Square~
+tour~
+   Still on the Grand Circle Tour, partner? Good. Mosey on over to New
+Orleans Square and find the heart of the square, where a certain pirate
+captain holds court.
+~
+   New Orleans Square, reached! Speak with the pirate captain to finish the
+tour.
+~
+You lose the trail.
+~
+1 40504 0 40700 40062 40064 -1
+10 0 3 40 -1 -1 1
+500 1000 -1
+S
+#40064
+The Grand Circle Tour: A Galaxy Far Away~
+tour~
+   Arr, the last leg! Only one wonder remains: travel through Frontierland's
+far gate to Batuu and stand in the shadow of Black Spire Outpost's Imperial
+Square. Do that, and the Grand Circle Tour is complete!
+~
+   Ye've walked the whole park, from Main Street to a galaxy far, far away!
+Take this medallion, tour champion -- ye've earned it.
+~
+So close, yet the journey ends here.
+~
+1 40700 0 40900 40063 -1 -1
+100 0 3 40 -1 -1 1
+5000 10000 40042
+S
+#40065
+Souvenir Run~
+souvenir~
+   Oh no -- a guest asked me for a collectible pin and I'm all out! Would you
+run over to Disney's Pin Traders in Downtown Disney, get a Mickey Mouse pin,
+and bring it back to me? I'd be ever so grateful.
+~
+   Bless you! This is exactly what they wanted. Here's a little something for
+your trouble.
+~
+Maybe next time.
+~
+5 40101 0 40030 -1 -1 -1
+20 0 2 40 -1 40101 1
+800 1500 -1
+S
 $~
