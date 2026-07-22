@@ -1,1 +1,196 @@
+#40900
+stormtrooper trooper first order~
+a First Order stormtrooper~
+A @wFirst Order stormtrooper@n stands at rigid attention here.
+~
+Clad head to toe in gleaming white armor, this trooper cradles a blaster
+rifle and scans the outpost for signs of Resistance activity.
+~
+104 0 0 0 0 0 0 0 -750 E
+8 12 5 2d4+60 1d6+2
+50 3000
+8 8 1
+E
+#40901
+officer first order commander~
+a First Order officer~
+A @wFirst Order officer@n barks orders at the troopers here.
+~
+Immaculate in a pressed grey uniform and peaked cap, this officer clearly
+expects to be obeyed without question.
+~
+106 0 0 0 0 0 0 0 -900 E
+12 8 3 3d6+120 2d4+3
+200 9000
+8 8 1
+E
+#40902
+pilot tie fighter first order~
+a TIE fighter pilot~
+A @wTIE fighter pilot@n in a black flight suit inspects a starfighter here.
+~
+The pilot's sealed helmet hides any expression, but the blaster on the hip
+is unmistakable.
+~
+104 0 0 0 0 0 0 0 -700 E
+9 11 4 2d5+70 1d8+2
+80 4000
+8 8 1
+E
+#40903
+bib milk vendor merchant~
+Bib the milk vendor~
+@YBib@n the milk vendor tends a frothy stand of blue and green milk here.
+~
+A wrinkled old spacer with a knowing grin, Bib ladles out cups of thick,
+sweet milk to anyone with a few credits.
+~
+74 0 0 0 0 0 0 0 0 E
+5 15 8 1d4+30 1d3+0
+40 1500
+8 8 1
+E
+#40904
+astromech droid r-series~
+an astromech droid~
+An @castromech droid@n rolls back and forth, beeping cheerfully here.
+~
+A dome-topped utility droid covered in scuffs and dents, whistling a
+stream of electronic chatter at passers-by.
+~
+72 0 0 0 0 0 0 0 0 E
+4 16 6 1d6+25 1d4+0
+0 1000
+8 8 0
+E
+#40905
+gatherer savi workshop artisan~
+a Gatherer of Savi's Workshop~
+A hooded @mGatherer@n arranges kyber crystals and hilt parts here.
+~
+One of the mysterious Gatherers, this artisan helps travelers assemble
+their own lightsabers in secret, away from First Order eyes.
+~
+74 0 0 0 0 0 0 0 500 E
+7 13 6 1d8+45 1d4+1
+60 2500
+8 8 2
+E
+#40906
+smuggler black spire spacer~
+a Black Spire smuggler~
+A shifty @Ysmuggler@n leans in a doorway, eyeing your credit pouch here.
+~
+Blaster slung low and eyes always moving, this spacer would sell their own
+grandmother for the right price.
+~
+104 0 0 0 0 0 0 0 -200 E
+6 14 6 2d4+40 1d6+1
+70 2200
+8 8 1
+E
+#40907
+bounty hunter weequay~
+a Weequay bounty hunter~
+A leathery @rWeequay bounty hunter@n sizes you up as a possible payday here.
+~
+Weathered skin like cured hide, a bandolier of exotic weapons, and the
+patient stare of someone who always collects.
+~
+104 0 0 0 0 0 0 0 -500 E
+11 9 3 3d5+100 2d4+2
+150 8000
+8 8 1
+E
+#40908
+handler creature stall keeper~
+a creature handler~
+A gentle @gcreature handler@n soothes the beasts in the stall here.
+~
+Surrounded by cages and pens, this handler speaks softly to a menagerie of
+strange animals from across the galaxy.
+~
+74 0 0 0 0 0 0 0 0 E
+5 15 7 1d6+35 1d4+0
+30 1200
+8 8 2
+E
+#40909
+lothcat loth-cat creature~
+a loth-cat~
+A striped @Yloth-cat@n prowls and hisses near the stalls here.
+~
+Sleek and quick with tufted ears, the loth-cat watches everything with
+bright, calculating eyes.
+~
+72 0 0 0 0 0 0 0 0 E
+2 18 8 1d4+10 1d3+0
+0 200
+8 8 0
+E
+#40910
+fighter resistance soldier~
+a Resistance fighter~
+A determined @bResistance fighter@n keeps watch here.
+~
+Dressed in practical fatigues with the Resistance crest on one shoulder,
+this soldier is ready to defend the outpost.
+~
+72 0 0 0 0 0 0 0 700 E
+7 13 5 2d4+50 1d6+1
+60 2500
+8 8 1
+E
+#40911
+vi moradi resistance officer spy~
+Vi Moradi~
+@BVi Moradi@n, a Resistance spy, studies a datapad intently here.
+~
+Sharp-eyed and quick-witted, Vi Moradi coordinates the Resistance presence
+on Batuu from the shadows of Black Spire Outpost.
+~
+74 0 0 0 0 0 0 0 900 E
+13 7 2 4d6+130 2d5+3
+250 12000
+8 8 2
+E
+#40912
+dok ondar ithorian collector~
+Dok-Ondar~
+@YDok-Ondar@n the Ithorian broods over his priceless antiquities here.
+~
+An ancient Ithorian with a curved neck and hammer-shaped head, Dok-Ondar
+guards a hoard of the rarest artifacts in the galaxy and suffers no thieves.
+~
+74 0 0 0 0 0 0 0 0 E
+16 4 1 5d8+180 2d6+4
+500 25000
+8 8 1
+E
+#40913
+oga garra blutopian gangster~
+Oga Garra~
+@ROga Garra@n, the Blutopian crime boss, rules the cantina from here.
+~
+Squat, ill-tempered, and utterly ruthless, Oga Garra runs every shady deal
+in Black Spire Outpost and answers challenges with violence.
+~
+74 0 0 0 0 0 0 0 -600 E
+18 2 0 6d8+220 3d5+5
+800 40000
+8 8 2
+E
+#40914
+dj rex droid r-3x pilot~
+DJ R-3X~
+@cDJ R-3X@n spins tunes from a battered pilot droid's chassis here.
+~
+Once a StarSpeeder pilot, this reprogrammed droid now serves as the
+cantina's enthusiastic disc jockey, bobbing to its own beats.
+~
+74 0 0 0 0 0 0 0 0 E
+3 17 8 1d4+15 1d2+0
+0 300
+8 8 0
+E
 $
