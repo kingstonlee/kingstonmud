@@ -7,8 +7,8 @@ Gowned in shimmering silk with a gentle smile, she poses for photographs
 and grants wishes with a wave of her gloved hand.
 ~
 74 0 0 0 0 0 0 0 500 E
-10 10 5 3d6+80 1d6+1
-0 6000
+10 10 5 3d6+90 1d6+0
+0 10000
 8 8 2
 E
 #40301
@@ -20,8 +20,8 @@ The @WWhite Rabbit@n dashes past, fretting over his pocket watch.
 hurrying somewhere he'll never quite reach on time.
 ~
 72 0 0 0 0 0 0 0 100 E
-3 17 8 1d4+15 1d3+0
-20 400
+3 17 8 1d4+28 1d3+0
+20 900
 8 8 1
 E
 T 40300
@@ -34,8 +34,8 @@ Once a humble squire, now the rightful king, he watches to see who else
 might prove worthy to draw the blade.
 ~
 74 0 0 0 0 0 0 0 600 E
-12 8 3 3d8+120 2d4+2
-200 10000
+12 8 3 3d8+154 2d4+2
+200 18000
 8 8 1
 E
 #40303
@@ -47,8 +47,8 @@ Feathered cap and merry tune, this wandering musician spins tales of
 dragons and derring-do for a few coins.
 ~
 72 0 0 0 0 0 0 0 200 E
-5 15 8 1d4+30 1d3+0
-20 700
+5 15 8 1d4+48 1d3+0
+20 2500
 8 8 1
 E
 #40304
@@ -60,8 +60,8 @@ A tiny, quick-tempered fairy trailing sparkling dust, no bigger than your
 hand and twice as spirited.
 ~
 72 0 0 0 0 0 0 0 300 E
-8 12 3 2d4+40 1d4+0
-0 4000
+8 12 3 2d4+75 1d4+0
+0 6400
 8 8 2
 E
 #40305
@@ -73,8 +73,8 @@ Cold and beautiful and cruel, she will suffer no one fairer than herself
 to live -- and she has a poisoned apple ready.
 ~
 104 0 0 0 0 0 0 0 -800 E
-11 9 3 3d6+100 2d4+2
-300 9000
+11 9 3 3d6+144 2d4+2
+300 15125
 8 8 2
 E
 T 40301
@@ -87,8 +87,8 @@ Bedecked in a vest and cap, this attendant keeps the painted horses turning
 to a cheerful calliope tune.
 ~
 74 0 0 0 0 0 0 0 200 E
-5 15 8 1d4+30 1d3+0
-20 700
+5 15 8 1d4+48 1d3+0
+20 2500
 8 8 1
 E
 #40307
@@ -100,8 +100,8 @@ An eccentric old inventor with wild grey hair and ink-stained fingers,
 always one gear away from his next great invention.
 ~
 74 0 0 0 0 0 0 0 300 E
-6 14 7 1d6+40 1d4+0
-30 1500
+6 14 7 1d6+56 1d4+0
+30 3600
 8 8 1
 E
 $

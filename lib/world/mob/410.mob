@@ -7,8 +7,8 @@ Rakish and confident, the galaxy's most famous smuggler eyes you with the
 wary charm of a man who has talked his way out of a thousand tight spots.
 ~
 74 0 0 0 0 0 0 0 350 E
-14 6 2 4d8+140 2d5+3
-500 15000
+14 6 2 4d8+178 2d5+3
+500 24500
 8 8 1
 E
 T 41001
@@ -21,8 +21,8 @@ Over two meters of loyal muscle and fur, Chewbacca cradles his bowcaster
 and rumbles low in his throat.
 ~
 74 0 0 0 0 0 0 0 300 E
-15 4 2 5d8+160 2d6+4
-100 18000
+15 4 2 5d8+188 2d6+4
+100 28125
 8 8 1
 E
 T 41000
@@ -35,8 +35,8 @@ A small floating sphere bristling with tiny stun emitters, used to hone a
 duelist's reflexes.
 ~
 72 0 0 0 0 0 0 0 0 E
-3 17 7 1d4+15 1d3+0
-0 400
+3 17 7 1d4+28 1d3+0
+0 900
 8 8 0
 E
 #41003
@@ -48,8 +48,8 @@ Part of a boarding party, this trooper is hunting for the Resistance spy
 rumored to be aboard.
 ~
 104 0 0 0 0 0 0 0 -750 E
-8 12 5 2d4+60 1d6+2
-50 3000
+8 12 5 2d4+75 1d6+1
+50 6400
 8 8 1
 E
 #41004
@@ -61,7 +61,7 @@ A knee-high box on wheels, forever rushing off to deliver something
 somewhere with great self-importance.
 ~
 72 0 0 0 0 0 0 0 0 E
-1 19 8 1d3+5 1d2+0
+1 19 8 1d3+8 1d2+0
 0 100
 8 8 0
 E
@@ -74,8 +74,8 @@ One of Tasu Leech's gangsters, sent to make sure the Falcon's captain pays
 what he owes -- one way or another.
 ~
 104 0 0 0 0 0 0 0 -400 E
-9 11 4 2d6+75 1d8+2
-120 4500
+9 11 4 2d6+83 1d8+0
+120 8100
 8 8 1
 E
 #41006
@@ -87,8 +87,8 @@ Nervous eyes and quick hands, this runner moves contraband through the
 Falcon's smuggling compartments for a cut of the profit.
 ~
 72 0 0 0 0 0 0 0 -100 E
-6 14 6 2d4+40 1d6+1
-90 2200
+6 14 6 2d4+55 1d6+0
+90 3600
 8 8 1
 E
 $
