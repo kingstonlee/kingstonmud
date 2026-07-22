@@ -81,8 +81,13 @@ struct shop_data {
 #define TRADE_NOCLERIC     (1 << 4)
 #define TRADE_NOTHIEF      (1 << 5)
 #define TRADE_NOWARRIOR    (1 << 6)
+#define TRADE_NOHUMANOID   (1 << 7)
+#define TRADE_NOELF        (1 << 8)
+#define TRADE_NOGNOME	   (1 << 9)
+#define TRADE_NODWARF	   (1 << 10)
+#define TRADE_NOHALFLING   (1 << 11)
 /** Total number of trade types */
-#define NUM_TRADERS     7
+#define NUM_TRADERS     12
 
 struct stack_data {
    int data[100];
@@ -127,6 +132,12 @@ struct stack_data {
 #define NOTRADE_THIEF(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOTHIEF))
 #define NOTRADE_WARRIOR(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOWARRIOR))
 
+#define NOTRADE_HUMANOID(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOHUMANOID))
+#define NOTRADE_ELF(i)		(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOELF))
+#define NOTRADE_GNOME(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOGNOME))
+#define NOTRADE_DWARF(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NODWARF))
+#define NOTRADE_HALFLING(i)	(IS_SET(SHOP_TRADE_WITH((i)), TRADE_NOHALFLING))
+
 /* Shop flags */
 #define WILL_START_FIGHT    (1 << 0)
 #define WILL_BANK_MONEY     (1 << 1)
@@ -147,6 +158,7 @@ struct stack_data {
 #define MSG_NO_SEE_CHAR		"I don't trade with someone I can't see!"
 #define MSG_NO_SELL_ALIGN	"Get out of here before I call the guards!"
 #define MSG_NO_SELL_CLASS	"We don't serve your kind here!"
+#define MSG_NO_SELL_RACE	"Get out, we don't serve your breed around here!"
 #define MSG_NO_USED_WANDSTAFF	"I don't buy used up wands or staves!"
 #define MSG_CANT_KILL_KEEPER	"Get out of here before I call the guards!"
 

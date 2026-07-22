@@ -320,6 +320,7 @@ const char *connected_types[] = {
   "Trigger edit",
   "Help edit",
   "Quest edit",
+  "Select race",
   "Preference edit",
   "IBT edit",
   "Message edit",
@@ -451,6 +452,11 @@ const char *extra_bits[] = {
   "ANTI_WARRIOR",
   "NO_SELL",
   "QUEST_ITEM",
+  "ANTI_HUMANOID",
+  "ANTI_ELF",
+  "ANTI_GNOME",
+  "ANTI_DWARF",
+  "ANTI_HALFLING",
   "\n"
 };
 

@@ -485,6 +485,8 @@ do                                                              \
 
 /** Class of ch. */
 #define GET_CLASS(ch)   ((ch)->player.chclass)
+/** Race of ch. */
+#define GET_RACE(ch)	((ch)->player.chrace)
 /** Height of ch. */
 #define GET_HEIGHT(ch)	((ch)->player.height)
 /** Weight of ch. */
@@ -862,6 +864,24 @@ do                                                              \
 /** 1 if ch is warrior class, 0 if not. */
 #define IS_WARRIOR(ch)		(!IS_NPC(ch) && \
         (GET_CLASS(ch) == CLASS_WARRIOR))
+
+/** Return the race abbreviation for ch. */
+#define RACE_ABBR(ch) (IS_NPC(ch) ? "---" : race_abbrevs[(int)GET_RACE(ch)])
+/** 1 if ch is humanoid class, 0 if not. */
+#define IS_HUMANOID(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_HUMANOID))
+/** 1 if ch is elf race, 0 if not. */
+#define IS_ELF(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_ELF))
+/** 1 if ch is gnome race, 0 if not. */
+#define IS_GNOME(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_GNOME))
+/** 1 if ch is dwarf race, 0 if not. */
+#define IS_DWARF(ch)		(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_DWARF))
+/** 1 if ch is warrior race, 0 if not. */
+#define IS_HALFLING(ch)	(!IS_NPC(ch) && \
+	(GET_RACE(ch) == RACE_HALFLING))
 
 /** Defines if ch is outdoors or not. */
 #define OUTSIDE(ch) (!ROOM_FLAGGED(IN_ROOM(ch), ROOM_INDOORS))

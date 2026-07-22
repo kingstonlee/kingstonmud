@@ -153,13 +153,15 @@
 /** Total number of available PC Classes */
 #define NUM_CLASSES	  4
 
-/* NPC classes (currently unused - feel free to implement!) */
-#define CLASS_OTHER       0    /**< NPC Class Other (or undefined) */
-#define CLASS_UNDEAD      1    /**< NPC Class Undead */
-#define CLASS_HUMANOID    2    /**< NPC Class Humanoid */
-#define CLASS_ANIMAL      3    /**< NPC Class Animal */
-#define CLASS_DRAGON      4    /**< NPC Class Dragon */
-#define CLASS_GIANT       5    /**< NPC Class Giant */
+/* PC Races */
+#define RACE_UNDEFINED	  (-1) /**< PC race undefined */
+#define RACE_HUMANOID	  0    /**< PC race 'H' */
+#define RACE_ELF	  1    /**< PC race 'E' */
+#define RACE_GNOME	  2    /**< PC race 'G' */
+#define RACE_DWARF	  3    /**< PC race 'W' */
+#define RACE_HALFLING	  4    /**< PC race 'L' */
+/** Total number of available PC Races */
+#define NUM_RACES	  5
 
 /* Sex */
 #define SEX_NEUTRAL   0   /**< Neutral Sex (Hermaphrodite) */
@@ -328,6 +330,7 @@
 #define CON_IBTEDIT      30 /**< OLC mode - idea/bug/typo edit */
 #define CON_MSGEDIT      31 /**< OLC mode - message editor */
 #define CON_GET_PROTOCOL 32 /**< Used at log-in while attempting to get protocols > */
+#define CON_QRACE        33 /**< Choose character race */
 
 /* OLC States range - used by IS_IN_OLC and IS_PLAYING */
 #define FIRST_OLC_STATE CON_OEDIT     /**< The first CON_ state that is an OLC */
@@ -425,8 +428,13 @@
 #define ITEM_ANTI_WARRIOR     15   /**< Not usable by warriors */
 #define ITEM_NOSELL           16   /**< Shopkeepers won't touch it */
 #define ITEM_QUEST            17   /**< Item is a quest item         */
+#define ITEM_ANTI_HUMANOID    18   /**< Item can't be worn by humanoids */
+#define ITEM_ANTI_ELF         19   /**< Item can't be worn by elfs */
+#define ITEM_ANTI_GNOME       20   /**< Item can't be worn by gnomes */
+#define ITEM_ANTI_DWARF       21   /**< Item can't be worn by dwarfs */
+#define ITEM_ANTI_HALFLING    22   /**< Item can't be worn by halflings */
 /** Total number of item flags */
-#define NUM_ITEM_FLAGS    18
+#define NUM_ITEM_FLAGS    23
 
 /* Modifier constants used with obj affects ('A' fields) */
 #define APPLY_NONE              0	/**< No effect			*/
@@ -865,6 +873,7 @@ struct char_player_data
   char *title;                   /**< PC / NPC title */
   byte sex;                      /**< PC / NPC sex */
   byte chclass;                  /**< PC / NPC class */
+  byte chrace;                   /**< PC / NPC's race */
   byte level;                    /**< PC / NPC level */
   struct time_data time;         /**< PC AGE in days */
   ubyte weight;                  /**< PC / NPC weight */

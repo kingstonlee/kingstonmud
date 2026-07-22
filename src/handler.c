@@ -21,6 +21,7 @@
 #include "dg_scripts.h"
 #include "act.h"
 #include "class.h"
+#include "races.h"
 #include "fight.h"
 #include "quest.h"
 #include "mud_event.h"
@@ -522,7 +523,7 @@ void equip_char(struct char_data *ch, struct obj_data *obj, int pos)
     log("SYSERR: EQUIP: Obj is in_room when equip.");
     return;
   }
-  if (invalid_align(ch, obj) || invalid_class(ch, obj)) {
+  if (invalid_align(ch, obj) || invalid_class(ch, obj) || invalid_race(ch, obj)) {
     act("You are zapped by $p and instantly let go of it.", FALSE, ch, obj, 0, TO_CHAR);
     act("$n is zapped by $p and instantly lets go of it.", FALSE, ch, obj, 0, TO_ROOM);
     /* Changed to drop in inventory instead of the ground. */
